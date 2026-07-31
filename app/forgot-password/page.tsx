@@ -1,0 +1,1 @@
+export default function Forgot(){return <main className="grid min-h-screen place-items-center p-5"><div className="card w-full max-w-md p-8"><h1 className="text-3xl font-black">استعادة كلمة المرور</h1><input className="input mt-6" placeholder="البريد الإلكتروني أو الهاتف"/><button className="btn btn-primary mt-5 w-full">إرسال رابط الاستعادة</button></div></main>}
