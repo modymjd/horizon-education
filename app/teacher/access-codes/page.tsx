@@ -1,32 +1,79 @@
 ﻿import Link from "next/link"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
+import { query } from "@/lib/db"
+import { AccessCodeCreateForm } from "@/components/teacher/AccessCodeCreateForm"
 
-const codes = [
-  {
-    code: "HZ-MATH-84K2",
-    lesson: "الحصة الأولى: المتغيرات والمعادلات",
-    status: "جديد",
-    usage: "12 استخدام متاح",
-    expires: "ينتهي خلال 14 يوم",
-  },
-  {
-    code: "HZ-REV-19PL",
-    lesson: "مراجعة الجبر",
-    status: "جديد",
-    usage: "5 استخدامات متاحة",
-    expires: "ينتهي خلال 7 أيام",
-  },
-  {
-    code: "HZ-CALC-77QW",
-    lesson: "قواعد الاشتقاق",
-    status: "مستخدم",
-    usage: "تم استخدامه بواسطة طالب",
-    expires: "صالح",
-  },
-]
+type LessonOption = {
+  id: number
+  title: string
+  course_title: string | null
+}
 
-export default function TeacherAccessCodesPage() {
+type AccessCodeRow = {
+  id: number
+  code_prefix: string | null
+  status: string
+  lesson_title: string | null
+  course_title: string | null
+  expires_at: string | null
+  created_at: string
+  batch_id: string | null
+}
+
+async function getTeacherLessons() {
+  return query<LessonOption>(`
+    SELECT
+      l.id,
+      l.title,
+      c.title AS course_title
+    FROM lessons l
+    JOIN chapters ch ON ch.id = l.chapter_id
+    JOIN courses c ON c.id = ch.course_id
+    JOIN teachers t ON t.id = c.teacher_id
+    JOIN users u ON u.id = t.user_id
+    WHERE u.email = 'teacher@horizon.test'
+      AND l.status = 'published'
+    ORDER BY c.title ASC, l.sort_order ASC
+  `)
+}
+
+async function getAccessCodes() {
+  return query<AccessCodeRow>(`
+    SELECT
+      ac.id,
+      ac.code_prefix,
+      ac.status,
+      ac.batch_id,
+      l.title AS lesson_title,
+      c.title AS course_title,
+      DATE_FORMAT(ac.expires_at, '%Y-%m-%d') AS expires_at,
+      DATE_FORMAT(ac.created_at, '%Y-%m-%d') AS created_at
+    FROM access_codes ac
+    JOIN lessons l ON l.id = ac.lesson_id
+    JOIN chapters ch ON ch.id = l.chapter_id
+    JOIN courses c ON c.id = ch.course_id
+    JOIN teachers t ON t.id = c.teacher_id
+    JOIN users u ON u.id = t.user_id
+    WHERE u.email = 'teacher@horizon.test'
+    ORDER BY ac.id DESC
+    LIMIT 50
+  `)
+}
+
+function getStatusLabel(status: string) {
+  if (status === "new") return "جديد"
+  if (status === "used") return "مستخدم"
+  if (status === "cancelled") return "ملغي"
+  return status
+}
+
+export default async function TeacherAccessCodesPage() {
+  const [lessons, codes] = await Promise.all([
+    getTeacherLessons(),
+    getAccessCodes(),
+  ])
+
   return (
     <main>
       <SiteHeader />
@@ -43,50 +90,7 @@ export default function TeacherAccessCodesPage() {
 
       <section className="section pt-6">
         <div className="wrap grid gap-7 lg:grid-cols-[0.9fr_1.1fr]">
-          <aside className="card code-generator">
-            <span className="eyebrow">إنشاء أكواد</span>
-            <h2 className="text-3xl font-black">ولّد أكواد جديدة</h2>
-            <p className="muted mt-3">
-              اختر الحصة وعدد الأكواد، وسيظهر الكود للطالب مرة واحدة.
-            </p>
-
-            <div className="form-grid mt-6">
-              <label className="font-bold">
-                الحصة
-                <select className="input mt-2" defaultValue="lesson-1">
-                  <option value="lesson-1">المتغيرات والمعادلات</option>
-                  <option value="lesson-2">تبسيط التعبيرات الجبرية</option>
-                  <option value="lesson-3">قواعد الاشتقاق</option>
-                </select>
-              </label>
-
-              <label className="font-bold">
-                عدد الأكواد
-                <input className="input mt-2" type="number" min="1" max="500" defaultValue="10" />
-              </label>
-
-              <label className="font-bold">
-                تاريخ الانتهاء
-                <input className="input mt-2" type="date" />
-              </label>
-
-              <label className="font-bold">
-                نوع الكود
-                <select className="input mt-2" defaultValue="single">
-                  <option value="single">استخدام مرة واحدة</option>
-                  <option value="multi">متعدد الاستخدام</option>
-                </select>
-              </label>
-            </div>
-
-            <button className="btn btn-block mt-6">
-              إنشاء الأكواد
-            </button>
-
-            <p className="muted mt-4 text-sm">
-              ملاحظة: هذه واجهة جاهزة، وربط الإنشاء الفعلي بالـ API يتم في الخطوة التالية.
-            </p>
-          </aside>
+          <AccessCodeCreateForm lessons={lessons} />
 
           <div>
             <div className="toolbar">
@@ -102,20 +106,39 @@ export default function TeacherAccessCodesPage() {
 
             <div className="code-table">
               {codes.map((item) => (
-                <div className="code-row" key={item.code}>
+                <div className="code-row" key={item.id}>
                   <div>
-                    <div className="code-token">{item.code}</div>
-                    <p className="muted mt-1">{item.lesson}</p>
+                    <div className="code-token">
+                      {item.code_prefix || "HZ-***"}
+                    </div>
+                    <p className="muted mt-1">
+                      {item.course_title ? `${item.course_title} — ` : ""}
+                      {item.lesson_title || "غير محدد"}
+                    </p>
                   </div>
 
-                  <span className="badge">{item.status}</span>
+                  <span className="badge">{getStatusLabel(item.status)}</span>
 
                   <div>
-                    <p className="font-bold">{item.usage}</p>
-                    <p className="muted text-sm">{item.expires}</p>
+                    <p className="font-bold">
+                      الدفعة: {item.batch_id?.slice(0, 8) || "—"}
+                    </p>
+                    <p className="muted text-sm">
+                      الإنشاء: {item.created_at}
+                      {item.expires_at ? ` · ينتهي: ${item.expires_at}` : ""}
+                    </p>
                   </div>
                 </div>
               ))}
+
+              {codes.length === 0 ? (
+                <div className="card access-code-card">
+                  <h3 className="text-xl font-black">لا توجد أكواد بعد</h3>
+                  <p className="muted mt-2">
+                    أنشئ أول دفعة أكواد من النموذج.
+                  </p>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
