@@ -610,3 +610,251 @@ img {
     grid-template-columns: 1fr;
   }
 }
+
+/* Course page */
+.course-hero {
+  padding: 72px 0 80px;
+}
+
+.course-hero-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 34px;
+  align-items: stretch;
+}
+
+.course-panel {
+  padding: 34px;
+}
+
+.course-preview {
+  min-height: 420px;
+  color: var(--cream);
+  background:
+    radial-gradient(circle at 80% 20%, rgba(238, 220, 199, 0.22), transparent 34%),
+    linear-gradient(155deg, var(--ember), var(--maple));
+  border-radius: 38px;
+  padding: 34px;
+  position: relative;
+  overflow: hidden;
+}
+
+.course-preview::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 36px;
+  bottom: 0;
+  width: 220px;
+  height: 270px;
+  border: 28px solid var(--orange);
+  border-bottom: 0;
+  border-radius: 140px 140px 0 0;
+  opacity: 0.95;
+}
+
+.course-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.skill-list {
+  display: grid;
+  gap: 14px;
+}
+
+.skill-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 18px;
+  border-radius: 24px;
+  background: var(--cream-2);
+  border: 1px solid var(--line);
+}
+
+.lesson-list {
+  display: grid;
+  gap: 14px;
+}
+
+.lesson-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+  border-radius: 24px;
+  background: rgba(246, 236, 222, 0.78);
+  border: 1px solid var(--line);
+}
+
+.lesson-number {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: var(--orange);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+
+.testimonial {
+  padding: 26px;
+}
+
+.price-card {
+  padding: 28px;
+  position: sticky;
+  top: 100px;
+}
+
+.price {
+  font-family: var(--display);
+  font-size: 58px;
+  line-height: 1;
+  color: var(--maple);
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .course-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .price-card {
+    position: static;
+  }
+}
+
+@media (max-width: 560px) {
+  .lesson-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Course page */
+.course-hero {
+  padding: 72px 0 80px;
+}
+
+.course-hero-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 34px;
+  align-items: stretch;
+}
+
+.course-panel {
+  padding: 34px;
+}
+
+.course-preview {
+  min-height: 420px;
+  color: var(--cream);
+  background:
+    radial-gradient(circle at 80% 20%, rgba(238, 220, 199, 0.22), transparent 34%),
+    linear-gradient(155deg, var(--ember), var(--maple));
+  border-radius: 38px;
+  padding: 34px;
+  position: relative;
+  overflow: hidden;
+}
+
+.course-preview::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 36px;
+  bottom: 0;
+  width: 220px;
+  height: 270px;
+  border: 28px solid var(--orange);
+  border-bottom: 0;
+  border-radius: 140px 140px 0 0;
+  opacity: 0.95;
+}
+
+.course-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.skill-list {
+  display: grid;
+  gap: 14px;
+}
+
+.skill-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 18px;
+  border-radius: 24px;
+  background: var(--cream-2);
+  border: 1px solid var(--line);
+}
+
+.lesson-list {
+  display: grid;
+  gap: 14px;
+}
+
+.lesson-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+  border-radius: 24px;
+  background: rgba(246, 236, 222, 0.78);
+  border: 1px solid var(--line);
+}
+
+.lesson-number {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: var(--orange);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+
+.testimonial {
+  padding: 26px;
+}
+
+.price-card {
+  padding: 28px;
+  position: sticky;
+  top: 100px;
+}
+
+.price {
+  font-family: var(--display);
+  font-size: 58px;
+  line-height: 1;
+  color: var(--maple);
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .course-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .price-card {
+    position: static;
+  }
+}
+
+@media (max-width: 560px) {
+  .lesson-row {
+    grid-template-columns: 1fr;
+  }
+}
