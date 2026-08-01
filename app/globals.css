@@ -1590,3 +1590,91 @@ img {
     white-space: nowrap;
   }
 }
+
+/* Admin reports/settings */
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.report-card {
+  padding: 24px;
+}
+
+.report-card b {
+  display: block;
+  font-family: var(--display);
+  font-size: 42px;
+  line-height: 1;
+  color: var(--maple);
+}
+
+.chart-card {
+  padding: 28px;
+}
+
+.fake-chart {
+  height: 280px;
+  display: flex;
+  align-items: end;
+  gap: 14px;
+  padding: 22px;
+  border-radius: 28px;
+  background: var(--cream-2);
+  border: 1px solid var(--line);
+}
+
+.chart-bar {
+  flex: 1;
+  min-width: 28px;
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(180deg, var(--orange), var(--maple));
+}
+
+.settings-card {
+  padding: 28px;
+}
+
+.settings-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.settings-row:last-child {
+  border-bottom: 0;
+}
+
+.toggle-pill {
+  width: 56px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--orange);
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(67, 37, 30, 0.12);
+}
+
+.toggle-pill::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  inset-inline-end: 5px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--cream);
+}
+
+@media (max-width: 900px) {
+  .report-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-row {
+    grid-template-columns: 1fr;
+  }
+}
