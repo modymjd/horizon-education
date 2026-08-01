@@ -2,14 +2,14 @@
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 
-const courses = [
-  ["ر", "الرياضيات للصف الأول الثانوي", "د. أحمد درويش", "منشور", "24 حصة", "82 طالب"],
-  ["ف", "الفيزياء العملية", "أ. مريم علي", "منشور", "18 حصة", "61 طالب"],
-  ["ك", "الكيمياء المبسطة", "أ. سارة محمود", "مسودة", "12 حصة", "44 طالب"],
-  ["ع", "اللغة العربية", "أ. محمد حسن", "منشور", "16 حصة", "73 طالب"],
+const students = [
+  ["م", "محمد محمود", "student@horizon.test", "الصف الأول الثانوي", "نشط", "3 مواد"],
+  ["س", "سارة أحمد", "sara@student.test", "الصف الأول الثانوي", "نشط", "2 مواد"],
+  ["ع", "علي حسن", "ali@student.test", "الصف الثاني الثانوي", "يحتاج متابعة", "1 مادة"],
+  ["ن", "نور خالد", "nour@student.test", "الصف الثالث الثانوي", "نشط", "4 مواد"],
 ]
 
-export default function AdminCoursesPage() {
+export default function AdminStudentsPage() {
   return (
     <main>
       <SiteHeader />
@@ -17,9 +17,9 @@ export default function AdminCoursesPage() {
       <section className="admin-page-hero">
         <div className="wrap">
           <span className="eyebrow">لوحة الإدارة</span>
-          <h1 className="h1">إدارة الكورسات</h1>
+          <h1 className="h1">إدارة الطلاب</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            راجع الكورسات المنشورة والمسودات، وعدد الحصص والطلاب لكل كورس.
+            تابع حسابات الطلاب، المراحل الدراسية، وحالة الاشتراكات والتقدم.
           </p>
         </div>
       </section>
@@ -28,26 +28,26 @@ export default function AdminCoursesPage() {
         <div className="wrap">
           <div className="admin-summary-grid">
             <div className="card summary-card">
-              <b>27</b>
-              <span className="muted font-bold">إجمالي الكورسات</span>
+              <b>128</b>
+              <span className="muted font-bold">إجمالي الطلاب</span>
             </div>
             <div className="card summary-card">
-              <b>19</b>
-              <span className="muted font-bold">منشورة</span>
+              <b>92</b>
+              <span className="muted font-bold">طلاب نشطون</span>
             </div>
             <div className="card summary-card">
-              <b>8</b>
-              <span className="muted font-bold">مسودات</span>
+              <b>11</b>
+              <span className="muted font-bold">يحتاجون متابعة</span>
             </div>
           </div>
 
           <div className="toolbar">
             <div className="search-row">
-              <input className="input" placeholder="ابحث عن كورس..." />
+              <input className="input" placeholder="ابحث باسم الطالب أو البريد..." />
               <select className="input" defaultValue="all">
-                <option value="all">كل الكورسات</option>
-                <option value="published">منشور</option>
-                <option value="draft">مسودة</option>
+                <option value="all">كل الحالات</option>
+                <option value="active">نشط</option>
+                <option value="follow">يحتاج متابعة</option>
               </select>
             </div>
 
@@ -60,26 +60,26 @@ export default function AdminCoursesPage() {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>الكورس</th>
-                  <th>المدرس</th>
+                  <th>الطالب</th>
+                  <th>البريد</th>
+                  <th>المرحلة</th>
                   <th>الحالة</th>
-                  <th>الحصص</th>
-                  <th>الطلاب</th>
+                  <th>الاشتراكات</th>
                 </tr>
               </thead>
               <tbody>
-                {courses.map(([letter, title, teacher, status, lessons, students]) => (
-                  <tr key={title}>
+                {students.map(([letter, name, email, grade, status, subs]) => (
+                  <tr key={email}>
                     <td>
                       <div className="table-user">
                         <div className="table-avatar">{letter}</div>
-                        <b>{title}</b>
+                        <b>{name}</b>
                       </div>
                     </td>
-                    <td>{teacher}</td>
+                    <td>{email}</td>
+                    <td>{grade}</td>
                     <td><span className="badge">{status}</span></td>
-                    <td>{lessons}</td>
-                    <td>{students}</td>
+                    <td>{subs}</td>
                   </tr>
                 ))}
               </tbody>
