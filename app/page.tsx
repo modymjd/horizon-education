@@ -1,4 +1,112 @@
-import Link from 'next/link'
-const stats=['٣ لوحات تحكم','أكواد آمنة','فواتير وتقارير','اختبارات وواجبات']
-const courses=[['الرياضيات المتقدمة','د. أحمد درويش','١٢ حصة'],['أساسيات التصميم','م. سارة علي','٨ حصص'],['اللغة الإنجليزية','أ. محمد حسن','١٠ حصص']]
-export default function Home(){return <main className="min-h-screen"><nav className="mx-auto flex max-w-7xl items-center justify-between p-5"><b className="text-2xl">Horizon Education</b><div className="hidden gap-6 md:flex"><a>الكورسات</a><a>المدرسون</a><a>الأسئلة الشائعة</a></div><Link className="btn btn-primary" href="/login">تسجيل الدخول</Link></nav><section className="mx-auto grid max-w-7xl gap-10 px-5 py-12 lg:grid-cols-2"><div><span className="badge">horizon-education.edu</span><h1 className="mt-5 text-5xl font-black leading-tight md:text-7xl">تعليم رقمي واضح، آمن، وسهل الإدارة</h1><p className="mt-5 text-lg text-brand-brown/80">منصة عربية RTL لإدارة الكورسات والحصص المدفوعة والأكواد والاختبارات والمدفوعات، بتجربة موحدة للأدمن والمدرس والطالب.</p><div className="mt-8 flex flex-wrap gap-3"><Link className="btn btn-primary" href="/student">ابدأ كطالب</Link><Link className="btn btn-soft" href="/admin">استعراض اللوحات</Link></div></div><div className="card relative overflow-hidden p-8"><div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-brand-orange/20"/><div className="relative rounded-3xl bg-brand-brown p-8 text-brand-cream"><div className="h-28 rounded-t-full border-[22px] border-b-0 border-brand-orange"/><div className="-mt-3 h-2 bg-brand-cream"/><h2 className="mt-8 text-4xl font-black">HORIZON</h2><p className="tracking-[.55em]">EDUCATION</p></div></div></section><section className="mx-auto max-w-7xl px-5 py-10"><div className="grid-auto">{stats.map(s=><div className="card p-6" key={s}><b>{s}</b><p className="mt-2 text-sm opacity-70">مصمم للتنفيذ السريع مع Next.js وMySQL</p></div>)}</div></section><section className="mx-auto max-w-7xl px-5 py-12"><h2 className="text-3xl font-black">كورسات مقترحة</h2><div className="mt-6 grid-auto">{courses.map(c=><div className="card p-5" key={c[0]}><div className="h-32 rounded-2xl bg-gradient-to-br from-brand-cream to-brand-taupe"/><h3 className="mt-4 text-xl font-black">{c[0]}</h3><p>{c[1]}</p><span className="badge mt-3 inline-block">{c[2]}</span></div>)}</div></section></main>}
+﻿import Link from "next/link"
+import { SiteHeader } from "@/components/site/SiteHeader"
+import { SiteFooter } from "@/components/site/SiteFooter"
+
+const subjects = [
+  ["الرياضيات", "من الجبر للتفاضل والتكامل — بأسلوب خطوة بخطوة", "ر"],
+  ["الفيزياء", "افهم القوانين بالتجارب والتطبيق العملي", "ف"],
+  ["الكيمياء", "من الذرة للمعادلات بطريقة سهلة ومنظمة", "ك"],
+]
+
+const features = [
+  ["شرح بالصورة الأول", "كل فكرة بتتشاف قبل ما تتحفظ، عشان تفهم إمتى تستخدمها."],
+  ["تصحيح فوري للأسئلة", "حل تدريبات وتابع مستواك أول بأول."],
+  ["متابعة تقدّمك", "لوحة واضحة لكل طالب تبين الحصص والشهادات والمواد."],
+]
+
+export default function Home() {
+  return (
+    <main>
+      <SiteHeader />
+
+      <section className="hero">
+        <div className="wrap hero-grid">
+          <div>
+            <span className="eyebrow">HORIZON EDUCATION</span>
+            <h1 className="h1">كل مادة هي خط تتعلم تشوف اللي وراه</h1>
+            <p className="muted mt-6 max-w-2xl text-lg">
+              منصة تعليمية عربية بتجمع المدرّسين، المواد، الحصص، أكواد الوصول،
+              والشهادات في تجربة واحدة بسيطة للطالب والمدرس والإدارة.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/subjects" className="btn">
+                تصفّح المواد
+              </Link>
+              <Link href="/login" className="btn btn-outline">
+                تسجيل الدخول
+              </Link>
+            </div>
+          </div>
+
+          <div className="hero-card">
+            <div className="hero-floating">
+              <span className="badge">متابعة مباشرة</span>
+              <h3 className="mt-4 text-2xl font-black">مستواك في كل مادة</h3>
+              <p className="mt-2 opacity-80">
+                حصص، واجبات، اختبارات، وشهادات في مكان واحد.
+              </p>
+            </div>
+            <div className="hero-arch" />
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="wrap">
+          <div className="section-head">
+            <span className="eyebrow">طريقة مختلفة في التعلم</span>
+            <h2 className="h2">مش بتحفظ الدرس، بتفهم إمتى تستخدمه</h2>
+          </div>
+
+          <div className="grid-auto">
+            {features.map(([title, text]) => (
+              <div className="card subject-card" key={title}>
+                <h3 className="text-2xl font-black">{title}</h3>
+                <p className="muted mt-3">{text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="wrap">
+          <div className="section-head">
+            <span className="eyebrow">المواد</span>
+            <h2 className="h2">مادة واحدة أو كل المواد — القرار ليك</h2>
+          </div>
+
+          <div className="grid-auto">
+            {subjects.map(([title, text, icon]) => (
+              <Link href="/subjects" className="card subject-card" key={title}>
+                <div className="icon-circle">{icon}</div>
+                <h3 className="mt-5 text-2xl font-black">{title}</h3>
+                <p className="muted mt-2">{text}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="wrap">
+          <div className="card p-8 md:p-12">
+            <span className="eyebrow">جرب الأول</span>
+            <h2 className="h2">أول حصة في أي مادة تجربة، وبعدين تقرر</h2>
+            <p className="muted mt-5 max-w-3xl">
+              ادخل شوف طريقة الشرح، اختبر نفسك، وبعدها كمل في المادة المناسبة ليك.
+            </p>
+            <div className="mt-8">
+              <Link href="/login" className="btn">
+                ابدأ تجربة التعلم
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SiteFooter />
+    </main>
+  )
+}
