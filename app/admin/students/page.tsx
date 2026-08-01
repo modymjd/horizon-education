@@ -1,15 +1,73 @@
 ﻿import Link from "next/link"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
+import { query } from "@/lib/db"
 
-const students = [
-  ["م", "محمد محمود", "student@horizon.test", "الصف الأول الثانوي", "نشط", "3 مواد"],
-  ["س", "سارة أحمد", "sara@student.test", "الصف الأول الثانوي", "نشط", "2 مواد"],
-  ["ع", "علي حسن", "ali@student.test", "الصف الثاني الثانوي", "يحتاج متابعة", "1 مادة"],
-  ["ن", "نور خالد", "nour@student.test", "الصف الثالث الثانوي", "نشط", "4 مواد"],
-]
+type StudentRow = {
+  id: number
+  full_name: string
+  email: string
+  status: string
+  student_code: string | null
+  stage_name: string | null
+  grade_name: string | null
+  education_type_name: string | null
+  subscriptions_count: number
+}
 
-export default function AdminStudentsPage() {
+async function getStudents() {
+  const students = await query<StudentRow>(`
+    SELECT
+      u.id,
+      u.full_name,
+      u.email,
+      u.status,
+      s.student_code,
+      es.name AS stage_name,
+      g.name AS grade_name,
+      et.name AS education_type_name,
+      COUNT(sla.id) AS subscriptions_count
+    FROM users u
+    JOIN roles r ON r.id = u.role_id
+    LEFT JOIN students s ON s.user_id = u.id
+    LEFT JOIN educational_stages es ON es.id = s.stage_id
+    LEFT JOIN grades g ON g.id = s.grade_id
+    LEFT JOIN education_types et ON et.id = s.education_type_id
+    LEFT JOIN student_lesson_access sla ON sla.student_id = s.id
+    WHERE r.name = 'student'
+      AND u.deleted_at IS NULL
+    GROUP BY
+      u.id,
+      u.full_name,
+      u.email,
+      u.status,
+      s.student_code,
+      es.name,
+      g.name,
+      et.name
+    ORDER BY u.id DESC
+  `)
+
+  return students
+}
+
+function getInitials(name: string) {
+  return name.trim().slice(0, 1) || "ط"
+}
+
+function getStatusLabel(status: string) {
+  if (status === "active") return "نشط"
+  if (status === "suspended") return "موقوف"
+  if (status === "banned") return "محظور"
+  return status
+}
+
+export default async function AdminStudentsPage() {
+  const students = await getStudents()
+
+  const activeStudents = students.filter((student) => student.status === "active").length
+  const followUpStudents = students.filter((student) => student.subscriptions_count === 0).length
+
   return (
     <main>
       <SiteHeader />
@@ -28,15 +86,15 @@ export default function AdminStudentsPage() {
         <div className="wrap">
           <div className="admin-summary-grid">
             <div className="card summary-card">
-              <b>128</b>
+              <b>{students.length}</b>
               <span className="muted font-bold">إجمالي الطلاب</span>
             </div>
             <div className="card summary-card">
-              <b>92</b>
+              <b>{activeStudents}</b>
               <span className="muted font-bold">طلاب نشطون</span>
             </div>
             <div className="card summary-card">
-              <b>11</b>
+              <b>{followUpStudents}</b>
               <span className="muted font-bold">يحتاجون متابعة</span>
             </div>
           </div>
@@ -62,26 +120,40 @@ export default function AdminStudentsPage() {
                 <tr>
                   <th>الطالب</th>
                   <th>البريد</th>
+                  <th>الكود</th>
                   <th>المرحلة</th>
                   <th>الحالة</th>
                   <th>الاشتراكات</th>
                 </tr>
               </thead>
               <tbody>
-                {students.map(([letter, name, email, grade, status, subs]) => (
-                  <tr key={email}>
-                    <td>
-                      <div className="table-user">
-                        <div className="table-avatar">{letter}</div>
-                        <b>{name}</b>
-                      </div>
-                    </td>
-                    <td>{email}</td>
-                    <td>{grade}</td>
-                    <td><span className="badge">{status}</span></td>
-                    <td>{subs}</td>
-                  </tr>
-                ))}
+                {students.map((student) => {
+                  const grade = [
+                    student.education_type_name,
+                    student.stage_name,
+                    student.grade_name,
+                  ]
+                    .filter(Boolean)
+                    .join(" / ")
+
+                  return (
+                    <tr key={student.id}>
+                      <td>
+                        <div className="table-user">
+                          <div className="table-avatar">{getInitials(student.full_name)}</div>
+                          <b>{student.full_name}</b>
+                        </div>
+                      </td>
+                      <td>{student.email}</td>
+                      <td>{student.student_code || "—"}</td>
+                      <td>{grade || "غير محدد"}</td>
+                      <td>
+                        <span className="badge">{getStatusLabel(student.status)}</span>
+                      </td>
+                      <td>{student.subscriptions_count} حصة</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
