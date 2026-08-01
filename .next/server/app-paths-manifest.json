@@ -1,5 +1,0 @@
-{
-  "/api/admin/lessons/[id]/videos/route": "app/api/admin/lessons/[id]/videos/route.js",
-  "/api/admin/lessons/[id]/attachments/route": "app/api/admin/lessons/[id]/attachments/route.js",
-  "/admin/lessons/[id]/page": "app/admin/lessons/[id]/page.js"
-}
