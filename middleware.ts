@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { jwtVerify } from "jose"
 
 type Role = "admin" | "teacher" | "student"
 
@@ -8,7 +9,11 @@ const protectedRoutes: Record<string, Role> = {
   "/student": "student",
 }
 
-export function middleware(req: NextRequest) {
+const secret = new TextEncoder().encode(
+  process.env.JWT_SECRET || "horizon-super-secret-dev-key"
+)
+
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
   const matchedRoute = Object.keys(protectedRoutes).find((route) =>
@@ -19,23 +24,36 @@ export function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  const role = req.cookies.get("horizon_role")?.value as Role | undefined
+  const token = req.cookies.get("horizon_session")?.value
 
-  if (!role) {
+  if (!token) {
     const url = new URL("/login", req.url)
-    url.searchParams.set("reason", "no_role_cookie")
+    url.searchParams.set("reason", "no_session")
     return NextResponse.redirect(url)
   }
 
-  const requiredRole = protectedRoutes[matchedRoute]
+  try {
+    const { payload } = await jwtVerify(token, secret)
+    const role = payload.role as Role | undefined
+    const requiredRole = protectedRoutes[matchedRoute]
 
-  if (role !== requiredRole) {
-    const url = new URL("/403", req.url)
-    url.searchParams.set("reason", "wrong_role")
-    return NextResponse.redirect(url)
+    if (!role || role !== requiredRole) {
+      const url = new URL("/403", req.url)
+      url.searchParams.set("reason", "wrong_role")
+      return NextResponse.redirect(url)
+    }
+
+    return NextResponse.next()
+  } catch {
+    const url = new URL("/login", req.url)
+    url.searchParams.set("reason", "invalid_session")
+    const res = NextResponse.redirect(url)
+
+    res.cookies.delete("horizon_session")
+    res.cookies.delete("horizon_role")
+
+    return res
   }
-
-  return NextResponse.next()
 }
 
 export const config = {
