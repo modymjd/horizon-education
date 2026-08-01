@@ -1,4 +1,4 @@
-const mysql = require("mysql2/promise")
+﻿const mysql = require("mysql2/promise")
 const bcrypt = require("bcryptjs")
 
 async function main() {
@@ -14,29 +14,34 @@ async function main() {
 
   await db.query(`
     INSERT IGNORE INTO roles (name) VALUES
-    ('admin'),
-    ('teacher'),
-    ('student');
+      ('admin'),
+      ('teacher'),
+      ('student');
 
     INSERT IGNORE INTO education_types (name, slug) VALUES
-    ('عام', 'general'),
-    ('أزهري', 'azhari'),
-    ('لغات', 'languages'),
-    ('دولي', 'international'),
-    ('فني', 'technical');
+      ('عام', 'general'),
+      ('أزهري', 'azhari'),
+      ('لغات', 'languages'),
+      ('دولي', 'international'),
+      ('فني', 'technical');
 
     INSERT IGNORE INTO educational_stages (name, education_type_id, sort_order)
-    SELECT 'المرحلة الثانوية', id, 1 FROM education_types WHERE slug = 'general';
+    SELECT 'المرحلة الثانوية', id, 1
+    FROM education_types
+    WHERE slug = 'general';
 
     INSERT IGNORE INTO grades (stage_id, name, sort_order)
-    SELECT id, 'الصف الأول الثانوي', 1 FROM educational_stages WHERE name = 'المرحلة الثانوية' LIMIT 1;
+    SELECT id, 'الصف الأول الثانوي', 1
+    FROM educational_stages
+    WHERE name = 'المرحلة الثانوية'
+    LIMIT 1;
 
     INSERT IGNORE INTO payment_methods (name, slug) VALUES
-    ('نقدي', 'cash'),
-    ('محفظة إلكترونية', 'wallet'),
-    ('تحويل بنكي', 'bank_transfer'),
-    ('بطاقة دفع', 'card'),
-    ('وسيلة أخرى', 'other');
+      ('نقدي', 'cash'),
+      ('محفظة إلكترونية', 'wallet'),
+      ('تحويل بنكي', 'bank_transfer'),
+      ('بطاقة دفع', 'card'),
+      ('وسيلة أخرى', 'other');
   `)
 
   const adminHash = await bcrypt.hash("Admin123456", 10)
@@ -45,7 +50,7 @@ async function main() {
 
   await db.execute(
     `
-    INSERT IGNORE INTO users 
+    INSERT IGNORE INTO users
       (role_id, email, phone, password_hash, full_name, status)
     SELECT id, ?, ?, ?, ?, 'active'
     FROM roles
@@ -56,7 +61,7 @@ async function main() {
 
   await db.execute(
     `
-    INSERT IGNORE INTO users 
+    INSERT IGNORE INTO users
       (role_id, email, phone, password_hash, full_name, status)
     SELECT id, ?, ?, ?, ?, 'active'
     FROM roles
@@ -67,7 +72,7 @@ async function main() {
 
   await db.execute(
     `
-    INSERT IGNORE INTO users 
+    INSERT IGNORE INTO users
       (role_id, email, phone, password_hash, full_name, status)
     SELECT id, ?, ?, ?, ?, 'active'
     FROM roles
@@ -78,7 +83,7 @@ async function main() {
 
   await db.execute(
     `
-    INSERT IGNORE INTO teachers 
+    INSERT IGNORE INTO teachers
       (user_id, bio, address, platform_commission_pct)
     SELECT id, 'مدرس رياضيات بخبرة 10 سنوات', 'القاهرة', 20.00
     FROM users
@@ -88,7 +93,7 @@ async function main() {
 
   await db.execute(
     `
-    INSERT IGNORE INTO guardians 
+    INSERT IGNORE INTO guardians
       (name, phone, alt_phone)
     VALUES
       ('ولي أمر الطالب', '01000000004', '01000000005')
@@ -97,7 +102,7 @@ async function main() {
 
   await db.execute(
     `
-    INSERT IGNORE INTO students 
+    INSERT IGNORE INTO students
       (
         user_id,
         student_code,
@@ -109,7 +114,7 @@ async function main() {
         education_type_id,
         guardian_id
       )
-    SELECT 
+    SELECT
       u.id,
       'STU-0001',
       '30001010101010',
@@ -126,7 +131,7 @@ async function main() {
 
   await db.execute(
     `
-    INSERT IGNORE INTO courses 
+    INSERT IGNORE INTO courses
       (
         slug,
         title,
