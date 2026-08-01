@@ -16,6 +16,24 @@ type PaymentRow = {
   paid_at: string
 }
 
+type StudentOption = {
+  id: number
+  full_name: string
+  student_code: string | null
+}
+
+type LessonOption = {
+  id: number
+  title: string
+  course_title: string | null
+  price: number
+}
+
+type PaymentMethodOption = {
+  id: number
+  name: string
+}
+
 async function getPayments() {
   const payments = await query<PaymentRow>(`
     SELECT
@@ -40,6 +58,48 @@ async function getPayments() {
   return payments
 }
 
+async function getPaymentFormOptions() {
+  const students = await query<StudentOption>(`
+    SELECT
+      s.id,
+      u.full_name,
+      s.student_code
+    FROM students s
+    JOIN users u ON u.id = s.user_id
+    WHERE u.deleted_at IS NULL
+      AND u.status = 'active'
+    ORDER BY u.full_name ASC
+  `)
+
+  const lessons = await query<LessonOption>(`
+    SELECT
+      l.id,
+      l.title,
+      c.title AS course_title,
+      l.price
+    FROM lessons l
+    JOIN chapters ch ON ch.id = l.chapter_id
+    JOIN courses c ON c.id = ch.course_id
+    WHERE l.status = 'published'
+    ORDER BY c.title ASC, l.sort_order ASC
+  `)
+
+  const paymentMethods = await query<PaymentMethodOption>(`
+    SELECT
+      id,
+      name
+    FROM payment_methods
+    WHERE is_active = 1
+    ORDER BY id ASC
+  `)
+
+  return {
+    students,
+    lessons,
+    paymentMethods,
+  }
+}
+
 function money(value: number | string | null | undefined) {
   return `${Number(value || 0).toLocaleString("ar-EG")} ج.م`
 }
@@ -53,7 +113,10 @@ function getStatusLabel(status: string) {
 }
 
 export default async function AdminPaymentsPage() {
-  const payments = await getPayments()
+  const [payments, options] = await Promise.all([
+    getPayments(),
+    getPaymentFormOptions(),
+  ])
 
   const totalRevenue = payments.reduce((sum, payment) => sum + Number(payment.amount_paid || 0), 0)
   const platformRevenue = payments.reduce((sum, payment) => sum + Number(payment.platform_amount || 0), 0)
@@ -79,7 +142,7 @@ export default async function AdminPaymentsPage() {
             <span className="eyebrow">تسجيل دفعة</span>
             <h2 className="text-3xl font-black">إضافة دفعة جديدة</h2>
             <p className="muted mt-3">
-              هذه واجهة جاهزة، وربط الحفظ الفعلي بالـ API يتم في خطوة لاحقة.
+              اختر الطالب والحصة وطريقة الدفع من البيانات المسجلة في قاعدة البيانات.
             </p>
 
             <div className="form-grid mt-6">
@@ -87,6 +150,12 @@ export default async function AdminPaymentsPage() {
                 الطالب
                 <select className="input mt-2" defaultValue="">
                   <option value="">اختر الطالب</option>
+                  {options.students.map((student) => (
+                    <option value={student.id} key={student.id}>
+                      {student.full_name}
+                      {student.student_code ? ` — ${student.student_code}` : ""}
+                    </option>
+                  ))}
                 </select>
               </label>
 
@@ -94,6 +163,13 @@ export default async function AdminPaymentsPage() {
                 الحصة
                 <select className="input mt-2" defaultValue="">
                   <option value="">اختر الحصة</option>
+                  {options.lessons.map((lesson) => (
+                    <option value={lesson.id} key={lesson.id}>
+                      {lesson.course_title ? `${lesson.course_title} — ` : ""}
+                      {lesson.title}
+                      {lesson.price ? ` — ${money(lesson.price)}` : ""}
+                    </option>
+                  ))}
                 </select>
               </label>
 
@@ -106,6 +182,11 @@ export default async function AdminPaymentsPage() {
                 طريقة الدفع
                 <select className="input mt-2" defaultValue="">
                   <option value="">اختر طريقة الدفع</option>
+                  {options.paymentMethods.map((method) => (
+                    <option value={method.id} key={method.id}>
+                      {method.name}
+                    </option>
+                  ))}
                 </select>
               </label>
             </div>
@@ -113,6 +194,10 @@ export default async function AdminPaymentsPage() {
             <button className="btn btn-block mt-6">
               تسجيل الدفعة
             </button>
+
+            <p className="muted mt-4 text-sm">
+              تم ربط القوائم بقاعدة البيانات. حفظ الدفعة نفسها هنفعّله في الخطوة التالية.
+            </p>
           </aside>
 
           <div>
