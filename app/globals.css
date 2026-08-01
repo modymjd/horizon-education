@@ -971,3 +971,136 @@ img {
     grid-template-columns: 1fr;
   }
 }
+
+/* Teacher dashboard */
+.teacher-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 22px;
+  align-items: stretch;
+  margin: 42px 0 28px;
+}
+
+.teacher-welcome {
+  padding: 34px;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(207, 65, 22, 0.18), transparent 34%),
+    rgba(246, 236, 222, 0.78);
+}
+
+.teacher-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.teacher-action-card {
+  border-radius: 26px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  background: var(--cream-2);
+  transition: 0.2s ease;
+}
+
+.teacher-action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 44px rgba(67, 37, 30, 0.1);
+}
+
+.teacher-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.teacher-stat-card {
+  padding: 22px;
+}
+
+.teacher-stat-card b {
+  display: block;
+  font-family: var(--display);
+  font-size: 42px;
+  line-height: 1;
+  color: var(--maple);
+}
+
+.teacher-course-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  border-radius: 26px;
+  background: rgba(246, 236, 222, 0.78);
+  border: 1px solid var(--line);
+}
+
+.course-letter {
+  width: 58px;
+  height: 58px;
+  border-radius: 20px;
+  background: var(--orange);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 22px;
+}
+
+.access-code-card {
+  padding: 24px;
+}
+
+.code-preview {
+  display: inline-flex;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: var(--ember);
+  color: var(--cream);
+  font-weight: 900;
+  letter-spacing: 1px;
+  direction: ltr;
+}
+
+.activity-list {
+  display: grid;
+  gap: 14px;
+}
+
+.activity-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: 22px;
+  background: rgba(246, 236, 222, 0.78);
+  border: 1px solid var(--line);
+}
+
+.activity-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--orange);
+  margin-top: 8px;
+  box-shadow: 0 0 0 7px rgba(207, 65, 22, 0.12);
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .teacher-dashboard-grid,
+  .teacher-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .teacher-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .teacher-course-row {
+    grid-template-columns: 1fr;
+  }
+}
