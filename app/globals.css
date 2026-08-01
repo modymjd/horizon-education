@@ -858,3 +858,116 @@ img {
     grid-template-columns: 1fr;
   }
 }
+
+/* Teacher profile */
+.teacher-hero {
+  padding: 72px 0 80px;
+}
+
+.teacher-hero-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 34px;
+  align-items: stretch;
+}
+
+.teacher-portrait {
+  min-height: 460px;
+  border-radius: 42px;
+  background:
+    radial-gradient(circle at 26% 18%, rgba(238, 220, 199, 0.25), transparent 32%),
+    linear-gradient(155deg, var(--maple), var(--ember));
+  color: var(--cream);
+  padding: 34px;
+  position: relative;
+  overflow: hidden;
+}
+
+.teacher-portrait::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 38px;
+  bottom: 0;
+  width: 220px;
+  height: 280px;
+  border: 28px solid var(--orange);
+  border-bottom: 0;
+  border-radius: 140px 140px 0 0;
+  opacity: 0.95;
+}
+
+.teacher-avatar-large {
+  width: 112px;
+  height: 112px;
+  border-radius: 999px;
+  background: var(--cream);
+  color: var(--maple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--display);
+  font-size: 58px;
+  font-weight: 700;
+  position: relative;
+  z-index: 2;
+}
+
+.teacher-info-card {
+  padding: 34px;
+}
+
+.teacher-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.teacher-stat {
+  background: var(--cream-2);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 18px;
+}
+
+.teacher-stat b {
+  display: block;
+  font-family: var(--display);
+  font-size: 34px;
+  line-height: 1;
+  color: var(--maple);
+}
+
+.timeline {
+  display: grid;
+  gap: 16px;
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.timeline-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--orange);
+  margin-top: 7px;
+  box-shadow: 0 0 0 8px rgba(207, 65, 22, 0.12);
+}
+
+.teacher-subject {
+  padding: 24px;
+}
+
+@media (max-width: 900px) {
+  .teacher-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .teacher-stats {
+    grid-template-columns: 1fr;
+  }
+}
