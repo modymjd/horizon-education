@@ -2,6 +2,7 @@
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 import { query } from "@/lib/db"
+import { PaymentCreateForm } from "@/components/admin/PaymentCreateForm"
 
 type PaymentRow = {
   id: number
@@ -118,9 +119,18 @@ export default async function AdminPaymentsPage() {
     getPaymentFormOptions(),
   ])
 
-  const totalRevenue = payments.reduce((sum, payment) => sum + Number(payment.amount_paid || 0), 0)
-  const platformRevenue = payments.reduce((sum, payment) => sum + Number(payment.platform_amount || 0), 0)
-  const teacherRevenue = payments.reduce((sum, payment) => sum + Number(payment.teacher_amount || 0), 0)
+  const totalRevenue = payments.reduce(
+    (sum, payment) => sum + Number(payment.amount_paid || 0),
+    0
+  )
+  const platformRevenue = payments.reduce(
+    (sum, payment) => sum + Number(payment.platform_amount || 0),
+    0
+  )
+  const teacherRevenue = payments.reduce(
+    (sum, payment) => sum + Number(payment.teacher_amount || 0),
+    0
+  )
 
   return (
     <main>
@@ -138,67 +148,11 @@ export default async function AdminPaymentsPage() {
 
       <section className="section pt-6">
         <div className="wrap grid gap-7 lg:grid-cols-[0.85fr_1.15fr]">
-          <aside className="card payment-form">
-            <span className="eyebrow">تسجيل دفعة</span>
-            <h2 className="text-3xl font-black">إضافة دفعة جديدة</h2>
-            <p className="muted mt-3">
-              اختر الطالب والحصة وطريقة الدفع من البيانات المسجلة في قاعدة البيانات.
-            </p>
-
-            <div className="form-grid mt-6">
-              <label className="font-bold">
-                الطالب
-                <select className="input mt-2" defaultValue="">
-                  <option value="">اختر الطالب</option>
-                  {options.students.map((student) => (
-                    <option value={student.id} key={student.id}>
-                      {student.full_name}
-                      {student.student_code ? ` — ${student.student_code}` : ""}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="font-bold">
-                الحصة
-                <select className="input mt-2" defaultValue="">
-                  <option value="">اختر الحصة</option>
-                  {options.lessons.map((lesson) => (
-                    <option value={lesson.id} key={lesson.id}>
-                      {lesson.course_title ? `${lesson.course_title} — ` : ""}
-                      {lesson.title}
-                      {lesson.price ? ` — ${money(lesson.price)}` : ""}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="font-bold">
-                المبلغ
-                <input className="input mt-2" type="number" placeholder="75" />
-              </label>
-
-              <label className="font-bold">
-                طريقة الدفع
-                <select className="input mt-2" defaultValue="">
-                  <option value="">اختر طريقة الدفع</option>
-                  {options.paymentMethods.map((method) => (
-                    <option value={method.id} key={method.id}>
-                      {method.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <button className="btn btn-block mt-6">
-              تسجيل الدفعة
-            </button>
-
-            <p className="muted mt-4 text-sm">
-              تم ربط القوائم بقاعدة البيانات. حفظ الدفعة نفسها هنفعّله في الخطوة التالية.
-            </p>
-          </aside>
+          <PaymentCreateForm
+            students={options.students}
+            lessons={options.lessons}
+            paymentMethods={options.paymentMethods}
+          />
 
           <div>
             <div className="admin-summary-grid">
@@ -243,12 +197,18 @@ export default async function AdminPaymentsPage() {
                 <tbody>
                   {payments.map((payment) => (
                     <tr key={payment.id}>
-                      <td><b>{payment.invoice_number}</b></td>
+                      <td>
+                        <b>{payment.invoice_number}</b>
+                      </td>
                       <td>{payment.student_name || "غير محدد"}</td>
                       <td>{payment.lesson_title || "غير محدد"}</td>
                       <td>{payment.payment_method_name || "غير محدد"}</td>
                       <td className="amount">{money(payment.amount_paid)}</td>
-                      <td><span className="badge">{getStatusLabel(payment.status)}</span></td>
+                      <td>
+                        <span className="badge">
+                          {getStatusLabel(payment.status)}
+                        </span>
+                      </td>
                       <td>{payment.paid_at}</td>
                     </tr>
                   ))}
