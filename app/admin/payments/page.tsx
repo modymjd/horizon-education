@@ -1,15 +1,64 @@
 ﻿import Link from "next/link"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
+import { query } from "@/lib/db"
 
-const payments = [
-  ["INV-2026-8K2A", "محمد محمود", "الحصة الأولى: المتغيرات والمعادلات", "نقدي", "75 ج.م", "مكتمل"],
-  ["INV-2026-3QW9", "سارة أحمد", "مراجعة الجبر", "محفظة إلكترونية", "120 ج.م", "مكتمل"],
-  ["INV-2026-7PL1", "علي حسن", "كورس الرياضيات", "تحويل بنكي", "300 ج.م", "مكتمل"],
-  ["INV-2026-2AA4", "نور خالد", "كورس الفيزياء", "بطاقة دفع", "250 ج.م", "معلق"],
-]
+type PaymentRow = {
+  id: number
+  invoice_number: string
+  student_name: string | null
+  lesson_title: string | null
+  payment_method_name: string | null
+  amount_paid: number
+  platform_amount: number
+  teacher_amount: number
+  status: string
+  paid_at: string
+}
 
-export default function AdminPaymentsPage() {
+async function getPayments() {
+  const payments = await query<PaymentRow>(`
+    SELECT
+      p.id,
+      p.invoice_number,
+      su.full_name AS student_name,
+      l.title AS lesson_title,
+      pm.name AS payment_method_name,
+      p.amount_paid,
+      p.platform_amount,
+      p.teacher_amount,
+      p.status,
+      DATE_FORMAT(p.paid_at, '%Y-%m-%d') AS paid_at
+    FROM payments p
+    LEFT JOIN students s ON s.id = p.student_id
+    LEFT JOIN users su ON su.id = s.user_id
+    LEFT JOIN lessons l ON l.id = p.lesson_id
+    LEFT JOIN payment_methods pm ON pm.id = p.payment_method_id
+    ORDER BY p.id DESC
+  `)
+
+  return payments
+}
+
+function money(value: number | string | null | undefined) {
+  return `${Number(value || 0).toLocaleString("ar-EG")} ج.م`
+}
+
+function getStatusLabel(status: string) {
+  if (status === "completed") return "مكتمل"
+  if (status === "pending") return "معلق"
+  if (status === "refunded") return "مسترد"
+  if (status === "cancelled") return "ملغي"
+  return status
+}
+
+export default async function AdminPaymentsPage() {
+  const payments = await getPayments()
+
+  const totalRevenue = payments.reduce((sum, payment) => sum + Number(payment.amount_paid || 0), 0)
+  const platformRevenue = payments.reduce((sum, payment) => sum + Number(payment.platform_amount || 0), 0)
+  const teacherRevenue = payments.reduce((sum, payment) => sum + Number(payment.teacher_amount || 0), 0)
+
   return (
     <main>
       <SiteHeader />
@@ -30,37 +79,33 @@ export default function AdminPaymentsPage() {
             <span className="eyebrow">تسجيل دفعة</span>
             <h2 className="text-3xl font-black">إضافة دفعة جديدة</h2>
             <p className="muted mt-3">
-              هذه واجهة جاهزة، وربطها بالـ API يتم في الخطوة التالية.
+              هذه واجهة جاهزة، وربط الحفظ الفعلي بالـ API يتم في خطوة لاحقة.
             </p>
 
             <div className="form-grid mt-6">
               <label className="font-bold">
                 الطالب
-                <select className="input mt-2" defaultValue="student-1">
-                  <option value="student-1">محمد محمود</option>
-                  <option value="student-2">سارة أحمد</option>
+                <select className="input mt-2" defaultValue="">
+                  <option value="">اختر الطالب</option>
                 </select>
               </label>
 
               <label className="font-bold">
                 الحصة
-                <select className="input mt-2" defaultValue="lesson-1">
-                  <option value="lesson-1">المتغيرات والمعادلات</option>
-                  <option value="lesson-2">مراجعة الجبر</option>
+                <select className="input mt-2" defaultValue="">
+                  <option value="">اختر الحصة</option>
                 </select>
               </label>
 
               <label className="font-bold">
                 المبلغ
-                <input className="input mt-2" type="number" defaultValue="75" />
+                <input className="input mt-2" type="number" placeholder="75" />
               </label>
 
               <label className="font-bold">
                 طريقة الدفع
-                <select className="input mt-2" defaultValue="cash">
-                  <option value="cash">نقدي</option>
-                  <option value="wallet">محفظة إلكترونية</option>
-                  <option value="bank">تحويل بنكي</option>
+                <select className="input mt-2" defaultValue="">
+                  <option value="">اختر طريقة الدفع</option>
                 </select>
               </label>
             </div>
@@ -73,15 +118,15 @@ export default function AdminPaymentsPage() {
           <div>
             <div className="admin-summary-grid">
               <div className="card summary-card">
-                <b>42,800</b>
-                <span className="muted font-bold">ج.م إجمالي الإيرادات</span>
+                <b>{money(totalRevenue)}</b>
+                <span className="muted font-bold">إجمالي الإيرادات</span>
               </div>
               <div className="card summary-card">
-                <b>8,560</b>
+                <b>{money(platformRevenue)}</b>
                 <span className="muted font-bold">نصيب المنصة</span>
               </div>
               <div className="card summary-card">
-                <b>34,240</b>
+                <b>{money(teacherRevenue)}</b>
                 <span className="muted font-bold">نصيب المدرسين</span>
               </div>
             </div>
@@ -107,19 +152,27 @@ export default function AdminPaymentsPage() {
                     <th>الطريقة</th>
                     <th>المبلغ</th>
                     <th>الحالة</th>
+                    <th>التاريخ</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {payments.map(([invoice, student, lesson, method, amount, status]) => (
-                    <tr key={invoice}>
-                      <td><b>{invoice}</b></td>
-                      <td>{student}</td>
-                      <td>{lesson}</td>
-                      <td>{method}</td>
-                      <td className="amount">{amount}</td>
-                      <td><span className="badge">{status}</span></td>
+                  {payments.map((payment) => (
+                    <tr key={payment.id}>
+                      <td><b>{payment.invoice_number}</b></td>
+                      <td>{payment.student_name || "غير محدد"}</td>
+                      <td>{payment.lesson_title || "غير محدد"}</td>
+                      <td>{payment.payment_method_name || "غير محدد"}</td>
+                      <td className="amount">{money(payment.amount_paid)}</td>
+                      <td><span className="badge">{getStatusLabel(payment.status)}</span></td>
+                      <td>{payment.paid_at}</td>
                     </tr>
                   ))}
+
+                  {payments.length === 0 ? (
+                    <tr>
+                      <td colSpan={7}>لا توجد مدفوعات مسجلة بعد.</td>
+                    </tr>
+                  ) : null}
                 </tbody>
               </table>
             </div>

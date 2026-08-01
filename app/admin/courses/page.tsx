@@ -1,15 +1,64 @@
 ﻿import Link from "next/link"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
+import { query } from "@/lib/db"
 
-const courses = [
-  ["ر", "الرياضيات للصف الأول الثانوي", "د. أحمد درويش", "منشور", "24 حصة", "82 طالب"],
-  ["ف", "الفيزياء العملية", "أ. مريم علي", "منشور", "18 حصة", "61 طالب"],
-  ["ك", "الكيمياء المبسطة", "أ. سارة محمود", "مسودة", "12 حصة", "44 طالب"],
-  ["ع", "اللغة العربية", "أ. محمد حسن", "منشور", "16 حصة", "73 طالب"],
-]
+type CourseRow = {
+  id: number
+  title: string
+  slug: string
+  status: string
+  teacher_name: string | null
+  lessons_count: number
+  students_count: number
+}
 
-export default function AdminCoursesPage() {
+async function getCourses() {
+  const courses = await query<CourseRow>(`
+    SELECT
+      c.id,
+      c.title,
+      c.slug,
+      c.status,
+      u.full_name AS teacher_name,
+      COUNT(DISTINCT l.id) AS lessons_count,
+      COUNT(DISTINCT sla.student_id) AS students_count
+    FROM courses c
+    LEFT JOIN teachers t ON t.id = c.teacher_id
+    LEFT JOIN users u ON u.id = t.user_id
+    LEFT JOIN chapters ch ON ch.course_id = c.id
+    LEFT JOIN lessons l ON l.chapter_id = ch.id
+    LEFT JOIN student_lesson_access sla ON sla.lesson_id = l.id
+    WHERE c.deleted_at IS NULL
+    GROUP BY
+      c.id,
+      c.title,
+      c.slug,
+      c.status,
+      u.full_name
+    ORDER BY c.id DESC
+  `)
+
+  return courses
+}
+
+function getStatusLabel(status: string) {
+  if (status === "published") return "منشور"
+  if (status === "draft") return "مسودة"
+  if (status === "archived") return "مؤرشف"
+  return status
+}
+
+function getInitials(title: string) {
+  return title.trim().slice(0, 1) || "ك"
+}
+
+export default async function AdminCoursesPage() {
+  const courses = await getCourses()
+
+  const published = courses.filter((course) => course.status === "published").length
+  const drafts = courses.filter((course) => course.status === "draft").length
+
   return (
     <main>
       <SiteHeader />
@@ -28,15 +77,15 @@ export default function AdminCoursesPage() {
         <div className="wrap">
           <div className="admin-summary-grid">
             <div className="card summary-card">
-              <b>27</b>
+              <b>{courses.length}</b>
               <span className="muted font-bold">إجمالي الكورسات</span>
             </div>
             <div className="card summary-card">
-              <b>19</b>
+              <b>{published}</b>
               <span className="muted font-bold">منشورة</span>
             </div>
             <div className="card summary-card">
-              <b>8</b>
+              <b>{drafts}</b>
               <span className="muted font-bold">مسودات</span>
             </div>
           </div>
@@ -65,23 +114,37 @@ export default function AdminCoursesPage() {
                   <th>الحالة</th>
                   <th>الحصص</th>
                   <th>الطلاب</th>
+                  <th>معاينة</th>
                 </tr>
               </thead>
               <tbody>
-                {courses.map(([letter, title, teacher, status, lessons, students]) => (
-                  <tr key={title}>
+                {courses.map((course) => (
+                  <tr key={course.id}>
                     <td>
                       <div className="table-user">
-                        <div className="table-avatar">{letter}</div>
-                        <b>{title}</b>
+                        <div className="table-avatar">{getInitials(course.title)}</div>
+                        <b>{course.title}</b>
                       </div>
                     </td>
-                    <td>{teacher}</td>
-                    <td><span className="badge">{status}</span></td>
-                    <td>{lessons}</td>
-                    <td>{students}</td>
+                    <td>{course.teacher_name || "غير محدد"}</td>
+                    <td>
+                      <span className="badge">{getStatusLabel(course.status)}</span>
+                    </td>
+                    <td>{course.lessons_count} حصة</td>
+                    <td>{course.students_count} طالب</td>
+                    <td>
+                      <Link href={`/courses/${course.slug}`} className="btn btn-soft btn-sm">
+                        فتح
+                      </Link>
+                    </td>
                   </tr>
                 ))}
+
+                {courses.length === 0 ? (
+                  <tr>
+                    <td colSpan={6}>لا توجد كورسات بعد.</td>
+                  </tr>
+                ) : null}
               </tbody>
             </table>
           </div>
