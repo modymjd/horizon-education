@@ -8,13 +8,19 @@ type LessonRow = {
   lesson_id: number
   lesson_title: string
   lesson_description: string | null
-  video_url: string | null
   price: number
   course_title: string
   course_slug: string
   chapter_title: string
   access_until: string | null
-  activated_at: string
+  activated_at: string | null
+}
+
+type LessonVideoRow = {
+  id: number
+  title: string
+  video_url: string
+  sort_order: number
 }
 
 async function getLesson(id: string) {
@@ -24,7 +30,6 @@ async function getLesson(id: string) {
       l.id AS lesson_id,
       l.title AS lesson_title,
       l.description AS lesson_description,
-      l.video_url,
       l.price,
       c.title AS course_title,
       c.slug AS course_slug,
@@ -47,17 +52,39 @@ async function getLesson(id: string) {
   return rows[0]
 }
 
+async function getLessonVideos(id: string) {
+  return query<LessonVideoRow>(
+    `
+    SELECT
+      id,
+      title,
+      video_url,
+      sort_order
+    FROM lesson_videos
+    WHERE lesson_id = ?
+    ORDER BY sort_order ASC, id ASC
+    `,
+    [id]
+  )
+}
+
 export default async function StudentLessonPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const lesson = await getLesson(id)
+
+  const [lesson, videos] = await Promise.all([
+    getLesson(id),
+    getLessonVideos(id),
+  ])
 
   if (!lesson) {
     notFound()
   }
+
+  const firstVideo = videos[0]
 
   return (
     <main>
@@ -69,14 +96,17 @@ export default async function StudentLessonPage({
             <div className="course-meta">
               <span className="badge">{lesson.course_title}</span>
               <span className="badge">{lesson.chapter_title}</span>
-              <span className="badge">تم التفعيل: {lesson.activated_at}</span>
+              <span className="badge">
+                تم التفعيل: {lesson.activated_at || "غير محدد"}
+              </span>
+              <span className="badge">{videos.length} فيديو</span>
             </div>
 
             <h1 className="h1 mt-6">{lesson.lesson_title}</h1>
 
             <p className="muted mt-6 text-lg">
               {lesson.lesson_description ||
-                "هذه الحصة متاحة لك الآن. ابدأ المشاهدة ثم ارجع للوحة الطالب لمتابعة تقدمك."}
+                "هذه الحصة متاحة لك الآن. شاهد فيديوهات الدرس بالترتيب."}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -93,10 +123,10 @@ export default async function StudentLessonPage({
           <aside className="course-preview">
             <span className="lesson-pill">حصة مفعّلة</span>
             <h2 className="mt-5 font-[var(--display)] text-6xl font-bold leading-none">
-              جاهز تبدأ؟
+              {videos.length > 1 ? "فيديوهات الدرس" : "جاهز تبدأ؟"}
             </h2>
             <p className="mt-4 max-w-sm opacity-80">
-              ركّز في الفيديو، وبعده حل التدريب القصير لتثبيت الفكرة.
+              شاهد الفيديوهات بالترتيب، وبعدها حل الواجب أو الامتحان عند إضافتهم.
             </p>
           </aside>
         </div>
@@ -104,27 +134,38 @@ export default async function StudentLessonPage({
 
       <section className="section pt-6">
         <div className="wrap grid gap-7 lg:grid-cols-[1fr_340px]">
-          <div className="card p-6 md:p-8">
-            <span className="eyebrow">مشاهدة الحصة</span>
-            <h2 className="text-3xl font-black">فيديو الدرس</h2>
+          <div className="grid gap-6">
+            {videos.map((video, index) => (
+              <div className="card p-6 md:p-8" key={video.id}>
+                <span className="eyebrow">الفيديو {index + 1}</span>
+                <h2 className="text-3xl font-black">{video.title}</h2>
 
-            <div className="mt-6 overflow-hidden rounded-[28px] border border-[var(--line)] bg-[var(--ember)]">
-              {lesson.video_url ? (
-                <video controls className="w-full" src={lesson.video_url}>
-                  المتصفح لا يدعم تشغيل الفيديو.
-                </video>
-              ) : (
-                <div className="grid min-h-[320px] place-items-center p-8 text-center text-[var(--cream)]">
-                  <div>
-                    <div className="mx-auto mb-5 h-24 w-24 rounded-full border-[18px] border-[var(--orange)] border-b-0" />
-                    <h3 className="text-3xl font-black">مكان فيديو الحصة</h3>
-                    <p className="mt-3 opacity-80">
-                      لم يتم رفع فيديو لهذه الحصة بعد. سيتم ظهوره هنا بعد إضافته من لوحة المدرس.
-                    </p>
+                <div className="mt-6 overflow-hidden rounded-[28px] border border-[var(--line)] bg-[var(--ember)]">
+                  <video controls className="w-full" src={video.video_url}>
+                    المتصفح لا يدعم تشغيل الفيديو.
+                  </video>
+                </div>
+              </div>
+            ))}
+
+            {videos.length === 0 ? (
+              <div className="card p-6 md:p-8">
+                <span className="eyebrow">مشاهدة الحصة</span>
+                <h2 className="text-3xl font-black">فيديو الدرس</h2>
+
+                <div className="mt-6 overflow-hidden rounded-[28px] border border-[var(--line)] bg-[var(--ember)]">
+                  <div className="grid min-h-[320px] place-items-center p-8 text-center text-[var(--cream)]">
+                    <div>
+                      <div className="mx-auto mb-5 h-24 w-24 rounded-full border-[18px] border-[var(--orange)] border-b-0" />
+                      <h3 className="text-3xl font-black">لا توجد فيديوهات بعد</h3>
+                      <p className="mt-3 opacity-80">
+                        لم يتم رفع فيديوهات لهذه الحصة بعد. سيتم ظهورها هنا بعد إضافتها من لوحة المدرس.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            ) : null}
           </div>
 
           <aside className="card price-card">
@@ -135,15 +176,22 @@ export default async function StudentLessonPage({
               <p>✓ تم تفعيل الوصول لهذه الحصة</p>
               <p>✓ الكورس: {lesson.course_title}</p>
               <p>✓ الباب: {lesson.chapter_title}</p>
+              <p>✓ عدد الفيديوهات: {videos.length}</p>
               <p>
                 ✓ متاح حتى:{" "}
                 {lesson.access_until ? lesson.access_until : "بدون تاريخ انتهاء"}
               </p>
             </div>
 
-            <Link href="/student/activate" className="btn btn-block mt-6">
-              تفعيل كود آخر
-            </Link>
+            {firstVideo ? (
+              <a href={`#video-${firstVideo.id}`} className="btn btn-block mt-6">
+                بدء المشاهدة
+              </a>
+            ) : (
+              <Link href="/student/activate" className="btn btn-block mt-6">
+                تفعيل كود آخر
+              </Link>
+            )}
           </aside>
         </div>
       </section>
