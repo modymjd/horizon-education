@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 import { LessonVideoForm } from "@/components/teacher/LessonVideoForm"
 import { LessonAssignmentForm } from "@/components/teacher/LessonAssignmentForm"
+import { LessonExamForm } from "@/components/teacher/LessonExamForm"
 import { query } from "@/lib/db"
 
 type LessonRow = {
@@ -25,6 +26,14 @@ type AssignmentRow = {
   description: string | null
   attachment_url: string | null
   due_at: string | null
+}
+
+type ExamRow = {
+  id: number
+  title: string
+  description: string | null
+  pass_score: number
+  is_required_to_unlock_next: number
 }
 
 async function getTeacherLesson() {
@@ -80,14 +89,29 @@ async function getAssignments() {
   `)
 }
 
+async function getExams() {
+  return query<ExamRow>(`
+    SELECT
+      id,
+      title,
+      description,
+      pass_score,
+      is_required_to_unlock_next
+    FROM lesson_exams
+    WHERE lesson_id = 1
+    ORDER BY sort_order ASC, id ASC
+  `)
+}
+
 function money(value: number | string | null | undefined) {
   return `${Number(value || 0).toLocaleString("ar-EG")} ج.م`
 }
 
 export default async function TeacherLessonPage() {
-  const [lesson, assignments] = await Promise.all([
+  const [lesson, assignments, exams] = await Promise.all([
     getTeacherLesson(),
     getAssignments(),
+    getExams(),
   ])
 
   if (!lesson) {
@@ -103,7 +127,8 @@ export default async function TeacherLessonPage() {
           <span className="eyebrow">لوحة المدرس</span>
           <h1 className="h1">{lesson.title}</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            {lesson.description || "إدارة محتوى الحصة، الفيديوهات، الواجبات، ومتابعة وصول الطلاب."}
+            {lesson.description ||
+              "إدارة محتوى الحصة، الفيديوهات، الواجبات، الامتحانات، ومتابعة وصول الطلاب."}
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
@@ -132,6 +157,7 @@ export default async function TeacherLessonPage() {
               <p>✓ طلاب لديهم وصول: {lesson.students_count}</p>
               <p>✓ فيديو أساسي: {lesson.video_url ? "مضاف" : "غير مضاف"}</p>
               <p>✓ عدد الواجبات: {assignments.length}</p>
+              <p>✓ عدد الامتحانات: {exams.length}</p>
             </div>
           </aside>
 
@@ -142,6 +168,8 @@ export default async function TeacherLessonPage() {
             />
 
             <LessonAssignmentForm lessonId={lesson.id} />
+
+            <LessonExamForm lessonId={lesson.id} />
 
             <div className="card payment-form">
               <span className="eyebrow">الواجبات الحالية</span>
@@ -180,6 +208,39 @@ export default async function TeacherLessonPage() {
                 ) : null}
               </div>
             </div>
+
+            <div className="card payment-form">
+              <span className="eyebrow">الامتحانات الحالية</span>
+              <h2 className="text-3xl font-black">قائمة الامتحانات</h2>
+
+              <div className="mt-6 grid gap-4">
+                {exams.map((exam) => (
+                  <div
+                    className="rounded-2xl border border-[var(--line)] bg-[var(--cream-2)] p-4"
+                    key={exam.id}
+                  >
+                    <h3 className="text-xl font-black">{exam.title}</h3>
+
+                    {exam.description ? (
+                      <p className="muted mt-2">{exam.description}</p>
+                    ) : null}
+
+                    <p className="muted mt-2 text-sm">
+                      درجة النجاح: {exam.pass_score}%
+                    </p>
+
+                    <p className="muted mt-1 text-sm">
+                      شرط فتح التالي:{" "}
+                      {exam.is_required_to_unlock_next ? "نعم" : "لا"}
+                    </p>
+                  </div>
+                ))}
+
+                {exams.length === 0 ? (
+                  <p className="muted">لا توجد امتحانات مضافة لهذه الحصة بعد.</p>
+                ) : null}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -190,7 +251,7 @@ export default async function TeacherLessonPage() {
             <span className="eyebrow">معاينة الطالب</span>
             <h2 className="h2">تأكد من شكل الحصة للطالب</h2>
             <p className="muted mt-5 max-w-3xl">
-              بعد إضافة الفيديوهات أو الواجبات، افتح صفحة الحصة كطالب للتأكد من ظهور المحتوى بشكل صحيح.
+              بعد إضافة الفيديوهات أو الواجبات أو الامتحانات، افتح صفحة الحصة كطالب للتأكد من ظهور المحتوى بشكل صحيح.
             </p>
 
             <div className="mt-8">
