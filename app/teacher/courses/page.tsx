@@ -12,6 +12,7 @@ type TeacherCourseRow = {
   lessons_count: number
   students_count: number
   teacher_revenue: number
+  first_lesson_id: number | null
 }
 
 async function getTeacherCourses() {
@@ -22,6 +23,7 @@ async function getTeacherCourses() {
       c.title,
       c.short_description,
       c.status,
+      MIN(l.id) AS first_lesson_id,
       COUNT(DISTINCT l.id) AS lessons_count,
       COUNT(DISTINCT sla.student_id) AS students_count,
       COALESCE(SUM(DISTINCT p.teacher_amount), 0) AS teacher_revenue
@@ -107,14 +109,17 @@ export default async function TeacherCoursesPage() {
               <b>{courses.length}</b>
               <span className="muted font-bold">كورسات</span>
             </div>
+
             <div className="card teacher-stat-card">
               <b>{totalLessons}</b>
               <span className="muted font-bold">حصة</span>
             </div>
+
             <div className="card teacher-stat-card">
               <b>{totalStudents}</b>
               <span className="muted font-bold">طالب لديه وصول</span>
             </div>
+
             <div className="card teacher-stat-card">
               <b>{money(totalRevenue)}</b>
               <span className="muted font-bold">إجمالي الأرباح</span>
@@ -147,6 +152,7 @@ export default async function TeacherCoursesPage() {
 
                     <div className="mt-4 flex items-center gap-4">
                       <div className="course-letter">{getInitials(course.title)}</div>
+
                       <div>
                         <h2 className="text-3xl font-black">{course.title}</h2>
                         <p className="muted mt-1">
@@ -160,7 +166,15 @@ export default async function TeacherCoursesPage() {
                     <Link href={`/courses/${course.slug}`} className="btn btn-soft">
                       معاينة
                     </Link>
-                    <Link href="/teacher/courses" className="btn btn-outline">
+
+                    <Link
+                      href={
+                        course.first_lesson_id
+                          ? `/teacher/lessons/${course.first_lesson_id}`
+                          : "/teacher/courses"
+                      }
+                      className="btn btn-outline"
+                    >
                       تعديل
                     </Link>
                   </div>
@@ -171,10 +185,12 @@ export default async function TeacherCoursesPage() {
                     <b>{course.lessons_count}</b>
                     <span className="muted">حصة</span>
                   </div>
+
                   <div className="metric-mini">
                     <b>{course.students_count}</b>
                     <span className="muted">طالب</span>
                   </div>
+
                   <div className="metric-mini">
                     <b>{money(course.teacher_revenue)}</b>
                     <span className="muted">أرباح</span>
