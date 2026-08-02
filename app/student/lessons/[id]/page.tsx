@@ -23,6 +23,14 @@ type LessonVideoRow = {
   sort_order: number
 }
 
+type AssignmentRow = {
+  id: number
+  title: string
+  description: string | null
+  attachment_url: string | null
+  due_at: string | null
+}
+
 async function getLesson(id: string) {
   const rows = await query<LessonRow>(
     `
@@ -68,6 +76,23 @@ async function getLessonVideos(id: string) {
   )
 }
 
+async function getAssignments(id: string) {
+  return query<AssignmentRow>(
+    `
+    SELECT
+      id,
+      title,
+      description,
+      attachment_url,
+      DATE_FORMAT(due_at, '%Y-%m-%d %H:%i') AS due_at
+    FROM lesson_assignments
+    WHERE lesson_id = ?
+    ORDER BY sort_order ASC, id ASC
+    `,
+    [id]
+  )
+}
+
 export default async function StudentLessonPage({
   params,
 }: {
@@ -75,9 +100,10 @@ export default async function StudentLessonPage({
 }) {
   const { id } = await params
 
-  const [lesson, videos] = await Promise.all([
+  const [lesson, videos, assignments] = await Promise.all([
     getLesson(id),
     getLessonVideos(id),
+    getAssignments(id),
   ])
 
   if (!lesson) {
@@ -100,6 +126,7 @@ export default async function StudentLessonPage({
                 تم التفعيل: {lesson.activated_at || "غير محدد"}
               </span>
               <span className="badge">{videos.length} فيديو</span>
+              <span className="badge">{assignments.length} واجب</span>
             </div>
 
             <h1 className="h1 mt-6">{lesson.lesson_title}</h1>
@@ -126,7 +153,7 @@ export default async function StudentLessonPage({
               {videos.length > 1 ? "فيديوهات الدرس" : "جاهز تبدأ؟"}
             </h2>
             <p className="mt-4 max-w-sm opacity-80">
-              شاهد الفيديوهات بالترتيب، وبعدها حل الواجب أو الامتحان عند إضافتهم.
+              شاهد الفيديوهات بالترتيب، وبعدها راجع الواجبات أو الامتحانات عند إضافتها.
             </p>
           </aside>
         </div>
@@ -136,7 +163,11 @@ export default async function StudentLessonPage({
         <div className="wrap grid gap-7 lg:grid-cols-[1fr_340px]">
           <div className="grid gap-6">
             {videos.map((video, index) => (
-              <div className="card p-6 md:p-8" key={video.id}>
+              <div
+                className="card p-6 md:p-8"
+                key={video.id}
+                id={`video-${video.id}`}
+              >
                 <span className="eyebrow">الفيديو {index + 1}</span>
                 <h2 className="text-3xl font-black">{video.title}</h2>
 
@@ -166,6 +197,44 @@ export default async function StudentLessonPage({
                 </div>
               </div>
             ) : null}
+
+            <div className="card p-6 md:p-8">
+              <span className="eyebrow">واجبات الحصة</span>
+              <h2 className="text-3xl font-black">المطلوب منك</h2>
+
+              <div className="mt-6 grid gap-4">
+                {assignments.map((assignment) => (
+                  <div
+                    className="rounded-2xl border border-[var(--line)] bg-[var(--cream-2)] p-4"
+                    key={assignment.id}
+                  >
+                    <h3 className="text-xl font-black">{assignment.title}</h3>
+
+                    {assignment.description ? (
+                      <p className="muted mt-2">{assignment.description}</p>
+                    ) : null}
+
+                    <p className="muted mt-2 text-sm">
+                      موعد التسليم: {assignment.due_at || "غير محدد"}
+                    </p>
+
+                    {assignment.attachment_url ? (
+                      <a
+                        href={assignment.attachment_url}
+                        className="btn btn-soft mt-4"
+                        target="_blank"
+                      >
+                        تحميل ملف الواجب
+                      </a>
+                    ) : null}
+                  </div>
+                ))}
+
+                {assignments.length === 0 ? (
+                  <p className="muted">لا توجد واجبات لهذه الحصة بعد.</p>
+                ) : null}
+              </div>
+            </div>
           </div>
 
           <aside className="card price-card">
@@ -177,6 +246,7 @@ export default async function StudentLessonPage({
               <p>✓ الكورس: {lesson.course_title}</p>
               <p>✓ الباب: {lesson.chapter_title}</p>
               <p>✓ عدد الفيديوهات: {videos.length}</p>
+              <p>✓ عدد الواجبات: {assignments.length}</p>
               <p>
                 ✓ متاح حتى:{" "}
                 {lesson.access_until ? lesson.access_until : "بدون تاريخ انتهاء"}
