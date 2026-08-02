@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/site/SiteFooter"
 import { LessonVideoForm } from "@/components/teacher/LessonVideoForm"
 import { LessonAssignmentForm } from "@/components/teacher/LessonAssignmentForm"
 import { LessonExamForm } from "@/components/teacher/LessonExamForm"
+import { ExamQuestionForm } from "@/components/teacher/ExamQuestionForm"
 import { query } from "@/lib/db"
 
 type LessonRow = {
@@ -34,6 +35,20 @@ type ExamRow = {
   description: string | null
   pass_score: number
   is_required_to_unlock_next: number
+}
+
+type ExamQuestionRow = {
+  id: number
+  exam_id: number
+  question_text: string
+  points: number
+}
+
+type ExamChoiceRow = {
+  id: number
+  question_id: number
+  choice_text: string
+  is_correct: number
 }
 
 async function getTeacherLesson() {
@@ -103,15 +118,51 @@ async function getExams() {
   `)
 }
 
+async function getExamQuestions() {
+  return query<ExamQuestionRow>(`
+    SELECT
+      id,
+      exam_id,
+      question_text,
+      points
+    FROM lesson_exam_questions
+    WHERE exam_id IN (
+      SELECT id FROM lesson_exams WHERE lesson_id = 1
+    )
+    ORDER BY sort_order ASC, id ASC
+  `)
+}
+
+async function getExamChoices() {
+  return query<ExamChoiceRow>(`
+    SELECT
+      id,
+      question_id,
+      choice_text,
+      is_correct
+    FROM lesson_exam_choices
+    WHERE question_id IN (
+      SELECT id
+      FROM lesson_exam_questions
+      WHERE exam_id IN (
+        SELECT id FROM lesson_exams WHERE lesson_id = 1
+      )
+    )
+    ORDER BY sort_order ASC, id ASC
+  `)
+}
+
 function money(value: number | string | null | undefined) {
   return `${Number(value || 0).toLocaleString("ar-EG")} ج.م`
 }
 
 export default async function TeacherLessonPage() {
-  const [lesson, assignments, exams] = await Promise.all([
+  const [lesson, assignments, exams, questions, choices] = await Promise.all([
     getTeacherLesson(),
     getAssignments(),
     getExams(),
+    getExamQuestions(),
+    getExamChoices(),
   ])
 
   if (!lesson) {
@@ -158,6 +209,7 @@ export default async function TeacherLessonPage() {
               <p>✓ فيديو أساسي: {lesson.video_url ? "مضاف" : "غير مضاف"}</p>
               <p>✓ عدد الواجبات: {assignments.length}</p>
               <p>✓ عدد الامتحانات: {exams.length}</p>
+              <p>✓ عدد الأسئلة: {questions.length}</p>
             </div>
           </aside>
 
@@ -233,6 +285,34 @@ export default async function TeacherLessonPage() {
                       شرط فتح التالي:{" "}
                       {exam.is_required_to_unlock_next ? "نعم" : "لا"}
                     </p>
+
+                    <ExamQuestionForm examId={exam.id} />
+
+                    <div className="mt-4 grid gap-3">
+                      {questions
+                        .filter((question) => question.exam_id === exam.id)
+                        .map((question) => (
+                          <div className="rounded-xl bg-white/70 p-3" key={question.id}>
+                            <p className="font-black">
+                              {question.question_text} — {question.points} درجة
+                            </p>
+
+                            <div className="mt-2 grid gap-1 text-sm">
+                              {choices
+                                .filter((choice) => choice.question_id === question.id)
+                                .map((choice) => (
+                                  <p key={choice.id}>
+                                    {choice.is_correct ? "✓" : "○"} {choice.choice_text}
+                                  </p>
+                                ))}
+                            </div>
+                          </div>
+                        ))}
+
+                      {questions.filter((question) => question.exam_id === exam.id).length === 0 ? (
+                        <p className="muted">لا توجد أسئلة لهذا الامتحان بعد.</p>
+                      ) : null}
+                    </div>
                   </div>
                 ))}
 
