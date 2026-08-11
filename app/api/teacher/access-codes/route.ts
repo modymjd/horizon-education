@@ -3,6 +3,7 @@ import { z } from "zod"
 import { nanoid } from "nanoid"
 import { createHash } from "crypto"
 import { query, pool } from "@/lib/db"
+import { requireTeacher } from "@/lib/session"
 
 const createCodesSchema = z.object({
   lesson_id: z.number().int().positive(),
@@ -10,11 +11,6 @@ const createCodesSchema = z.object({
   expires_at: z.string().optional(),
   single_use: z.boolean().default(true),
 })
-
-type TeacherRow = {
-  id: number
-  user_id: number
-}
 
 type LessonRow = {
   id: number
@@ -26,28 +22,20 @@ function hashCode(code: string) {
 
 export async function POST(req: Request) {
   try {
-    const body = createCodesSchema.parse(await req.json())
+    const { user, response } = await requireTeacher()
 
-    const teacherRows = await query<TeacherRow>(
-      `
-      SELECT
-        t.id,
-        t.user_id
-      FROM teachers t
-      JOIN users u ON u.id = t.user_id
-      WHERE u.email = 'teacher@horizon.test'
-      LIMIT 1
-      `
-    )
+    if (response || !user) {
+      return response
+    }
 
-    const teacher = teacherRows[0]
-
-    if (!teacher) {
+    if (!user.teacher_id) {
       return NextResponse.json(
         { message: "لم يتم العثور على حساب المدرس" },
-        { status: 404 }
+        { status: 403 }
       )
     }
+
+    const body = createCodesSchema.parse(await req.json())
 
     const lessonRows = await query<LessonRow>(
       `
@@ -59,7 +47,7 @@ export async function POST(req: Request) {
         AND c.teacher_id = ?
       LIMIT 1
       `,
-      [body.lesson_id, teacher.id]
+      [body.lesson_id, user.teacher_id]
     )
 
     if (!lessonRows.length) {
@@ -102,7 +90,7 @@ export async function POST(req: Request) {
             rawCode.slice(0, 5),
             body.expires_at || null,
             body.single_use ? 1 : 0,
-            teacher.user_id,
+            user.id,
             batchId,
           ]
         )
