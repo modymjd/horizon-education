@@ -1,9 +1,10 @@
-import Link from "next/link"
-import { notFound } from "next/navigation"
+﻿import Link from "next/link"
+import { notFound, redirect } from "next/navigation"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 import { StudentExamPageForm } from "@/components/student/StudentExamPageForm"
 import { query } from "@/lib/db"
+import { getCurrentUser } from "@/lib/session"
 
 type ExamRow = {
   id: number
@@ -30,7 +31,7 @@ type ExamChoiceRow = {
   choice_text: string
 }
 
-async function getExam(id: string) {
+async function getExam(id: string, studentId: number) {
   const rows = await query<ExamRow>(
     `
     SELECT
@@ -45,17 +46,16 @@ async function getExam(id: string) {
       a.passed
     FROM lesson_exams e
     JOIN lessons l ON l.id = e.lesson_id
-    JOIN student_lesson_access sla ON sla.lesson_id = l.id
-    JOIN students s ON s.id = sla.student_id
-    JOIN users u ON u.id = s.user_id
+    JOIN student_lesson_access sla
+      ON sla.lesson_id = l.id
+      AND sla.student_id = ?
     LEFT JOIN lesson_exam_attempts a
       ON a.exam_id = e.id
-      AND a.student_id = s.id
-    WHERE u.email = 'student@horizon.test'
-      AND e.id = ?
+      AND a.student_id = sla.student_id
+    WHERE e.id = ?
     LIMIT 1
     `,
-    [id]
+    [studentId, id]
   )
 
   return rows[0]
@@ -98,10 +98,20 @@ export default async function StudentExamPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  if (user.role !== "student" || !user.student_id) {
+    redirect("/403")
+  }
+
   const { id } = await params
 
   const [exam, questions, choices] = await Promise.all([
-    getExam(id),
+    getExam(id, user.student_id),
     getQuestions(id),
     getChoices(id),
   ])
@@ -131,7 +141,7 @@ export default async function StudentExamPage({
             <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-900">
               <b>تنبيه مهم:</b>
               <p className="mt-2">
-                بمجرد بدء الامتحان، لو خرجت من الصفحة أو عملت Refresh أو قفلت التبويب،
+                بمجرد بدء الامتحان، لو خرجت من الصفحة أو عملت تحديث أو قفلت التبويب،
                 سيتم إغلاق الامتحان وتسجيل المحاولة بدرجة صفر، ولن تتمكن من دخوله مرة أخرى.
               </p>
             </div>

@@ -1,8 +1,9 @@
-import Link from "next/link"
-import { notFound } from "next/navigation"
+﻿import Link from "next/link"
+import { notFound, redirect } from "next/navigation"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 import { query } from "@/lib/db"
+import { getCurrentUser } from "@/lib/session"
 
 type LessonRow = {
   lesson_id: number
@@ -43,7 +44,7 @@ type ExamRow = {
   questions_count: number
 }
 
-async function getLesson(id: string) {
+async function getLesson(id: string, studentId: number) {
   const rows = await query<LessonRow>(
     `
     SELECT
@@ -57,16 +58,14 @@ async function getLesson(id: string) {
       DATE_FORMAT(sla.access_until, '%Y-%m-%d') AS access_until,
       DATE_FORMAT(sla.created_at, '%Y-%m-%d') AS activated_at
     FROM student_lesson_access sla
-    JOIN students s ON s.id = sla.student_id
-    JOIN users u ON u.id = s.user_id
     JOIN lessons l ON l.id = sla.lesson_id
     JOIN chapters ch ON ch.id = l.chapter_id
     JOIN courses c ON c.id = ch.course_id
-    WHERE u.email = 'student@horizon.test'
+    WHERE sla.student_id = ?
       AND l.id = ?
     LIMIT 1
     `,
-    [id]
+    [studentId, id]
   )
 
   return rows[0]
@@ -105,7 +104,7 @@ async function getAssignments(id: string) {
   )
 }
 
-async function getExams(id: string) {
+async function getExams(id: string, studentId: number) {
   return query<ExamRow>(
     `
     SELECT
@@ -120,15 +119,14 @@ async function getExams(id: string) {
       COUNT(DISTINCT q.id) AS questions_count
     FROM lesson_exams e
     JOIN lessons l ON l.id = e.lesson_id
-    JOIN student_lesson_access sla ON sla.lesson_id = l.id
-    JOIN students s ON s.id = sla.student_id
-    JOIN users u ON u.id = s.user_id
+    JOIN student_lesson_access sla
+      ON sla.lesson_id = l.id
+      AND sla.student_id = ?
     LEFT JOIN lesson_exam_attempts a
       ON a.exam_id = e.id
-      AND a.student_id = s.id
+      AND a.student_id = sla.student_id
     LEFT JOIN lesson_exam_questions q ON q.exam_id = e.id
-    WHERE u.email = 'student@horizon.test'
-      AND e.lesson_id = ?
+    WHERE e.lesson_id = ?
     GROUP BY
       e.id,
       e.title,
@@ -140,7 +138,7 @@ async function getExams(id: string) {
       a.passed
     ORDER BY e.sort_order ASC, e.id ASC
     `,
-    [id]
+    [studentId, id]
   )
 }
 
@@ -149,13 +147,23 @@ export default async function StudentLessonPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  if (user.role !== "student" || !user.student_id) {
+    redirect("/403")
+  }
+
   const { id } = await params
 
   const [lesson, videos, assignments, exams] = await Promise.all([
-    getLesson(id),
+    getLesson(id, user.student_id),
     getLessonVideos(id),
     getAssignments(id),
-    getExams(id),
+    getExams(id, user.student_id),
   ])
 
   if (!lesson) {
@@ -174,9 +182,7 @@ export default async function StudentLessonPage({
             <div className="course-meta">
               <span className="badge">{lesson.course_title}</span>
               <span className="badge">{lesson.chapter_title}</span>
-              <span className="badge">
-                تم التفعيل: {lesson.activated_at || "غير محدد"}
-              </span>
+              <span className="badge">تم التفعيل: {lesson.activated_at || "غير محدد"}</span>
               <span className="badge">{videos.length} فيديو</span>
               <span className="badge">{assignments.length} واجب</span>
               <span className="badge">{exams.length} امتحان</span>
@@ -243,7 +249,7 @@ export default async function StudentLessonPage({
                       <div className="mx-auto mb-5 h-24 w-24 rounded-full border-[18px] border-[var(--orange)] border-b-0" />
                       <h3 className="text-3xl font-black">لا توجد فيديوهات بعد</h3>
                       <p className="mt-3 opacity-80">
-                        لم يتم رفع فيديوهات لهذه الحصة بعد. سيتم ظهورها هنا بعد إضافتها من لوحة المدرس.
+                        لم يتم رفع فيديوهات لهذه الحصة بعد. ستظهر هنا بعد إضافتها من لوحة المدرس.
                       </p>
                     </div>
                   </div>
@@ -314,8 +320,7 @@ export default async function StudentLessonPage({
                     </p>
 
                     <p className="muted mt-1 text-sm">
-                      شرط فتح التالي:{" "}
-                      {exam.is_required_to_unlock_next ? "نعم" : "لا"}
+                      شرط فتح التالي: {exam.is_required_to_unlock_next ? "نعم" : "لا"}
                     </p>
 
                     {exam.attempted ? (
@@ -350,8 +355,7 @@ export default async function StudentLessonPage({
               <p>✓ عدد الواجبات: {assignments.length}</p>
               <p>✓ عدد الامتحانات: {exams.length}</p>
               <p>
-                ✓ متاح حتى:{" "}
-                {lesson.access_until ? lesson.access_until : "بدون تاريخ انتهاء"}
+                ✓ متاح حتى: {lesson.access_until ? lesson.access_until : "بدون تاريخ انتهاء"}
               </p>
             </div>
 

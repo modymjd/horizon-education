@@ -1,7 +1,9 @@
 ﻿import Link from "next/link"
+import { redirect } from "next/navigation"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 import { query } from "@/lib/db"
+import { getCurrentUser } from "@/lib/session"
 
 type StudentSummary = {
   student_id: number
@@ -28,8 +30,9 @@ type CourseProgress = {
   unlocked_lessons: number
 }
 
-async function getStudentSummary() {
-  const rows = await query<StudentSummary>(`
+async function getStudentSummary(studentId: number) {
+  const rows = await query<StudentSummary>(
+    `
     SELECT
       s.id AS student_id,
       u.full_name,
@@ -41,16 +44,19 @@ async function getStudentSummary() {
     LEFT JOIN lessons l ON l.id = sla.lesson_id
     LEFT JOIN chapters ch ON ch.id = l.chapter_id
     LEFT JOIN courses c ON c.id = ch.course_id
-    WHERE u.email = 'student@horizon.test'
+    WHERE s.id = ?
     GROUP BY s.id, u.full_name
     LIMIT 1
-  `)
+    `,
+    [studentId]
+  )
 
   return rows[0]
 }
 
-async function getStudentLessons() {
-  return query<StudentLesson>(`
+async function getStudentLessons(studentId: number) {
+  return query<StudentLesson>(
+    `
     SELECT
       l.id AS lesson_id,
       l.title AS lesson_title,
@@ -60,19 +66,20 @@ async function getStudentLessons() {
       DATE_FORMAT(sla.access_until, '%Y-%m-%d') AS access_until,
       DATE_FORMAT(sla.created_at, '%Y-%m-%d') AS created_at
     FROM student_lesson_access sla
-    JOIN students s ON s.id = sla.student_id
-    JOIN users u ON u.id = s.user_id
     JOIN lessons l ON l.id = sla.lesson_id
     JOIN chapters ch ON ch.id = l.chapter_id
     JOIN courses c ON c.id = ch.course_id
-    WHERE u.email = 'student@horizon.test'
+    WHERE sla.student_id = ?
     ORDER BY sla.id DESC
     LIMIT 6
-  `)
+    `,
+    [studentId]
+  )
 }
 
-async function getCourseProgress() {
-  return query<CourseProgress>(`
+async function getCourseProgress(studentId: number) {
+  return query<CourseProgress>(
+    `
     SELECT
       c.id AS course_id,
       c.title AS course_title,
@@ -83,12 +90,12 @@ async function getCourseProgress() {
     JOIN chapters ch ON ch.course_id = c.id
     JOIN lessons all_lessons ON all_lessons.chapter_id = ch.id
     JOIN student_lesson_access sla ON sla.lesson_id = all_lessons.id
-    JOIN students s ON s.id = sla.student_id
-    JOIN users u ON u.id = s.user_id
-    WHERE u.email = 'student@horizon.test'
+    WHERE sla.student_id = ?
     GROUP BY c.id, c.title, c.slug
     ORDER BY c.id DESC
-  `)
+    `,
+    [studentId]
+  )
 }
 
 function getProgressPercent(unlocked: number, total: number) {
@@ -119,14 +126,24 @@ function ProgressRing({ value }: { value: number }) {
 }
 
 export default async function StudentDashboard() {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  if (user.role !== "student" || !user.student_id) {
+    redirect("/403")
+  }
+
   const [summary, lessons, progress] = await Promise.all([
-    getStudentSummary(),
-    getStudentLessons(),
-    getCourseProgress(),
+    getStudentSummary(user.student_id),
+    getStudentLessons(user.student_id),
+    getCourseProgress(user.student_id),
   ])
 
   const latestLesson = lessons[0]
-  const studentName = summary?.full_name || "الطالب"
+  const studentName = summary?.full_name || user.full_name || "الطالب"
   const activeLessons = Number(summary?.active_lessons || 0)
   const activeCourses = Number(summary?.active_courses || 0)
 
