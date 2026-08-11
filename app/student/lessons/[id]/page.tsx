@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 import { query } from "@/lib/db"
 import { getCurrentUser } from "@/lib/session"
+import { StudentAssignmentSubmitForm } from "@/components/student/StudentAssignmentSubmitForm"
 
 type LessonRow = {
   lesson_id: number
@@ -30,6 +31,8 @@ type AssignmentRow = {
   description: string | null
   attachment_url: string | null
   due_at: string | null
+  submission_url: string | null
+  submitted_at: string | null
 }
 
 type ExamPlacement = "before_content" | "after_content"
@@ -90,20 +93,25 @@ async function getLessonVideos(id: string) {
   )
 }
 
-async function getAssignments(id: string) {
+async function getAssignments(id: string, studentId: number) {
   return query<AssignmentRow>(
     `
     SELECT
-      id,
-      title,
-      description,
-      attachment_url,
-      DATE_FORMAT(due_at, '%Y-%m-%d %H:%i') AS due_at
-    FROM lesson_assignments
-    WHERE lesson_id = ?
-    ORDER BY sort_order ASC, id ASC
+      a.id,
+      a.title,
+      a.description,
+      a.attachment_url,
+      DATE_FORMAT(a.due_at, '%Y-%m-%d %H:%i') AS due_at,
+      s.submission_url,
+      DATE_FORMAT(s.submitted_at, '%Y-%m-%d %H:%i') AS submitted_at
+    FROM lesson_assignments a
+    LEFT JOIN lesson_assignment_submissions s
+      ON s.assignment_id = a.id
+      AND s.student_id = ?
+    WHERE a.lesson_id = ?
+    ORDER BY a.sort_order ASC, a.id ASC
     `,
-    [id]
+    [studentId, id]
   )
 }
 
@@ -198,7 +206,7 @@ export default async function StudentLessonPage({
   const [lesson, videos, assignments, exams] = await Promise.all([
     getLesson(id, user.student_id),
     getLessonVideos(id),
-    getAssignments(id),
+    getAssignments(id, user.student_id),
     getExams(id, user.student_id),
   ])
 
@@ -342,6 +350,17 @@ export default async function StudentLessonPage({
                         تحميل ملف الواجب
                       </a>
                     ) : null}
+
+                    {assignment.submission_url ? (
+                      <p className="muted mt-3 text-sm">
+                        تم التسليم: {assignment.submitted_at || "تم الاستلام"}
+                      </p>
+                    ) : null}
+
+                    <StudentAssignmentSubmitForm
+                      assignmentId={assignment.id}
+                      existingSubmissionUrl={assignment.submission_url}
+                    />
                   </div>
                 ))}
 

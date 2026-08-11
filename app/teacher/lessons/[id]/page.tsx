@@ -15,6 +15,7 @@ type LessonRow = {
   video_url: string | null
   price: number
   status: string
+  course_id: number
   course_title: string
   course_slug: string
   chapter_title: string
@@ -30,6 +31,16 @@ type ExamRow = {
   questions_count: number
 }
 
+type SubmissionRow = {
+  id: number
+  assignment_title: string
+  student_name: string
+  submission_url: string
+  notes: string | null
+  status: string
+  submitted_at: string
+}
+
 async function getTeacherLesson(id: string, teacherId: number) {
   const rows = await query<LessonRow>(
     `
@@ -40,6 +51,7 @@ async function getTeacherLesson(id: string, teacherId: number) {
       l.video_url,
       l.price,
       l.status,
+      c.id AS course_id,
       c.title AS course_title,
       c.slug AS course_slug,
       ch.title AS chapter_title,
@@ -50,6 +62,7 @@ async function getTeacherLesson(id: string, teacherId: number) {
     LEFT JOIN student_lesson_access sla ON sla.lesson_id = l.id
     WHERE c.teacher_id = ?
       AND l.id = ?
+      AND l.deleted_at IS NULL
     GROUP BY
       l.id,
       l.title,
@@ -57,6 +70,7 @@ async function getTeacherLesson(id: string, teacherId: number) {
       l.video_url,
       l.price,
       l.status,
+      c.id,
       c.title,
       c.slug,
       ch.title
@@ -98,6 +112,32 @@ async function getLessonExams(id: string, teacherId: number) {
   )
 }
 
+async function getLessonSubmissions(id: string, teacherId: number) {
+  return query<SubmissionRow>(
+    `
+    SELECT
+      s.id,
+      a.title AS assignment_title,
+      u.full_name AS student_name,
+      s.submission_url,
+      s.notes,
+      s.status,
+      DATE_FORMAT(s.submitted_at, '%Y-%m-%d %H:%i') AS submitted_at
+    FROM lesson_assignment_submissions s
+    JOIN lesson_assignments a ON a.id = s.assignment_id
+    JOIN lessons l ON l.id = a.lesson_id
+    JOIN chapters ch ON ch.id = l.chapter_id
+    JOIN courses c ON c.id = ch.course_id
+    JOIN students st ON st.id = s.student_id
+    JOIN users u ON u.id = st.user_id
+    WHERE a.lesson_id = ?
+      AND c.teacher_id = ?
+    ORDER BY s.submitted_at DESC
+    `,
+    [id, teacherId]
+  )
+}
+
 function money(value: number | string | null | undefined) {
   return `${Number(value || 0).toLocaleString("ar-EG")} ج.م`
 }
@@ -105,6 +145,14 @@ function money(value: number | string | null | undefined) {
 function getPlacementLabel(placement: string) {
   if (placement === "before_content") return "قبل الحصة"
   return "بعد الحصة"
+}
+
+function getSubmissionStatusLabel(status: string) {
+  if (status === "submitted") return "تم التسليم"
+  if (status === "reviewed") return "تمت المراجعة"
+  if (status === "accepted") return "مقبول"
+  if (status === "rejected") return "مرفوض"
+  return status
 }
 
 export default async function TeacherLessonPage({
@@ -124,9 +172,10 @@ export default async function TeacherLessonPage({
 
   const { id } = await params
 
-  const [lesson, exams] = await Promise.all([
+  const [lesson, exams, submissions] = await Promise.all([
     getTeacherLesson(id, user.teacher_id),
     getLessonExams(id, user.teacher_id),
+    getLessonSubmissions(id, user.teacher_id),
   ])
 
   if (!lesson) {
@@ -146,9 +195,14 @@ export default async function TeacherLessonPage({
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
-            <Link href="/teacher/courses" className="btn">
+            <Link href={`/teacher/courses/${lesson.course_id}/lessons`} className="btn">
+              رجوع لحصص الكورس
+            </Link>
+
+            <Link href="/teacher/courses" className="btn btn-outline">
               رجوع للكورسات
             </Link>
+
             <Link href={`/courses/${lesson.course_slug}`} className="btn btn-outline">
               معاينة الكورس
             </Link>
@@ -170,6 +224,7 @@ export default async function TeacherLessonPage({
               <p>✓ طلاب لديهم وصول: {lesson.students_count}</p>
               <p>✓ فيديو: {lesson.video_url ? "مضاف" : "غير مضاف"}</p>
               <p>✓ عدد الامتحانات: {exams.length}</p>
+              <p>✓ تسليمات الواجبات: {submissions.length}</p>
             </div>
           </aside>
 
@@ -224,6 +279,51 @@ export default async function TeacherLessonPage({
                 <p className="muted">
                   لا توجد امتحانات لهذه الحصة بعد. أضف امتحانًا من النموذج بالأعلى.
                 </p>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="wrap">
+          <div className="card p-8 md:p-12">
+            <span className="eyebrow">تسليمات الواجبات</span>
+            <h2 className="h2">تسليمات الطلاب</h2>
+            <p className="muted mt-5 max-w-3xl">
+              راجع الملفات التي رفعها الطلاب كإجابات على واجبات هذه الحصة.
+            </p>
+
+            <div className="mt-8 grid gap-4">
+              {submissions.map((submission) => (
+                <div
+                  className="rounded-2xl border border-[var(--line)] bg-[var(--cream-2)] p-5"
+                  key={submission.id}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <span className="badge">{getSubmissionStatusLabel(submission.status)}</span>
+                      <h3 className="mt-3 text-xl font-black">{submission.assignment_title}</h3>
+                      <p className="muted mt-2">الطالب: {submission.student_name}</p>
+                      <p className="muted mt-1 text-sm">وقت التسليم: {submission.submitted_at}</p>
+                      {submission.notes ? (
+                        <p className="muted mt-2">ملاحظات الطالب: {submission.notes}</p>
+                      ) : null}
+                    </div>
+
+                    <a
+                      href={submission.submission_url}
+                      className="btn btn-soft"
+                      target="_blank"
+                    >
+                      تحميل التسليم
+                    </a>
+                  </div>
+                </div>
+              ))}
+
+              {submissions.length === 0 ? (
+                <p className="muted">لا توجد تسليمات واجبات لهذه الحصة بعد.</p>
               ) : null}
             </div>
           </div>
