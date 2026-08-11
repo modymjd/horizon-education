@@ -14,7 +14,6 @@ type TeacherCourseRow = {
   lessons_count: number
   students_count: number
   teacher_revenue: number
-  first_lesson_id: number | null
 }
 
 async function getTeacherCourses(teacherId: number) {
@@ -26,7 +25,6 @@ async function getTeacherCourses(teacherId: number) {
       c.title,
       c.short_description,
       c.status,
-      MIN(l.id) AS first_lesson_id,
       COUNT(DISTINCT l.id) AS lessons_count,
       COUNT(DISTINCT sla.student_id) AS students_count,
       COALESCE(SUM(DISTINCT p.teacher_amount), 0) AS teacher_revenue
@@ -179,14 +177,17 @@ export default async function TeacherCoursesPage() {
                     </Link>
 
                     <Link
-                      href={
-                        course.first_lesson_id
-                          ? `/teacher/lessons/${course.first_lesson_id}`
-                          : "/teacher/courses"
-                      }
+                      href={`/teacher/courses/${course.id}/lessons`}
                       className="btn btn-outline"
                     >
-                      تعديل
+                      عرض الحصص
+                    </Link>
+
+                    <Link
+                      href={`/teacher/courses/${course.id}/lessons/new`}
+                      className="btn btn-outline"
+                    >
+                      إضافة حصة
                     </Link>
                   </div>
                 </div>
@@ -226,4 +227,3 @@ export default async function TeacherCoursesPage() {
     </main>
   )
 }
-
