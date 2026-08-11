@@ -2,83 +2,50 @@
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 
-const settings = [
-  ["تفعيل تسجيل الطلاب", "السماح للطلاب بإنشاء حسابات جديدة من صفحة التسجيل."],
-  ["مراجعة المدرسين قبل النشر", "أي مدرس جديد يحتاج موافقة الإدارة قبل الظهور."],
-  ["إظهار الشهادات العامة", "السماح بالتحقق من الشهادات برقم الشهادة."],
-  ["تنبيهات المدفوعات", "إرسال إشعار عند تسجيل دفعة جديدة."],
-]
-
 export default function AdminSettingsPage() {
   return (
     <main>
       <SiteHeader />
 
-      <section className="admin-page-hero">
+      <section className="section">
         <div className="wrap">
-          <span className="eyebrow">لوحة الإدارة</span>
-          <h1 className="h1">الإعدادات</h1>
-          <p className="muted mt-5 max-w-2xl text-lg">
-            إعدادات عامة لشكل المنصة، التسجيل، الشهادات، والتنبيهات.
-          </p>
-        </div>
-      </section>
+          <div className="card p-6 md:p-10">
+            <span className="eyebrow">لوحة الأدمن</span>
+            <h1 className="h2">إعدادات المنصة</h1>
+            <p className="muted mt-4">
+              إعدادات عامة للمنصة. لا تعرض بيانات دخول تجريبية في بيئة الإنتاج.
+            </p>
 
-      <section className="section pt-6">
-        <div className="wrap grid gap-7 lg:grid-cols-[0.9fr_1.1fr]">
-          <aside className="card settings-card">
-            <span className="eyebrow">المنصة</span>
-            <h2 className="text-3xl font-black">بيانات المنصة</h2>
-
-            <div className="mt-6 grid gap-4">
-              <label className="font-bold">
+            <div className="mt-8 grid gap-5 md:grid-cols-2">
+              <label>
                 اسم المنصة
-                <input className="input mt-2" defaultValue="حورايزون تعليم" />
+                <input className="input mt-2" defaultValue="Horizon Education" />
               </label>
 
-              <label className="font-bold">
-                رابط الموقع
-                <input className="input mt-2" defaultValue="http://localhost:3000" />
+              <label>
+                البريد الرسمي
+                <input className="input mt-2" defaultValue="support@horizon-education.com" />
               </label>
 
-              <label className="font-bold">
-                البريد الإداري
-                <input className="input mt-2" defaultValue="admin@horizon.test" />
+              <label>
+                العملة
+                <input className="input mt-2" defaultValue="ج.م" />
+              </label>
+
+              <label>
+                نسبة المنصة الافتراضية
+                <input className="input mt-2" defaultValue="20" />
               </label>
             </div>
 
-            <button className="btn btn-block mt-6">
-              حفظ الإعدادات
-            </button>
-
-            <p className="muted mt-4 text-sm">
-              هذه واجهة جاهزة، وربط الحفظ الفعلي بالـ API يتم لاحقًا.
-            </p>
-          </aside>
-
-          <div className="card settings-card">
-            <div className="toolbar">
-              <div>
-                <span className="eyebrow">الخيارات</span>
-                <h2 className="text-3xl font-black">إعدادات التشغيل</h2>
-              </div>
+            <div className="mt-8 flex gap-3">
+              <button className="btn" type="button">
+                حفظ الإعدادات
+              </button>
 
               <Link href="/admin" className="btn btn-outline">
-                رجوع للوحة الإدارة
+                رجوع للوحة الأدمن
               </Link>
-            </div>
-
-            <div>
-              {settings.map(([title, description]) => (
-                <div className="settings-row" key={title}>
-                  <div>
-                    <h3 className="font-black">{title}</h3>
-                    <p className="muted text-sm">{description}</p>
-                  </div>
-
-                  <div className="toggle-pill" />
-                </div>
-              ))}
             </div>
           </div>
         </div>
