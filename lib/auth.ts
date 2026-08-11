@@ -1,4 +1,4 @@
-import bcrypt from "bcryptjs"
+﻿import bcrypt from "bcryptjs"
 import { SignJWT, jwtVerify } from "jose"
 
 export type Role = "admin" | "teacher" | "student"
@@ -9,8 +9,18 @@ export const roleHome: Record<Role, string> = {
   student: "/student",
 }
 
+const jwtSecret = process.env.JWT_SECRET
+
+if (!jwtSecret || jwtSecret.length < 32) {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("JWT_SECRET must be set to a strong secret in production")
+  }
+
+  console.warn("⚠️ Using development JWT_SECRET. Set a strong JWT_SECRET before production.")
+}
+
 const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET || "horizon-super-secret-dev-key"
+  jwtSecret || "horizon-development-secret-change-me-32"
 )
 
 export function hashPassword(password: string) {
