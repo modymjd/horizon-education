@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server"
+﻿import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
+import { requireTeacher } from "@/lib/session"
 
 type TeacherExamRow = {
   id: number
@@ -10,7 +11,7 @@ type ChoiceInput = {
   is_correct: boolean
 }
 
-async function verifyTeacherExam(examId: number) {
+async function verifyTeacherExam(examId: number, teacherId: number) {
   const rows = await query<TeacherExamRow>(
     `
     SELECT e.id
@@ -18,13 +19,11 @@ async function verifyTeacherExam(examId: number) {
     JOIN lessons l ON l.id = e.lesson_id
     JOIN chapters ch ON ch.id = l.chapter_id
     JOIN courses c ON c.id = ch.course_id
-    JOIN teachers t ON t.id = c.teacher_id
-    JOIN users u ON u.id = t.user_id
-    WHERE u.email = 'teacher@horizon.test'
+    WHERE c.teacher_id = ?
       AND e.id = ?
     LIMIT 1
     `,
-    [examId]
+    [teacherId, examId]
   )
 
   return rows[0]
@@ -32,6 +31,19 @@ async function verifyTeacherExam(examId: number) {
 
 export async function POST(req: Request) {
   try {
+    const { user, response } = await requireTeacher()
+
+    if (response || !user) {
+      return response
+    }
+
+    if (!user.teacher_id) {
+      return NextResponse.json(
+        { message: "لم يتم العثور على حساب المدرس" },
+        { status: 403 }
+      )
+    }
+
     const body = await req.json()
 
     const examId = Number(body.exam_id)
@@ -80,7 +92,7 @@ export async function POST(req: Request) {
       )
     }
 
-    const exam = await verifyTeacherExam(examId)
+    const exam = await verifyTeacherExam(examId, user.teacher_id)
 
     if (!exam) {
       return NextResponse.json(
@@ -89,7 +101,7 @@ export async function POST(req: Request) {
       )
     }
 
-    const questionRows = await query<{ id: number }>(
+    const questionRows = await query(
       `
       INSERT INTO lesson_exam_questions
         (exam_id, question_text, points, sort_order)
