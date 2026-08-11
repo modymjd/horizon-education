@@ -321,6 +321,7 @@ async function main() {
           description,
           pass_score,
           is_required_to_unlock_next,
+          placement,
           sort_order
         )
       VALUES
@@ -330,6 +331,7 @@ async function main() {
           'امتحان قصير يظهر للطالب قبل مشاهدة محتوى الحصة.',
           60,
           0,
+          'before_content',
           0
         )
       ON DUPLICATE KEY UPDATE
@@ -337,6 +339,7 @@ async function main() {
         description = VALUES(description),
         pass_score = VALUES(pass_score),
         is_required_to_unlock_next = VALUES(is_required_to_unlock_next),
+        placement = VALUES(placement),
         sort_order = VALUES(sort_order)
       `,
       [lesson.id]
@@ -402,3 +405,4 @@ async function main() {
 }
 
 main()
+

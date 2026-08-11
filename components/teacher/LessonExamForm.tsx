@@ -1,19 +1,19 @@
-"use client"
+﻿"use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 
 type Props = {
   lessonId: number
 }
 
-export function LessonExamForm({ lessonId }: Props) {
-  const router = useRouter()
+type ExamPlacement = "before_content" | "after_content"
 
+export function LessonExamForm({ lessonId }: Props) {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [passScore, setPassScore] = useState("60")
   const [required, setRequired] = useState(false)
+  const [placement, setPlacement] = useState<ExamPlacement>("after_content")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
@@ -43,6 +43,7 @@ export function LessonExamForm({ lessonId }: Props) {
           description,
           pass_score: Number(passScore),
           is_required_to_unlock_next: required,
+          placement,
         }),
       })
 
@@ -58,7 +59,7 @@ export function LessonExamForm({ lessonId }: Props) {
       setDescription("")
       setPassScore("60")
       setRequired(false)
-      router.refresh()
+      setPlacement("after_content")
     } catch {
       setError("تعذر الاتصال بالخادم")
     } finally {
@@ -67,28 +68,36 @@ export function LessonExamForm({ lessonId }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="card payment-form">
+    <form onSubmit={handleSubmit} className="card p-6 md:p-8">
       <span className="eyebrow">امتحانات الحصة</span>
       <h2 className="text-3xl font-black">إضافة امتحان</h2>
-      <p className="muted mt-3">
-        أضف امتحانًا للحصة وحدد هل اجتيازه مطلوب لفتح الحصة التالية.
+      <p className="muted mt-2">
+        أضف امتحانًا للحصة وحدد مكان ظهوره للطالب قبل محتوى الحصة أو بعده.
       </p>
 
-      {error ? <div className="alert-error mt-5">{error}</div> : null}
-      {success ? <div className="alert-success mt-5">{success}</div> : null}
+      {error ? (
+        <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+          {error}
+        </div>
+      ) : null}
 
-      <label className="mt-6 block font-bold">
+      {success ? (
+        <div className="alert-success mt-5">
+          {success}
+        </div>
+      ) : null}
+
+      <label className="mt-5 block">
         عنوان الامتحان
         <input
           className="input mt-2"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="مثال: اختبار سريع بعد الدرس"
-          required
+          placeholder="مثال: امتحان تمهيدي على الحصة"
         />
       </label>
 
-      <label className="mt-4 block font-bold">
+      <label className="mt-4 block">
         وصف الامتحان
         <textarea
           className="input mt-2 min-h-28"
@@ -98,7 +107,19 @@ export function LessonExamForm({ lessonId }: Props) {
         />
       </label>
 
-      <label className="mt-4 block font-bold">
+      <label className="mt-4 block">
+        مكان ظهور الامتحان
+        <select
+          className="input mt-2"
+          value={placement}
+          onChange={(e) => setPlacement(e.target.value as ExamPlacement)}
+        >
+          <option value="before_content">قبل الحصة</option>
+          <option value="after_content">بعد الحصة</option>
+        </select>
+      </label>
+
+      <label className="mt-4 block">
         درجة النجاح
         <input
           className="input mt-2"
@@ -107,11 +128,10 @@ export function LessonExamForm({ lessonId }: Props) {
           max="100"
           value={passScore}
           onChange={(e) => setPassScore(e.target.value)}
-          required
         />
       </label>
 
-      <label className="mt-4 flex items-center gap-3 font-bold">
+      <label className="mt-5 flex items-center gap-3 font-bold">
         <input
           type="checkbox"
           checked={required}
@@ -120,7 +140,7 @@ export function LessonExamForm({ lessonId }: Props) {
         مطلوب اجتيازه لفتح الحصة التالية
       </label>
 
-      <button className="btn btn-block mt-6 disabled:opacity-60" disabled={isLoading}>
+      <button className="btn mt-6 w-full" type="submit" disabled={isLoading}>
         {isLoading ? "جاري الإضافة..." : "إضافة الامتحان"}
       </button>
     </form>
