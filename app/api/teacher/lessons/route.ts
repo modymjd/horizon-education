@@ -2,25 +2,24 @@
 import { writeFile, mkdir } from "fs/promises"
 import path from "path"
 import { query } from "@/lib/db"
+import { requireTeacher } from "@/lib/session"
 
 type TeacherLessonRow = {
   id: number
 }
 
-async function verifyTeacherLesson(lessonId: number) {
+async function verifyTeacherLesson(lessonId: number, teacherId: number) {
   const lessonRows = await query<TeacherLessonRow>(
     `
     SELECT l.id
     FROM lessons l
     JOIN chapters ch ON ch.id = l.chapter_id
     JOIN courses c ON c.id = ch.course_id
-    JOIN teachers t ON t.id = c.teacher_id
-    JOIN users u ON u.id = t.user_id
-    WHERE u.email = 'teacher@horizon.test'
+    WHERE c.teacher_id = ?
       AND l.id = ?
     LIMIT 1
     `,
-    [lessonId]
+    [teacherId, lessonId]
   )
 
   return lessonRows[0]
@@ -28,6 +27,19 @@ async function verifyTeacherLesson(lessonId: number) {
 
 export async function POST(req: Request) {
   try {
+    const { user, response } = await requireTeacher()
+
+    if (response || !user) {
+      return response
+    }
+
+    if (!user.teacher_id) {
+      return NextResponse.json(
+        { message: "لم يتم العثور على حساب المدرس" },
+        { status: 403 }
+      )
+    }
+
     const formData = await req.formData()
 
     const lessonIdRaw = formData.get("lesson_id")
@@ -58,7 +70,17 @@ export async function POST(req: Request) {
       )
     }
 
-    const lesson = await verifyTeacherLesson(lessonId)
+    const maxSizeMb = 100
+    const maxSizeBytes = maxSizeMb * 1024 * 1024
+
+    if (file.size > maxSizeBytes) {
+      return NextResponse.json(
+        { message: `حجم الفيديو يجب ألا يتجاوز ${maxSizeMb}MB` },
+        { status: 400 }
+      )
+    }
+
+    const lesson = await verifyTeacherLesson(lessonId, user.teacher_id)
 
     if (!lesson) {
       return NextResponse.json(
