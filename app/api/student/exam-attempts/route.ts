@@ -1,9 +1,6 @@
-import { NextResponse } from "next/server"
+﻿import { NextResponse } from "next/server"
 import { pool, query } from "@/lib/db"
-
-type StudentRow = {
-  id: number
-}
+import { requireStudent } from "@/lib/session"
 
 type ExamRow = {
   id: number
@@ -30,22 +27,21 @@ type AnswerInput = {
   choice_id: number
 }
 
-async function getStudent() {
-  const rows = await query<StudentRow>(
-    `
-    SELECT s.id
-    FROM students s
-    JOIN users u ON u.id = s.user_id
-    WHERE u.email = 'student@horizon.test'
-    LIMIT 1
-    `
-  )
-
-  return rows[0]
-}
-
 export async function POST(req: Request) {
   try {
+    const { user, response } = await requireStudent()
+
+    if (response || !user) {
+      return response
+    }
+
+    if (!user.student_id) {
+      return NextResponse.json(
+        { message: "لم يتم العثور على حساب الطالب" },
+        { status: 403 }
+      )
+    }
+
     const body = await req.json()
 
     const examId = Number(body.exam_id)
@@ -61,15 +57,6 @@ export async function POST(req: Request) {
       )
     }
 
-    const student = await getStudent()
-
-    if (!student) {
-      return NextResponse.json(
-        { message: "حساب الطالب غير موجود" },
-        { status: 403 }
-      )
-    }
-
     const existingAttempts = await query<ExistingAttemptRow>(
       `
       SELECT id
@@ -78,7 +65,7 @@ export async function POST(req: Request) {
         AND student_id = ?
       LIMIT 1
       `,
-      [examId, student.id]
+      [examId, user.student_id]
     )
 
     if (existingAttempts.length > 0) {
@@ -140,7 +127,6 @@ export async function POST(req: Request) {
     )
 
     let earnedPoints = 0
-
     const answerMap = new Map<number, number>()
 
     if (!autoClosed) {
@@ -188,7 +174,7 @@ export async function POST(req: Request) {
           (exam_id, student_id, score, passed)
         VALUES (?, ?, ?, ?)
         `,
-        [examId, student.id, score, passed]
+        [examId, user.student_id, score, passed]
       )
 
       const attemptId = (result as any).insertId

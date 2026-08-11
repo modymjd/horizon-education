@@ -2,6 +2,7 @@
 import { z } from "zod"
 import { createHash } from "crypto"
 import { query, pool } from "@/lib/db"
+import { requireStudent } from "@/lib/session"
 
 const activateSchema = z.object({
   code: z.string().min(5).max(80),
@@ -30,6 +31,19 @@ function hashCode(code: string) {
 
 export async function POST(req: Request) {
   try {
+    const { user, response } = await requireStudent()
+
+    if (response || !user) {
+      return response
+    }
+
+    if (!user.student_id) {
+      return NextResponse.json(
+        { message: "لم يتم العثور على حساب الطالب" },
+        { status: 403 }
+      )
+    }
+
     const body = activateSchema.parse(await req.json())
     const codeHash = hashCode(body.code)
 
@@ -41,9 +55,10 @@ export async function POST(req: Request) {
         u.status
       FROM students s
       JOIN users u ON u.id = s.user_id
-      WHERE u.email = 'student@horizon.test'
+      WHERE s.id = ?
       LIMIT 1
-      `
+      `,
+      [user.student_id]
     )
 
     const student = studentRows[0]
