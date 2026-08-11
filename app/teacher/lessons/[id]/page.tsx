@@ -3,6 +3,8 @@ import { notFound, redirect } from "next/navigation"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 import { LessonVideoForm } from "@/components/teacher/LessonVideoForm"
+import { LessonAssignmentForm } from "@/components/teacher/LessonAssignmentForm"
+import { LessonExamForm } from "@/components/teacher/LessonExamForm"
 import { query } from "@/lib/db"
 import { getCurrentUser } from "@/lib/session"
 
@@ -122,10 +124,16 @@ export default async function TeacherLessonPage({
             </div>
           </aside>
 
-          <LessonVideoForm
-            lessonId={lesson.id}
-            initialVideoUrl={lesson.video_url}
-          />
+          <div className="grid gap-6">
+            <LessonVideoForm
+              lessonId={lesson.id}
+              initialVideoUrl={lesson.video_url}
+            />
+
+            <LessonAssignmentForm lessonId={lesson.id} />
+
+            <LessonExamForm lessonId={lesson.id} />
+          </div>
         </div>
       </section>
 
@@ -150,3 +158,4 @@ export default async function TeacherLessonPage({
     </main>
   )
 }
+
