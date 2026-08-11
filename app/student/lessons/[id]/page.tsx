@@ -32,12 +32,15 @@ type AssignmentRow = {
   due_at: string | null
 }
 
+type ExamPlacement = "before_content" | "after_content"
+
 type ExamRow = {
   id: number
   title: string
   description: string | null
   pass_score: number
   is_required_to_unlock_next: number
+  placement: ExamPlacement
   attempted: number
   score: number | null
   passed: number | null
@@ -113,6 +116,7 @@ async function getExams(id: string, studentId: number) {
       e.description,
       e.pass_score,
       e.is_required_to_unlock_next,
+      COALESCE(e.placement, 'after_content') AS placement,
       CASE WHEN a.id IS NULL THEN 0 ELSE 1 END AS attempted,
       a.score,
       a.passed,
@@ -133,12 +137,44 @@ async function getExams(id: string, studentId: number) {
       e.description,
       e.pass_score,
       e.is_required_to_unlock_next,
+      e.placement,
       attempted,
       a.score,
       a.passed
-    ORDER BY e.sort_order ASC, e.id ASC
+    ORDER BY e.placement ASC, e.sort_order ASC, e.id ASC
     `,
     [studentId, id]
+  )
+}
+
+function ExamCard({ exam }: { exam: ExamRow }) {
+  return (
+    <div className="rounded-2xl border border-[var(--line)] bg-[var(--cream-2)] p-4">
+      <h3 className="text-xl font-black">{exam.title}</h3>
+
+      {exam.description ? (
+        <p className="muted mt-2">{exam.description}</p>
+      ) : null}
+
+      <p className="muted mt-2 text-sm">درجة النجاح: {exam.pass_score}%</p>
+
+      <p className="muted mt-1 text-sm">عدد الأسئلة: {exam.questions_count}</p>
+
+      <p className="muted mt-1 text-sm">
+        شرط فتح التالي: {exam.is_required_to_unlock_next ? "نعم" : "لا"}
+      </p>
+
+      {exam.attempted ? (
+        <div className="alert-success mt-4">
+          تم تسليم الامتحان — الدرجة: {exam.score}% —{" "}
+          {exam.passed ? "ناجح" : "غير ناجح"}
+        </div>
+      ) : (
+        <Link href={`/student/exams/${exam.id}`} className="btn mt-4">
+          بدء الامتحان
+        </Link>
+      )}
+    </div>
   )
 }
 
@@ -170,6 +206,8 @@ export default async function StudentLessonPage({
     notFound()
   }
 
+  const beforeExams = exams.filter((exam) => exam.placement === "before_content")
+  const afterExams = exams.filter((exam) => exam.placement !== "before_content")
   const firstVideo = videos[0]
 
   return (
@@ -182,7 +220,9 @@ export default async function StudentLessonPage({
             <div className="course-meta">
               <span className="badge">{lesson.course_title}</span>
               <span className="badge">{lesson.chapter_title}</span>
-              <span className="badge">تم التفعيل: {lesson.activated_at || "غير محدد"}</span>
+              <span className="badge">
+                تم التفعيل: {lesson.activated_at || "غير محدد"}
+              </span>
               <span className="badge">{videos.length} فيديو</span>
               <span className="badge">{assignments.length} واجب</span>
               <span className="badge">{exams.length} امتحان</span>
@@ -192,7 +232,7 @@ export default async function StudentLessonPage({
 
             <p className="muted mt-6 text-lg">
               {lesson.lesson_description ||
-                "هذه الحصة متاحة لك الآن. شاهد فيديوهات الدرس بالترتيب، ثم راجع الواجبات والامتحانات."}
+                "هذه الحصة متاحة لك الآن. ابدأ بالامتحانات التمهيدية إن وجدت، ثم شاهد الفيديوهات وراجع الواجبات والامتحانات."}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -209,10 +249,10 @@ export default async function StudentLessonPage({
           <aside className="course-preview">
             <span className="lesson-pill">حصة مفعّلة</span>
             <h2 className="mt-5 font-[var(--display)] text-6xl font-bold leading-none">
-              {videos.length > 1 ? "فيديوهات الدرس" : "جاهز تبدأ؟"}
+              {beforeExams.length > 0 ? "ابدأ بامتحان تمهيدي" : "جاهز تبدأ؟"}
             </h2>
             <p className="mt-4 max-w-sm opacity-80">
-              شاهد الفيديوهات بالترتيب، وبعدها حل الواجبات والامتحانات المطلوبة.
+              تابع محتوى الحصة بالترتيب: امتحان قبل الحصة إن وجد، ثم الفيديوهات، ثم الواجبات والامتحانات.
             </p>
           </aside>
         </div>
@@ -221,6 +261,22 @@ export default async function StudentLessonPage({
       <section className="section pt-6">
         <div className="wrap grid gap-7 lg:grid-cols-[1fr_340px]">
           <div className="grid gap-6">
+            {beforeExams.length > 0 ? (
+              <div className="card p-6 md:p-8">
+                <span className="eyebrow">قبل الحصة</span>
+                <h2 className="text-3xl font-black">امتحان تمهيدي</h2>
+                <p className="muted mt-2">
+                  حل الامتحان التمهيدي قبل مشاهدة محتوى الحصة لقياس مستواك الحالي.
+                </p>
+
+                <div className="mt-6 grid gap-4">
+                  {beforeExams.map((exam) => (
+                    <ExamCard key={exam.id} exam={exam} />
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
             {videos.map((video, index) => (
               <div
                 className="card p-6 md:p-8"
@@ -296,48 +352,16 @@ export default async function StudentLessonPage({
             </div>
 
             <div className="card p-6 md:p-8">
-              <span className="eyebrow">امتحانات الحصة</span>
-              <h2 className="text-3xl font-black">اختبر فهمك</h2>
+              <span className="eyebrow">بعد الحصة</span>
+              <h2 className="text-3xl font-black">امتحانات الحصة</h2>
 
               <div className="mt-6 grid gap-4">
-                {exams.map((exam) => (
-                  <div
-                    className="rounded-2xl border border-[var(--line)] bg-[var(--cream-2)] p-4"
-                    key={exam.id}
-                  >
-                    <h3 className="text-xl font-black">{exam.title}</h3>
-
-                    {exam.description ? (
-                      <p className="muted mt-2">{exam.description}</p>
-                    ) : null}
-
-                    <p className="muted mt-2 text-sm">
-                      درجة النجاح: {exam.pass_score}%
-                    </p>
-
-                    <p className="muted mt-1 text-sm">
-                      عدد الأسئلة: {exam.questions_count}
-                    </p>
-
-                    <p className="muted mt-1 text-sm">
-                      شرط فتح التالي: {exam.is_required_to_unlock_next ? "نعم" : "لا"}
-                    </p>
-
-                    {exam.attempted ? (
-                      <div className="alert-success mt-4">
-                        تم تسليم الامتحان — الدرجة: {exam.score}% —{" "}
-                        {exam.passed ? "ناجح" : "غير ناجح"}
-                      </div>
-                    ) : (
-                      <Link href={`/student/exams/${exam.id}`} className="btn mt-4">
-                        بدء الامتحان
-                      </Link>
-                    )}
-                  </div>
+                {afterExams.map((exam) => (
+                  <ExamCard key={exam.id} exam={exam} />
                 ))}
 
-                {exams.length === 0 ? (
-                  <p className="muted">لا توجد امتحانات لهذه الحصة بعد.</p>
+                {afterExams.length === 0 ? (
+                  <p className="muted">لا توجد امتحانات بعد الحصة حتى الآن.</p>
                 ) : null}
               </div>
             </div>
@@ -351,15 +375,20 @@ export default async function StudentLessonPage({
               <p>✓ تم تفعيل الوصول لهذه الحصة</p>
               <p>✓ الكورس: {lesson.course_title}</p>
               <p>✓ الباب: {lesson.chapter_title}</p>
+              <p>✓ امتحانات قبل الحصة: {beforeExams.length}</p>
               <p>✓ عدد الفيديوهات: {videos.length}</p>
               <p>✓ عدد الواجبات: {assignments.length}</p>
-              <p>✓ عدد الامتحانات: {exams.length}</p>
+              <p>✓ امتحانات بعد الحصة: {afterExams.length}</p>
               <p>
                 ✓ متاح حتى: {lesson.access_until ? lesson.access_until : "بدون تاريخ انتهاء"}
               </p>
             </div>
 
-            {firstVideo ? (
+            {beforeExams.length > 0 ? (
+              <Link href={`/student/exams/${beforeExams[0].id}`} className="btn btn-block mt-6">
+                بدء الامتحان التمهيدي
+              </Link>
+            ) : firstVideo ? (
               <a href={`#video-${firstVideo.id}`} className="btn btn-block mt-6">
                 بدء المشاهدة
               </a>

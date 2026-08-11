@@ -6,6 +6,8 @@ type TeacherLessonRow = {
   id: number
 }
 
+type ExamPlacement = "before_content" | "after_content"
+
 async function verifyTeacherLesson(lessonId: number, teacherId: number) {
   const rows = await query<TeacherLessonRow>(
     `
@@ -21,6 +23,14 @@ async function verifyTeacherLesson(lessonId: number, teacherId: number) {
   )
 
   return rows[0]
+}
+
+function normalizePlacement(value: unknown): ExamPlacement {
+  if (value === "before_content") {
+    return "before_content"
+  }
+
+  return "after_content"
 }
 
 export async function POST(req: Request) {
@@ -45,6 +55,7 @@ export async function POST(req: Request) {
     const description = String(body.description || "")
     const passScore = Number(body.pass_score || 60)
     const isRequiredToUnlockNext = Boolean(body.is_required_to_unlock_next)
+    const placement = normalizePlacement(body.placement)
 
     if (!lessonId || Number.isNaN(lessonId)) {
       return NextResponse.json(
@@ -85,9 +96,11 @@ export async function POST(req: Request) {
           description,
           pass_score,
           is_required_to_unlock_next,
+          placement,
           sort_order
         )
       VALUES (
+        ?,
         ?,
         ?,
         ?,
@@ -100,6 +113,7 @@ export async function POST(req: Request) {
               SELECT MAX(sort_order) + 1 AS next_order
               FROM lesson_exams
               WHERE lesson_id = ?
+                AND placement = ?
             ) AS x
           ),
           1
@@ -112,7 +126,9 @@ export async function POST(req: Request) {
         description.trim() || null,
         passScore,
         isRequiredToUnlockNext ? 1 : 0,
+        placement,
         lessonId,
+        placement,
       ]
     )
 
