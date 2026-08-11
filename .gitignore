@@ -12,3 +12,8 @@ pnpm-debug.log*
 
 public/uploads/videos/*.mp4
 project-report.txt
+
+# Local uploaded files
+public/uploads/assignments/
+public/uploads/videos/
+

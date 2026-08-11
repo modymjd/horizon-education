@@ -161,8 +161,10 @@ export default function LessonDetailsClient({
     )
   }
 
+  const lessonId = lesson.id
+
   async function reloadVideos() {
-    const res = await fetch(`/api/admin/lessons/${lesson.id}/videos`, {
+    const res = await fetch(`/api/admin/lessons/${lessonId}/videos`, {
       cache: "no-store",
     })
 
@@ -171,7 +173,7 @@ export default function LessonDetailsClient({
   }
 
   async function reloadAttachments() {
-    const res = await fetch(`/api/admin/lessons/${lesson.id}/attachments`, {
+    const res = await fetch(`/api/admin/lessons/${lessonId}/attachments`, {
       cache: "no-store",
     })
 
@@ -215,7 +217,7 @@ export default function LessonDetailsClient({
         return
       }
 
-      const res = await fetch(`/api/admin/lessons/${lesson.id}/videos`, {
+      const res = await fetch(`/api/admin/lessons/${lessonId}/videos`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -257,7 +259,7 @@ export default function LessonDetailsClient({
     setAttachmentLoading(true)
 
     try {
-      const res = await fetch(`/api/admin/lessons/${lesson.id}/attachments`, {
+      const res = await fetch(`/api/admin/lessons/${lessonId}/attachments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

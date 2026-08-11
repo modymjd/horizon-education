@@ -87,8 +87,10 @@ export default function CourseDetailsClient({
     )
   }
 
+  const courseId = course.id
+
   async function reloadChapters() {
-    const res = await fetch(`/api/admin/courses/${course.id}/chapters`, {
+    const res = await fetch(`/api/admin/courses/${courseId}/chapters`, {
       cache: "no-store",
     })
 
@@ -104,7 +106,7 @@ export default function CourseDetailsClient({
     setIsLoading(true)
 
     try {
-      const res = await fetch(`/api/admin/courses/${course.id}/chapters`, {
+      const res = await fetch(`/api/admin/courses/${courseId}/chapters`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

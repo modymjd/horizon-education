@@ -17,7 +17,7 @@ type StudentLesson = {
   course_slug: string
   chapter_title: string
   access_until: string | null
-  created_at: string
+  created_at: string | null
 }
 
 type CourseProgress = {
@@ -26,11 +26,6 @@ type CourseProgress = {
   course_slug: string
   total_lessons: number
   unlocked_lessons: number
-}
-
-type CertificateRow = {
-  title: string
-  issued_at: string
 }
 
 async function getStudentSummary() {
@@ -82,12 +77,12 @@ async function getCourseProgress() {
       c.id AS course_id,
       c.title AS course_title,
       c.slug AS course_slug,
-      COUNT(DISTINCT l.id) AS total_lessons,
+      COUNT(DISTINCT all_lessons.id) AS total_lessons,
       COUNT(DISTINCT sla.lesson_id) AS unlocked_lessons
     FROM courses c
     JOIN chapters ch ON ch.course_id = c.id
-    JOIN lessons l ON l.chapter_id = ch.id
-    JOIN student_lesson_access sla ON sla.lesson_id = l.id
+    JOIN lessons all_lessons ON all_lessons.chapter_id = ch.id
+    JOIN student_lesson_access sla ON sla.lesson_id = all_lessons.id
     JOIN students s ON s.id = sla.student_id
     JOIN users u ON u.id = s.user_id
     WHERE u.email = 'student@horizon.test'
@@ -186,15 +181,15 @@ export default async function StudentDashboard() {
             </h2>
             <p className="muted mt-4">
               {latestLesson
-                ? `${latestLesson.chapter_title} — تم التفعيل في ${latestLesson.created_at}`
+                ? `${latestLesson.chapter_title} — تم التفعيل في ${latestLesson.created_at || "غير محدد"}`
                 : "استخدم كود الوصول الذي حصلت عليه من المدرس أو الإدارة."}
             </p>
           </div>
 
           <div>
             {latestLesson ? (
-              <Link href={`/courses/${latestLesson.course_slug}`} className="btn">
-                فتح الكورس
+              <Link href={`/student/lessons/${latestLesson.lesson_id}`} className="btn">
+                فتح الحصة
               </Link>
             ) : (
               <Link href="/student/activate" className="btn">
@@ -280,13 +275,13 @@ export default async function StudentDashboard() {
                     {lesson.course_title} — {lesson.chapter_title}
                   </p>
                   <p className="muted text-sm">
-                    تم التفعيل: {lesson.created_at}
+                    تم التفعيل: {lesson.created_at || "غير محدد"}
                     {lesson.access_until ? ` · متاح حتى: ${lesson.access_until}` : ""}
                   </p>
                 </div>
 
-                <Link href={`/courses/${lesson.course_slug}`} className="btn btn-soft">
-                  فتح
+                <Link href={`/student/lessons/${lesson.lesson_id}`} className="btn btn-soft">
+                  فتح الحصة
                 </Link>
               </div>
             ))}

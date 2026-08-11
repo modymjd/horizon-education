@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import Link from "next/link"
 import { useState } from "react"
@@ -50,7 +50,7 @@ const emptyForm: FormState = {
   availableUntil: "",
 }
 
-const lessonStatusLabel = {
+const lessonStatusLabel: Record<Lesson["status"], string> = {
   draft: "مسودة",
   published: "منشور",
   hidden: "مخفي",
@@ -84,8 +84,10 @@ export default function ChapterLessonsClient({
     )
   }
 
+  const chapterId = chapter.id
+
   async function reloadLessons() {
-    const res = await fetch(`/api/admin/chapters/${chapter.id}/lessons`, {
+    const res = await fetch(`/api/admin/chapters/${chapterId}/lessons`, {
       cache: "no-store",
     })
 
@@ -101,7 +103,7 @@ export default function ChapterLessonsClient({
     setIsLoading(true)
 
     try {
-      const res = await fetch(`/api/admin/chapters/${chapter.id}/lessons`, {
+      const res = await fetch(`/api/admin/chapters/${chapterId}/lessons`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -357,7 +359,11 @@ export default function ChapterLessonsClient({
                 {lessons.map((lesson) => (
                   <tr key={lesson.id}>
                     <td>
-                      <b><Link href={`/admin/lessons/${lesson.id}`} className="font-black underline">{lesson.title}</Link></b>
+                      <b>
+                        <Link href={`/admin/lessons/${lesson.id}`} className="font-black underline">
+                          {lesson.title}
+                        </Link>
+                      </b>
                       <p className="mt-1 text-xs opacity-60">
                         {lesson.description || "بدون وصف"}
                       </p>

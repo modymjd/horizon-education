@@ -31,6 +31,18 @@ type AssignmentRow = {
   due_at: string | null
 }
 
+type ExamRow = {
+  id: number
+  title: string
+  description: string | null
+  pass_score: number
+  is_required_to_unlock_next: number
+  attempted: number
+  score: number | null
+  passed: number | null
+  questions_count: number
+}
+
 async function getLesson(id: string) {
   const rows = await query<LessonRow>(
     `
@@ -93,6 +105,45 @@ async function getAssignments(id: string) {
   )
 }
 
+async function getExams(id: string) {
+  return query<ExamRow>(
+    `
+    SELECT
+      e.id,
+      e.title,
+      e.description,
+      e.pass_score,
+      e.is_required_to_unlock_next,
+      CASE WHEN a.id IS NULL THEN 0 ELSE 1 END AS attempted,
+      a.score,
+      a.passed,
+      COUNT(DISTINCT q.id) AS questions_count
+    FROM lesson_exams e
+    JOIN lessons l ON l.id = e.lesson_id
+    JOIN student_lesson_access sla ON sla.lesson_id = l.id
+    JOIN students s ON s.id = sla.student_id
+    JOIN users u ON u.id = s.user_id
+    LEFT JOIN lesson_exam_attempts a
+      ON a.exam_id = e.id
+      AND a.student_id = s.id
+    LEFT JOIN lesson_exam_questions q ON q.exam_id = e.id
+    WHERE u.email = 'student@horizon.test'
+      AND e.lesson_id = ?
+    GROUP BY
+      e.id,
+      e.title,
+      e.description,
+      e.pass_score,
+      e.is_required_to_unlock_next,
+      attempted,
+      a.score,
+      a.passed
+    ORDER BY e.sort_order ASC, e.id ASC
+    `,
+    [id]
+  )
+}
+
 export default async function StudentLessonPage({
   params,
 }: {
@@ -100,10 +151,11 @@ export default async function StudentLessonPage({
 }) {
   const { id } = await params
 
-  const [lesson, videos, assignments] = await Promise.all([
+  const [lesson, videos, assignments, exams] = await Promise.all([
     getLesson(id),
     getLessonVideos(id),
     getAssignments(id),
+    getExams(id),
   ])
 
   if (!lesson) {
@@ -127,13 +179,14 @@ export default async function StudentLessonPage({
               </span>
               <span className="badge">{videos.length} فيديو</span>
               <span className="badge">{assignments.length} واجب</span>
+              <span className="badge">{exams.length} امتحان</span>
             </div>
 
             <h1 className="h1 mt-6">{lesson.lesson_title}</h1>
 
             <p className="muted mt-6 text-lg">
               {lesson.lesson_description ||
-                "هذه الحصة متاحة لك الآن. شاهد فيديوهات الدرس بالترتيب."}
+                "هذه الحصة متاحة لك الآن. شاهد فيديوهات الدرس بالترتيب، ثم راجع الواجبات والامتحانات."}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -153,7 +206,7 @@ export default async function StudentLessonPage({
               {videos.length > 1 ? "فيديوهات الدرس" : "جاهز تبدأ؟"}
             </h2>
             <p className="mt-4 max-w-sm opacity-80">
-              شاهد الفيديوهات بالترتيب، وبعدها راجع الواجبات أو الامتحانات عند إضافتها.
+              شاهد الفيديوهات بالترتيب، وبعدها حل الواجبات والامتحانات المطلوبة.
             </p>
           </aside>
         </div>
@@ -235,6 +288,54 @@ export default async function StudentLessonPage({
                 ) : null}
               </div>
             </div>
+
+            <div className="card p-6 md:p-8">
+              <span className="eyebrow">امتحانات الحصة</span>
+              <h2 className="text-3xl font-black">اختبر فهمك</h2>
+
+              <div className="mt-6 grid gap-4">
+                {exams.map((exam) => (
+                  <div
+                    className="rounded-2xl border border-[var(--line)] bg-[var(--cream-2)] p-4"
+                    key={exam.id}
+                  >
+                    <h3 className="text-xl font-black">{exam.title}</h3>
+
+                    {exam.description ? (
+                      <p className="muted mt-2">{exam.description}</p>
+                    ) : null}
+
+                    <p className="muted mt-2 text-sm">
+                      درجة النجاح: {exam.pass_score}%
+                    </p>
+
+                    <p className="muted mt-1 text-sm">
+                      عدد الأسئلة: {exam.questions_count}
+                    </p>
+
+                    <p className="muted mt-1 text-sm">
+                      شرط فتح التالي:{" "}
+                      {exam.is_required_to_unlock_next ? "نعم" : "لا"}
+                    </p>
+
+                    {exam.attempted ? (
+                      <div className="alert-success mt-4">
+                        تم تسليم الامتحان — الدرجة: {exam.score}% —{" "}
+                        {exam.passed ? "ناجح" : "غير ناجح"}
+                      </div>
+                    ) : (
+                      <Link href={`/student/exams/${exam.id}`} className="btn mt-4">
+                        بدء الامتحان
+                      </Link>
+                    )}
+                  </div>
+                ))}
+
+                {exams.length === 0 ? (
+                  <p className="muted">لا توجد امتحانات لهذه الحصة بعد.</p>
+                ) : null}
+              </div>
+            </div>
           </div>
 
           <aside className="card price-card">
@@ -247,6 +348,7 @@ export default async function StudentLessonPage({
               <p>✓ الباب: {lesson.chapter_title}</p>
               <p>✓ عدد الفيديوهات: {videos.length}</p>
               <p>✓ عدد الواجبات: {assignments.length}</p>
+              <p>✓ عدد الامتحانات: {exams.length}</p>
               <p>
                 ✓ متاح حتى:{" "}
                 {lesson.access_until ? lesson.access_until : "بدون تاريخ انتهاء"}
