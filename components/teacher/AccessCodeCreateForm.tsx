@@ -7,10 +7,19 @@ type LessonOption = {
   id: number
   title: string
   course_title: string | null
+  chapter_title: string | null
+  status: string
 }
 
 type Props = {
   lessons: LessonOption[]
+}
+
+function getLessonStatusLabel(status: string) {
+  if (status === "published") return "منشورة"
+  if (status === "draft") return "مسودة"
+  if (status === "hidden") return "مخفية"
+  return status
 }
 
 export function AccessCodeCreateForm({ lessons }: Props) {
@@ -29,6 +38,12 @@ export function AccessCodeCreateForm({ lessons }: Props) {
 
     setError("")
     setCodes([])
+
+    if (!lessonId) {
+      setError("اختر الحصة أولًا")
+      return
+    }
+
     setIsLoading(true)
 
     try {
@@ -66,7 +81,7 @@ export function AccessCodeCreateForm({ lessons }: Props) {
       <span className="eyebrow">إنشاء أكواد</span>
       <h2 className="text-3xl font-black">ولّد أكواد جديدة</h2>
       <p className="muted mt-3">
-        اختر الحصة وعدد الأكواد، وسيتم عرض الأكواد الخام مرة واحدة فقط.
+        اختر أي حصة من حصصك وعدد الأكواد، وسيتم عرض الأكواد الخام مرة واحدة فقط.
       </p>
 
       {error ? <div className="alert-error mt-5">{error}</div> : null}
@@ -97,7 +112,8 @@ export function AccessCodeCreateForm({ lessons }: Props) {
             {lessons.map((lesson) => (
               <option value={lesson.id} key={lesson.id}>
                 {lesson.course_title ? `${lesson.course_title} — ` : ""}
-                {lesson.title}
+                {lesson.chapter_title ? `${lesson.chapter_title} — ` : ""}
+                {lesson.title} ({getLessonStatusLabel(lesson.status)})
               </option>
             ))}
           </select>

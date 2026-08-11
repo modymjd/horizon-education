@@ -45,6 +45,7 @@ export async function POST(req: Request) {
       JOIN courses c ON c.id = ch.course_id
       WHERE l.id = ?
         AND c.teacher_id = ?
+        AND l.deleted_at IS NULL
       LIMIT 1
       `,
       [body.lesson_id, user.teacher_id]
@@ -90,7 +91,7 @@ export async function POST(req: Request) {
             rawCode.slice(0, 5),
             body.expires_at || null,
             body.single_use ? 1 : 0,
-            user.id,
+            user.teacher_id,
             batchId,
           ]
         )

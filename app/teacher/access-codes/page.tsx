@@ -10,6 +10,8 @@ type LessonOption = {
   id: number
   title: string
   course_title: string | null
+  chapter_title: string | null
+  status: string
 }
 
 type AccessCodeRow = {
@@ -29,13 +31,15 @@ async function getTeacherLessons(teacherId: number) {
     SELECT
       l.id,
       l.title,
-      c.title AS course_title
+      l.status,
+      c.title AS course_title,
+      ch.title AS chapter_title
     FROM lessons l
     JOIN chapters ch ON ch.id = l.chapter_id
     JOIN courses c ON c.id = ch.course_id
     WHERE c.teacher_id = ?
-      AND l.status = 'published'
-    ORDER BY c.title ASC, l.sort_order ASC
+      AND l.deleted_at IS NULL
+    ORDER BY c.title ASC, ch.sort_order ASC, l.sort_order ASC, l.id ASC
     `,
     [teacherId]
   )
