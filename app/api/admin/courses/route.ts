@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server"
+﻿import { NextResponse } from "next/server"
 import { query, pool } from "@/lib/db"
 import { courseSchema } from "@/lib/validators"
+import { requireAdmin } from "@/lib/session"
 
 function makeSlug(title: string) {
   return (
@@ -16,6 +17,12 @@ function makeSlug(title: string) {
 
 export async function GET() {
   try {
+    const { response } = await requireAdmin()
+
+    if (response) {
+      return response
+    }
+
     const courses = await query<any>(
       `
       SELECT
@@ -100,10 +107,14 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const { user, response } = await requireAdmin()
+
+  if (response || !user) {
+    return response
+  }
+
   const body = courseSchema.parse(await req.json())
-
   const slug = makeSlug(body.title)
-
   const conn = await pool.getConnection()
 
   try {
@@ -127,7 +138,7 @@ export async function POST(req: Request) {
           created_by
         )
       VALUES
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         slug,
@@ -141,6 +152,7 @@ export async function POST(req: Request) {
         body.startsAt || null,
         body.endsAt || null,
         body.accessDurationDays || 30,
+        user.id,
       ]
     )
 
@@ -149,9 +161,9 @@ export async function POST(req: Request) {
       INSERT INTO audit_logs
         (user_id, action, entity_type, entity_id, new_values)
       VALUES
-        (1, 'create_course', 'course', LAST_INSERT_ID(), JSON_OBJECT('title', ?, 'teacher_id', ?))
+        (?, 'create_course', 'course', LAST_INSERT_ID(), JSON_OBJECT('title', ?, 'teacher_id', ?))
       `,
-      [body.title, body.teacherId]
+      [user.id, body.title, body.teacherId]
     )
 
     await conn.commit()
@@ -159,7 +171,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       message: "تم إنشاء الكورس بنجاح",
     })
-  } catch (error: any) {
+  } catch (error) {
     await conn.rollback()
 
     console.error("CREATE_COURSE_ERROR", error)

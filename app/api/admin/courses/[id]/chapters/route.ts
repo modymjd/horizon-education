@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server"
+﻿import { NextResponse } from "next/server"
 import { query, pool } from "@/lib/db"
 import { chapterSchema } from "@/lib/validators"
+import { requireAdmin } from "@/lib/session"
 
 type Params = {
   params: Promise<{
@@ -10,6 +11,12 @@ type Params = {
 
 export async function GET(_req: Request, context: Params) {
   try {
+    const { response } = await requireAdmin()
+
+    if (response) {
+      return response
+    }
+
     const { id } = await context.params
     const courseId = Number(id)
 
@@ -91,6 +98,12 @@ export async function GET(_req: Request, context: Params) {
 }
 
 export async function POST(req: Request, context: Params) {
+  const { user, response } = await requireAdmin()
+
+  if (response || !user) {
+    return response
+  }
+
   const { id } = await context.params
   const courseId = Number(id)
   const body = chapterSchema.parse(await req.json())
@@ -145,9 +158,9 @@ export async function POST(req: Request, context: Params) {
       INSERT INTO audit_logs
         (user_id, action, entity_type, entity_id, new_values)
       VALUES
-        (1, 'create_chapter', 'chapter', LAST_INSERT_ID(), JSON_OBJECT('title', ?, 'course_id', ?))
+        (?, 'create_chapter', 'chapter', LAST_INSERT_ID(), JSON_OBJECT('title', ?, 'course_id', ?))
       `,
-      [body.title, courseId]
+      [user.id, body.title, courseId]
     )
 
     await conn.commit()
