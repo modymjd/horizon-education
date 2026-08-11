@@ -1,24 +1,23 @@
-import { NextResponse } from "next/server"
+﻿import { NextResponse } from "next/server"
 import { query } from "@/lib/db"
+import { requireTeacher } from "@/lib/session"
 
 type TeacherLessonRow = {
   id: number
 }
 
-async function verifyTeacherLesson(lessonId: number) {
+async function verifyTeacherLesson(lessonId: number, teacherId: number) {
   const rows = await query<TeacherLessonRow>(
     `
     SELECT l.id
     FROM lessons l
     JOIN chapters ch ON ch.id = l.chapter_id
     JOIN courses c ON c.id = ch.course_id
-    JOIN teachers t ON t.id = c.teacher_id
-    JOIN users u ON u.id = t.user_id
-    WHERE u.email = 'teacher@horizon.test'
+    WHERE c.teacher_id = ?
       AND l.id = ?
     LIMIT 1
     `,
-    [lessonId]
+    [teacherId, lessonId]
   )
 
   return rows[0]
@@ -26,6 +25,19 @@ async function verifyTeacherLesson(lessonId: number) {
 
 export async function POST(req: Request) {
   try {
+    const { user, response } = await requireTeacher()
+
+    if (response || !user) {
+      return response
+    }
+
+    if (!user.teacher_id) {
+      return NextResponse.json(
+        { message: "لم يتم العثور على حساب المدرس" },
+        { status: 403 }
+      )
+    }
+
     const body = await req.json()
 
     const lessonId = Number(body.lesson_id)
@@ -55,7 +67,7 @@ export async function POST(req: Request) {
       )
     }
 
-    const lesson = await verifyTeacherLesson(lessonId)
+    const lesson = await verifyTeacherLesson(lessonId, user.teacher_id)
 
     if (!lesson) {
       return NextResponse.json(
