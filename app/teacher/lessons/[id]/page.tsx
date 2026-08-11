@@ -21,6 +21,15 @@ type LessonRow = {
   students_count: number
 }
 
+type ExamRow = {
+  id: number
+  title: string
+  description: string | null
+  pass_score: number
+  placement: "before_content" | "after_content"
+  questions_count: number
+}
+
 async function getTeacherLesson(id: string, teacherId: number) {
   const rows = await query<LessonRow>(
     `
@@ -59,8 +68,43 @@ async function getTeacherLesson(id: string, teacherId: number) {
   return rows[0]
 }
 
+async function getLessonExams(id: string, teacherId: number) {
+  return query<ExamRow>(
+    `
+    SELECT
+      e.id,
+      e.title,
+      e.description,
+      e.pass_score,
+      e.placement,
+      COUNT(DISTINCT q.id) AS questions_count
+    FROM lesson_exams e
+    JOIN lessons l ON l.id = e.lesson_id
+    JOIN chapters ch ON ch.id = l.chapter_id
+    JOIN courses c ON c.id = ch.course_id
+    LEFT JOIN lesson_exam_questions q ON q.exam_id = e.id
+    WHERE e.lesson_id = ?
+      AND c.teacher_id = ?
+    GROUP BY
+      e.id,
+      e.title,
+      e.description,
+      e.pass_score,
+      e.placement,
+      e.sort_order
+    ORDER BY e.placement ASC, e.sort_order ASC, e.id ASC
+    `,
+    [id, teacherId]
+  )
+}
+
 function money(value: number | string | null | undefined) {
   return `${Number(value || 0).toLocaleString("ar-EG")} ج.م`
+}
+
+function getPlacementLabel(placement: string) {
+  if (placement === "before_content") return "قبل الحصة"
+  return "بعد الحصة"
 }
 
 export default async function TeacherLessonPage({
@@ -79,7 +123,11 @@ export default async function TeacherLessonPage({
   }
 
   const { id } = await params
-  const lesson = await getTeacherLesson(id, user.teacher_id)
+
+  const [lesson, exams] = await Promise.all([
+    getTeacherLesson(id, user.teacher_id),
+    getLessonExams(id, user.teacher_id),
+  ])
 
   if (!lesson) {
     notFound()
@@ -121,6 +169,7 @@ export default async function TeacherLessonPage({
               <p>✓ الحالة: {lesson.status}</p>
               <p>✓ طلاب لديهم وصول: {lesson.students_count}</p>
               <p>✓ فيديو: {lesson.video_url ? "مضاف" : "غير مضاف"}</p>
+              <p>✓ عدد الامتحانات: {exams.length}</p>
             </div>
           </aside>
 
@@ -140,10 +189,54 @@ export default async function TeacherLessonPage({
       <section className="section tint-section">
         <div className="wrap">
           <div className="card p-8 md:p-12">
+            <span className="eyebrow">امتحانات الحصة</span>
+            <h2 className="h2">إدارة الامتحانات والأسئلة</h2>
+            <p className="muted mt-5 max-w-3xl">
+              بعد إضافة امتحان، افتح إدارة الأسئلة لإضافة أسئلة الاختيار من متعدد.
+            </p>
+
+            <div className="mt-8 grid gap-5">
+              {exams.map((exam) => (
+                <div
+                  className="rounded-2xl border border-[var(--line)] bg-[var(--cream-2)] p-5"
+                  key={exam.id}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <span className="badge">{getPlacementLabel(exam.placement)}</span>
+                      <h3 className="mt-3 text-2xl font-black">{exam.title}</h3>
+                      {exam.description ? (
+                        <p className="muted mt-2">{exam.description}</p>
+                      ) : null}
+                      <p className="muted mt-2 text-sm">
+                        درجة النجاح: {exam.pass_score}% — عدد الأسئلة: {exam.questions_count}
+                      </p>
+                    </div>
+
+                    <Link href={`/teacher/exams/${exam.id}`} className="btn btn-outline">
+                      إدارة الأسئلة
+                    </Link>
+                  </div>
+                </div>
+              ))}
+
+              {exams.length === 0 ? (
+                <p className="muted">
+                  لا توجد امتحانات لهذه الحصة بعد. أضف امتحانًا من النموذج بالأعلى.
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="wrap">
+          <div className="card p-8 md:p-12">
             <span className="eyebrow">معاينة الطالب</span>
             <h2 className="h2">تأكد من شكل الحصة للطالب</h2>
             <p className="muted mt-5 max-w-3xl">
-              بعد حفظ رابط الفيديو، افتح صفحة الحصة كطالب للتأكد من ظهوره بشكل صحيح.
+              بعد حفظ رابط الفيديو وإضافة الواجبات والامتحانات، افتح صفحة الحصة كطالب للتأكد من ظهورها بشكل صحيح.
             </p>
             <div className="mt-8">
               <Link href={`/student/lessons/${lesson.id}`} className="btn">
@@ -158,4 +251,3 @@ export default async function TeacherLessonPage({
     </main>
   )
 }
-
