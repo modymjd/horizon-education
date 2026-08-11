@@ -1,7 +1,9 @@
 ﻿import Link from "next/link"
+import { redirect } from "next/navigation"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 import { query } from "@/lib/db"
+import { getCurrentUser } from "@/lib/session"
 
 type TeacherCourseRow = {
   id: number
@@ -15,8 +17,9 @@ type TeacherCourseRow = {
   first_lesson_id: number | null
 }
 
-async function getTeacherCourses() {
-  const courses = await query<TeacherCourseRow>(`
+async function getTeacherCourses(teacherId: number) {
+  return query<TeacherCourseRow>(
+    `
     SELECT
       c.id,
       c.slug,
@@ -28,13 +31,11 @@ async function getTeacherCourses() {
       COUNT(DISTINCT sla.student_id) AS students_count,
       COALESCE(SUM(DISTINCT p.teacher_amount), 0) AS teacher_revenue
     FROM courses c
-    JOIN teachers t ON t.id = c.teacher_id
-    JOIN users u ON u.id = t.user_id
     LEFT JOIN chapters ch ON ch.course_id = c.id
     LEFT JOIN lessons l ON l.chapter_id = ch.id
     LEFT JOIN student_lesson_access sla ON sla.lesson_id = l.id
     LEFT JOIN payments p ON p.lesson_id = l.id
-    WHERE u.email = 'teacher@horizon.test'
+    WHERE c.teacher_id = ?
       AND c.deleted_at IS NULL
     GROUP BY
       c.id,
@@ -43,9 +44,9 @@ async function getTeacherCourses() {
       c.short_description,
       c.status
     ORDER BY c.id DESC
-  `)
-
-  return courses
+    `,
+    [teacherId]
+  )
 }
 
 function getStatusLabel(status: string) {
@@ -71,7 +72,17 @@ function money(value: number | string | null | undefined) {
 }
 
 export default async function TeacherCoursesPage() {
-  const courses = await getTeacherCourses()
+  const user = await getCurrentUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  if (user.role !== "teacher" || !user.teacher_id) {
+    redirect("/403")
+  }
+
+  const courses = await getTeacherCourses(user.teacher_id)
 
   const totalLessons = courses.reduce(
     (sum, course) => sum + Number(course.lessons_count || 0),

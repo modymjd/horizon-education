@@ -1,9 +1,10 @@
 ﻿import Link from "next/link"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 import { LessonVideoForm } from "@/components/teacher/LessonVideoForm"
 import { query } from "@/lib/db"
+import { getCurrentUser } from "@/lib/session"
 
 type LessonRow = {
   id: number
@@ -18,7 +19,7 @@ type LessonRow = {
   students_count: number
 }
 
-async function getTeacherLesson(id: string)  {
+async function getTeacherLesson(id: string, teacherId: number) {
   const rows = await query<LessonRow>(
     `
     SELECT
@@ -35,10 +36,8 @@ async function getTeacherLesson(id: string)  {
     FROM lessons l
     JOIN chapters ch ON ch.id = l.chapter_id
     JOIN courses c ON c.id = ch.course_id
-    JOIN teachers t ON t.id = c.teacher_id
-    JOIN users u ON u.id = t.user_id
     LEFT JOIN student_lesson_access sla ON sla.lesson_id = l.id
-    WHERE u.email = 'teacher@horizon.test'
+    WHERE c.teacher_id = ?
       AND l.id = ?
     GROUP BY
       l.id,
@@ -52,7 +51,7 @@ async function getTeacherLesson(id: string)  {
       ch.title
     LIMIT 1
     `,
-    [id]
+    [teacherId, id]
   )
 
   return rows[0]
@@ -67,8 +66,22 @@ export default async function TeacherLessonPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  if (user.role !== "teacher" || !user.teacher_id) {
+    redirect("/403")
+  }
+
   const { id } = await params
-  const lesson = await getTeacherLesson(id)
+  const lesson = await getTeacherLesson(id, user.teacher_id)
+
+  if (!lesson) {
+    notFound()
+  }
 
   return (
     <main>
@@ -125,7 +138,9 @@ export default async function TeacherLessonPage({
               بعد حفظ رابط الفيديو، افتح صفحة الحصة كطالب للتأكد من ظهوره بشكل صحيح.
             </p>
             <div className="mt-8">
-            <Link href={`/student/lessons/${lesson.id}`} className="btn"></Link>
+              <Link href={`/student/lessons/${lesson.id}`} className="btn">
+                فتح صفحة الحصة
+              </Link>
             </div>
           </div>
         </div>

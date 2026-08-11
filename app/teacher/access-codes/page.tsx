@@ -1,7 +1,9 @@
 ﻿import Link from "next/link"
+import { redirect } from "next/navigation"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 import { query } from "@/lib/db"
+import { getCurrentUser } from "@/lib/session"
 import { AccessCodeCreateForm } from "@/components/teacher/AccessCodeCreateForm"
 
 type LessonOption = {
@@ -21,8 +23,9 @@ type AccessCodeRow = {
   batch_id: string | null
 }
 
-async function getTeacherLessons() {
-  return query<LessonOption>(`
+async function getTeacherLessons(teacherId: number) {
+  return query<LessonOption>(
+    `
     SELECT
       l.id,
       l.title,
@@ -30,16 +33,17 @@ async function getTeacherLessons() {
     FROM lessons l
     JOIN chapters ch ON ch.id = l.chapter_id
     JOIN courses c ON c.id = ch.course_id
-    JOIN teachers t ON t.id = c.teacher_id
-    JOIN users u ON u.id = t.user_id
-    WHERE u.email = 'teacher@horizon.test'
+    WHERE c.teacher_id = ?
       AND l.status = 'published'
     ORDER BY c.title ASC, l.sort_order ASC
-  `)
+    `,
+    [teacherId]
+  )
 }
 
-async function getAccessCodes() {
-  return query<AccessCodeRow>(`
+async function getAccessCodes(teacherId: number) {
+  return query<AccessCodeRow>(
+    `
     SELECT
       ac.id,
       ac.code_prefix,
@@ -53,12 +57,12 @@ async function getAccessCodes() {
     JOIN lessons l ON l.id = ac.lesson_id
     JOIN chapters ch ON ch.id = l.chapter_id
     JOIN courses c ON c.id = ch.course_id
-    JOIN teachers t ON t.id = c.teacher_id
-    JOIN users u ON u.id = t.user_id
-    WHERE u.email = 'teacher@horizon.test'
+    WHERE c.teacher_id = ?
     ORDER BY ac.id DESC
     LIMIT 50
-  `)
+    `,
+    [teacherId]
+  )
 }
 
 function getStatusLabel(status: string) {
@@ -69,9 +73,19 @@ function getStatusLabel(status: string) {
 }
 
 export default async function TeacherAccessCodesPage() {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  if (user.role !== "teacher" || !user.teacher_id) {
+    redirect("/403")
+  }
+
   const [lessons, codes] = await Promise.all([
-    getTeacherLessons(),
-    getAccessCodes(),
+    getTeacherLessons(user.teacher_id),
+    getAccessCodes(user.teacher_id),
   ])
 
   return (
