@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+﻿import { NextRequest, NextResponse } from "next/server"
 import { jwtVerify } from "jose"
 
 type Role = "admin" | "teacher" | "student"
@@ -9,9 +9,19 @@ const protectedRoutes: Record<string, Role> = {
   "/student": "student",
 }
 
-const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET || "horizon-super-secret-dev-key"
-)
+function getJwtSecret() {
+  const jwtSecret = process.env.JWT_SECRET
+
+  if (!jwtSecret || jwtSecret.length < 32) {
+    if (process.env.NODE_ENV === "production") {
+      return null
+    }
+
+    return "horizon-development-secret-change-me-32"
+  }
+
+  return jwtSecret
+}
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
@@ -24,6 +34,14 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
+  const jwtSecret = getJwtSecret()
+
+  if (!jwtSecret) {
+    const url = new URL("/login", req.url)
+    url.searchParams.set("reason", "missing_secret")
+    return NextResponse.redirect(url)
+  }
+
   const token = req.cookies.get("horizon_session")?.value
 
   if (!token) {
@@ -33,6 +51,7 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
+    const secret = new TextEncoder().encode(jwtSecret)
     const { payload } = await jwtVerify(token, secret)
     const role = payload.role as Role | undefined
     const requiredRole = protectedRoutes[matchedRoute]
