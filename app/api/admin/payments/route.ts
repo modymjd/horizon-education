@@ -2,6 +2,7 @@
 import { z } from "zod"
 import { nanoid } from "nanoid"
 import { query, pool } from "@/lib/db"
+import { requireAdmin } from "@/lib/session"
 
 const paymentSchema = z.object({
   student_id: z.number().int().positive(),
@@ -19,6 +20,12 @@ type LessonRow = {
 
 export async function POST(req: Request) {
   try {
+    const { user, response } = await requireAdmin()
+
+    if (response || !user) {
+      return response
+    }
+
     const body = paymentSchema.parse(await req.json())
 
     const lessonRows = await query<LessonRow>(
@@ -50,27 +57,6 @@ export async function POST(req: Request) {
     const platformAmount = (Number(body.amount_paid) * commissionPct) / 100
     const teacherAmount = Number(body.amount_paid) - platformAmount
     const invoiceNumber = `INV-${new Date().getFullYear()}-${nanoid(8).toUpperCase()}`
-
-    const adminRows = await query<{ id: number }>(
-      `
-      SELECT u.id
-      FROM users u
-      JOIN roles r ON r.id = u.role_id
-      WHERE r.name = "admin"
-        AND u.deleted_at IS NULL
-      ORDER BY u.id ASC
-      LIMIT 1
-      `
-    )
-
-    const adminId = adminRows[0]?.id
-
-    if (!adminId) {
-      return NextResponse.json(
-        { message: "لا يوجد حساب إدارة لتسجيل الدفعة" },
-        { status: 400 }
-      )
-    }
 
     const conn = await pool.getConnection()
 
@@ -109,7 +95,7 @@ export async function POST(req: Request) {
           body.payment_method_id,
           null,
           body.notes || null,
-          adminId,
+          user.id,
         ]
       )
 
@@ -131,6 +117,16 @@ export async function POST(req: Request) {
         VALUES (?, ?, ?)
         `,
         [body.student_id, body.lesson_id, paymentId]
+      )
+
+      await conn.execute(
+        `
+        INSERT INTO audit_logs
+          (user_id, action, entity_type, entity_id, new_values)
+        VALUES
+          (?, 'create_payment', 'payment', ?, JSON_OBJECT('invoice_number', ?, 'amount_paid', ?))
+        `,
+        [user.id, paymentId, invoiceNumber, body.amount_paid]
       )
 
       await conn.commit()
@@ -157,4 +153,3 @@ export async function POST(req: Request) {
     )
   }
 }
-

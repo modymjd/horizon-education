@@ -1,10 +1,17 @@
-import { NextResponse } from "next/server"
+﻿import { NextResponse } from "next/server"
 import { query, pool } from "@/lib/db"
 import { hashPassword } from "@/lib/auth"
 import { teacherSchema } from "@/lib/validators"
+import { requireAdmin } from "@/lib/session"
 
 export async function GET() {
   try {
+    const { response } = await requireAdmin()
+
+    if (response) {
+      return response
+    }
+
     const teachers = await query<any>(
       `
       SELECT
@@ -46,10 +53,14 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const { user, response } = await requireAdmin()
+
+  if (response || !user) {
+    return response
+  }
+
   const body = teacherSchema.parse(await req.json())
-
   const passwordHash = await hashPassword(body.password)
-
   const conn = await pool.getConnection()
 
   try {
@@ -87,7 +98,7 @@ export async function POST(req: Request) {
       ]
     )
 
-    const userId = userResult.insertId
+    const teacherUserId = userResult.insertId
 
     await conn.execute(
       `
@@ -97,7 +108,7 @@ export async function POST(req: Request) {
         (?, ?, ?, ?)
       `,
       [
-        userId,
+        teacherUserId,
         body.bio || null,
         body.address || null,
         body.commission,
@@ -111,7 +122,7 @@ export async function POST(req: Request) {
       VALUES
         (?, 'create_teacher', 'teacher', ?, JSON_OBJECT('email', ?, 'full_name', ?))
       `,
-      [userId, userId, body.email, body.fullName]
+      [user.id, teacherUserId, body.email, body.fullName]
     )
 
     await conn.commit()

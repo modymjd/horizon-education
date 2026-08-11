@@ -1,9 +1,16 @@
 ﻿import { NextResponse } from "next/server"
 import { writeFile, mkdir } from "fs/promises"
 import path from "path"
+import { requireAdmin } from "@/lib/session"
 
 export async function POST(req: Request) {
   try {
+    const { response } = await requireAdmin()
+
+    if (response) {
+      return response
+    }
+
     const formData = await req.formData()
     const file = formData.get("file") as File | null
 

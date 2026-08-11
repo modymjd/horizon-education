@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server"
+﻿import { NextResponse } from "next/server"
 import { query, pool } from "@/lib/db"
 import { lessonVideoSchema } from "@/lib/validators"
+import { requireAdmin } from "@/lib/session"
 
 type Params = {
   params: Promise<{
@@ -10,6 +11,12 @@ type Params = {
 
 export async function GET(_req: Request, context: Params) {
   try {
+    const { response } = await requireAdmin()
+
+    if (response) {
+      return response
+    }
+
     const { id } = await context.params
     const lessonId = Number(id)
 
@@ -85,6 +92,12 @@ export async function GET(_req: Request, context: Params) {
 }
 
 export async function POST(req: Request, context: Params) {
+  const { user, response } = await requireAdmin()
+
+  if (response || !user) {
+    return response
+  }
+
   const { id } = await context.params
   const lessonId = Number(id)
   const body = lessonVideoSchema.parse(await req.json())
@@ -141,9 +154,9 @@ export async function POST(req: Request, context: Params) {
       INSERT INTO audit_logs
         (user_id, action, entity_type, entity_id, new_values)
       VALUES
-        (1, 'create_lesson_video', 'lesson_video', LAST_INSERT_ID(), JSON_OBJECT('title', ?, 'lesson_id', ?))
+        (?, 'create_lesson_video', 'lesson_video', LAST_INSERT_ID(), JSON_OBJECT('title', ?, 'lesson_id', ?))
       `,
-      [body.title, lessonId]
+      [user.id, body.title, lessonId]
     )
 
     await conn.commit()
