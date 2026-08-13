@@ -30,6 +30,14 @@ type CourseProgress = {
   unlocked_lessons: number
 }
 
+type CourseRequestNotification = {
+  id: number
+  status: "pending" | "accepted" | "rejected"
+  course_title: string
+  requested_at: string
+  reviewed_at: string | null
+}
+
 async function getStudentSummary(studentId: number) {
   const rows = await query<StudentSummary>(
     `
@@ -98,9 +106,52 @@ async function getCourseProgress(studentId: number) {
   )
 }
 
+async function getCourseRequestNotifications(studentId: number) {
+  return query<CourseRequestNotification>(
+    `
+    SELECT
+      r.id,
+      r.status,
+      c.title AS course_title,
+      DATE_FORMAT(r.requested_at, '%Y-%m-%d %H:%i') AS requested_at,
+      DATE_FORMAT(r.reviewed_at, '%Y-%m-%d %H:%i') AS reviewed_at
+    FROM student_course_requests r
+    JOIN courses c ON c.id = r.course_id
+    WHERE r.student_id = ?
+      AND c.deleted_at IS NULL
+    ORDER BY r.requested_at DESC
+    LIMIT 5
+    `,
+    [studentId]
+  )
+}
+
 function getProgressPercent(unlocked: number, total: number) {
   if (!total) return 0
   return Math.round((Number(unlocked) / Number(total)) * 100)
+}
+
+function getRequestTitle(status: string) {
+  if (status === "pending") return "طلبك قيد المراجعة"
+  if (status === "accepted") return "تم قبول طلبك"
+  if (status === "rejected") return "لم يتم قبول طلبك"
+  return "تحديث على طلب الانضمام"
+}
+
+function getRequestMessage(notification: CourseRequestNotification) {
+  if (notification.status === "pending") {
+    return `طلبك للانضمام إلى كورس ${notification.course_title} قيد المراجعة لدى المدرس.`
+  }
+
+  if (notification.status === "accepted") {
+    return `تم قبولك في كورس ${notification.course_title}. تواصل مع المدرس للحصول على كود الوصول للحصص.`
+  }
+
+  if (notification.status === "rejected") {
+    return `لم يتم قبولك في كورس ${notification.course_title}. يمكنك طلب الانضمام لكورس آخر أو التواصل مع الإدارة.`
+  }
+
+  return `يوجد تحديث على طلبك في كورس ${notification.course_title}.`
 }
 
 function ProgressRing({ value }: { value: number }) {
@@ -136,22 +187,26 @@ export default async function StudentDashboard() {
     redirect("/403")
   }
 
-  const [summary, lessons, progress] = await Promise.all([
+  const [summary, lessons, progress, notifications] = await Promise.all([
     getStudentSummary(user.student_id),
     getStudentLessons(user.student_id),
     getCourseProgress(user.student_id),
+    getCourseRequestNotifications(user.student_id),
   ])
 
   const latestLesson = lessons[0]
   const studentName = summary?.full_name || user.full_name || "الطالب"
   const activeLessons = Number(summary?.active_lessons || 0)
   const activeCourses = Number(summary?.active_courses || 0)
+  const unreadLikeNotifications = notifications.filter(
+    (item) => item.status === "accepted" || item.status === "rejected"
+  ).length
 
   const stats = [
     [String(activeCourses), "كورسات مفعّلة"],
     [String(activeLessons), "حصص متاحة"],
     [String(progress.length), "مواد قيد الدراسة"],
-    [latestLesson ? "1" : "0", "آخر حصة جديدة"],
+    [String(unreadLikeNotifications), "إشعارات طلبات"],
   ]
 
   return (
@@ -172,6 +227,7 @@ export default async function StudentDashboard() {
               <Link href="/student/activate" className="btn">
                 تفعيل كود جديد
               </Link>
+
               <Link href="/subjects" className="btn btn-outline">
                 تصفح المواد
               </Link>
@@ -188,7 +244,56 @@ export default async function StudentDashboard() {
           </div>
         </section>
 
-        <section className="card continue-card">
+        {notifications.length > 0 ? (
+          <section className="card mt-7 p-6 md:p-8">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <span className="eyebrow">الإشعارات</span>
+                <h2 className="text-3xl font-black">تحديثات طلبات الانضمام</h2>
+              </div>
+
+              <Link href="/subjects" className="btn btn-outline">
+                تصفح الكورسات
+              </Link>
+            </div>
+
+            <div className="mt-6 grid gap-4">
+              {notifications.map((notification) => (
+                <div
+                  className="rounded-2xl border border-[var(--line)] bg-[var(--cream-2)] p-4"
+                  key={notification.id}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-xl font-black">
+                        {getRequestTitle(notification.status)}
+                      </h3>
+                      <p className="muted mt-2">
+                        {getRequestMessage(notification)}
+                      </p>
+                      <p className="muted mt-2 text-sm">
+                        تاريخ الطلب: {notification.requested_at}
+                        {notification.reviewed_at
+                          ? ` — تاريخ المراجعة: ${notification.reviewed_at}`
+                          : ""}
+                      </p>
+                    </div>
+
+                    <span className="badge">
+                      {notification.status === "pending"
+                        ? "قيد المراجعة"
+                        : notification.status === "accepted"
+                          ? "مقبول"
+                          : "مرفوض"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <section className="card continue-card mt-7">
           <div>
             <span className="lesson-pill">
               {latestLesson ? latestLesson.course_title : "ابدأ الآن"}
@@ -209,8 +314,8 @@ export default async function StudentDashboard() {
                 فتح الحصة
               </Link>
             ) : (
-              <Link href="/student/activate" className="btn">
-                تفعيل كود
+              <Link href="/subjects" className="btn">
+                تصفح الكورسات
               </Link>
             )}
           </div>
@@ -261,10 +366,10 @@ export default async function StudentDashboard() {
               <div className="card progress-card">
                 <h3>لا توجد كورسات مفعّلة بعد</h3>
                 <p className="muted mt-2">
-                  فعّل كود وصول لبدء ظهور تقدمك هنا.
+                  اطلب الانضمام لكورس مناسب، وبعد قبول المدرس فعّل كود الوصول لبدء ظهور تقدمك هنا.
                 </p>
-                <Link href="/student/activate" className="btn mt-6">
-                  تفعيل كود
+                <Link href="/subjects" className="btn mt-6">
+                  تصفح الكورسات
                 </Link>
               </div>
             ) : null}
@@ -319,4 +424,3 @@ export default async function StudentDashboard() {
     </main>
   )
 }
-
