@@ -54,15 +54,19 @@ export function AdminCourseCreateForm({
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
 
-  const filteredStages = stages.filter((stage) => {
+  const matchingStages = stages.filter((stage) => {
     if (!educationTypeId) return true
     return !stage.education_type_id || String(stage.education_type_id) === educationTypeId
   })
 
-  const filteredGrades = grades.filter((grade) => {
+  const filteredStages = matchingStages.length > 0 ? matchingStages : stages
+
+  const matchingGrades = grades.filter((grade) => {
     if (!stageId) return true
     return String(grade.stage_id) === stageId
   })
+
+  const filteredGrades = matchingGrades.length > 0 ? matchingGrades : grades
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -280,3 +284,4 @@ export function AdminCourseCreateForm({
     </form>
   )
 }
+
