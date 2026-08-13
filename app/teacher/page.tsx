@@ -209,6 +209,10 @@ export default async function TeacherDashboard() {
                 طلبات الانضمام
               </Link>
 
+              <Link href="/teacher/students" className="btn btn-outline">
+                طلابي
+              </Link>
+
               <Link href="/teacher/access-codes" className="btn btn-outline">
                 إنشاء أكواد وصول
               </Link>
@@ -220,6 +224,12 @@ export default async function TeacherDashboard() {
               <span className="badge">الطلبات</span>
               <h3 className="mt-4 text-2xl font-black">راجع طلبات الطلاب</h3>
               <p className="muted mt-2">اقبل أو ارفض طلبات الانضمام لكورساتك.</p>
+            </Link>
+
+            <Link href="/teacher/students" className="teacher-action-card">
+              <span className="badge">الطلاب</span>
+              <h3 className="mt-4 text-2xl font-black">قائمة الطلاب المقبولين</h3>
+              <p className="muted mt-2">راجع بيانات الطلاب وأرقام التواصل وولي الأمر.</p>
             </Link>
 
             <Link href="/teacher/access-codes" className="teacher-action-card">
@@ -366,3 +376,4 @@ export default async function TeacherDashboard() {
     </main>
   )
 }
+
