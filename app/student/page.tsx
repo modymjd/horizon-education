@@ -165,7 +165,7 @@ export default async function StudentDashboard() {
             <p className="muted mt-4 text-lg">
               {latestLesson
                 ? `آخر حصة اتفعلت لك: ${latestLesson.lesson_title}.`
-                : "فعّل أول كود وصول عشان تبدأ مذاكرتك."}
+                : "اطلب الانضمام لكورس مناسب، أو فعّل كود وصول عشان تبدأ مذاكرتك."}
             </p>
 
             <div className="mt-7 flex flex-wrap gap-3">
@@ -199,7 +199,7 @@ export default async function StudentDashboard() {
             <p className="muted mt-4">
               {latestLesson
                 ? `${latestLesson.chapter_title} — تم التفعيل في ${latestLesson.created_at || "غير محدد"}`
-                : "استخدم كود الوصول الذي حصلت عليه من المدرس أو الإدارة."}
+                : "اطلب الانضمام لكورس مناسب، وبعد قبول المدرس استخدم كود الوصول الذي يرسله لك."}
             </p>
           </div>
 
@@ -319,3 +319,4 @@ export default async function StudentDashboard() {
     </main>
   )
 }
+
