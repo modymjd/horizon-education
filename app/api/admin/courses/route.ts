@@ -47,6 +47,8 @@ export async function GET() {
       JOIN teachers t ON t.id = c.teacher_id
       JOIN users u ON u.id = t.user_id
       LEFT JOIN education_types et ON et.id = c.education_type_id
+LEFT JOIN educational_stages es ON es.id = c.stage_id
+LEFT JOIN grades g ON g.id = c.grade_id
       LEFT JOIN chapters ch ON ch.course_id = c.id AND ch.deleted_at IS NULL
       LEFT JOIN lessons l ON l.chapter_id = ch.id AND l.deleted_at IS NULL
       WHERE c.deleted_at IS NULL
@@ -148,6 +150,8 @@ export async function POST(req: Request) {
         body.coverImageUrl || null,
         body.teacherId,
         body.educationTypeId || null,
+        body.stageId || null,
+        body.gradeId || null,
         body.status,
         body.startsAt || null,
         body.endsAt || null,
@@ -184,3 +188,4 @@ export async function POST(req: Request) {
     conn.release()
   }
 }
+

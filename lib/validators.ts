@@ -1,4 +1,4 @@
-import { z } from "zod"
+﻿import { z } from "zod"
 
 export const loginSchema = z.object({
   email: z.string().email(),
@@ -23,11 +23,14 @@ export const courseSchema = z.object({
   coverImageUrl: z.string().optional(),
   teacherId: z.coerce.number(),
   educationTypeId: z.coerce.number().optional(),
+  stageId: z.coerce.number().optional(),
+  gradeId: z.coerce.number().optional(),
   status: z.enum(["draft", "published", "paused", "ended"]),
   startsAt: z.string().optional(),
   endsAt: z.string().optional(),
   accessDurationDays: z.coerce.number().min(1).optional(),
 })
+
 export const paymentSchema = z.object({
   studentId: z.coerce.number(),
   lessonId: z.coerce.number(),
@@ -49,6 +52,7 @@ export const chapterSchema = z.object({
   status: z.enum(["draft", "published", "hidden"]),
   publishedAt: z.string().optional(),
 })
+
 export const lessonSchema = z.object({
   title: z.string().min(3, "اسم الحصة يجب ألا يقل عن 3 أحرف"),
   description: z.string().optional(),
@@ -59,6 +63,7 @@ export const lessonSchema = z.object({
   availableFrom: z.string().optional(),
   availableUntil: z.string().optional(),
 })
+
 export const lessonVideoSchema = z.object({
   title: z.string().min(3, "اسم الفيديو يجب ألا يقل عن 3 أحرف"),
   videoUrl: z.string().optional(),

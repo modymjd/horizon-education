@@ -1,0 +1,5 @@
+﻿ALTER TABLE courses
+ADD COLUMN stage_id TINYINT UNSIGNED NULL AFTER education_type_id;
+
+ALTER TABLE courses
+ADD COLUMN grade_id SMALLINT UNSIGNED NULL AFTER stage_id;

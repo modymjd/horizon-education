@@ -1,6 +1,7 @@
 ﻿import Link from "next/link"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
+import { AdminCourseCreateForm } from "@/components/admin/AdminCourseCreateForm"
 import { query } from "@/lib/db"
 
 type CourseRow = {
@@ -9,23 +10,55 @@ type CourseRow = {
   slug: string
   status: string
   teacher_name: string | null
+  education_type_name: string | null
+  stage_name: string | null
+  grade_name: string | null
   lessons_count: number
   students_count: number
 }
 
+type TeacherOption = {
+  id: number
+  full_name: string
+}
+
+type EducationTypeOption = {
+  id: number
+  name: string
+}
+
+type StageOption = {
+  id: number
+  name: string
+  education_type_id: number | null
+}
+
+type GradeOption = {
+  id: number
+  name: string
+  stage_id: number
+}
+
 async function getCourses() {
-  const courses = await query<CourseRow>(`
+  const courses = await query<CourseRow>(
+    `
     SELECT
       c.id,
       c.title,
       c.slug,
       c.status,
       u.full_name AS teacher_name,
+      et.name AS education_type_name,
+      es.name AS stage_name,
+      g.name AS grade_name,
       COUNT(DISTINCT l.id) AS lessons_count,
       COUNT(DISTINCT sla.student_id) AS students_count
     FROM courses c
     LEFT JOIN teachers t ON t.id = c.teacher_id
     LEFT JOIN users u ON u.id = t.user_id
+    LEFT JOIN education_types et ON et.id = c.education_type_id
+    LEFT JOIN educational_stages es ON es.id = c.stage_id
+    LEFT JOIN grades g ON g.id = c.grade_id
     LEFT JOIN chapters ch ON ch.course_id = c.id
     LEFT JOIN lessons l ON l.chapter_id = ch.id
     LEFT JOIN student_lesson_access sla ON sla.lesson_id = l.id
@@ -35,16 +68,67 @@ async function getCourses() {
       c.title,
       c.slug,
       c.status,
-      u.full_name
+      u.full_name,
+      et.name,
+      es.name,
+      g.name
     ORDER BY c.id DESC
-  `)
+    `
+  )
 
   return courses
+}
+
+async function getTeachers() {
+  return query<TeacherOption>(
+    `
+    SELECT
+      t.id,
+      u.full_name
+    FROM teachers t
+    JOIN users u ON u.id = t.user_id
+    WHERE u.deleted_at IS NULL
+      AND u.status = 'active'
+    ORDER BY u.full_name ASC
+    `
+  )
+}
+
+async function getEducationTypes() {
+  return query<EducationTypeOption>(
+    `
+    SELECT id, name
+    FROM education_types
+    ORDER BY id ASC
+    `
+  )
+}
+
+async function getStages() {
+  return query<StageOption>(
+    `
+    SELECT id, name, education_type_id
+    FROM educational_stages
+    ORDER BY sort_order ASC, id ASC
+    `
+  )
+}
+
+async function getGrades() {
+  return query<GradeOption>(
+    `
+    SELECT id, name, stage_id
+    FROM grades
+    ORDER BY sort_order ASC, id ASC
+    `
+  )
 }
 
 function getStatusLabel(status: string) {
   if (status === "published") return "منشور"
   if (status === "draft") return "مسودة"
+  if (status === "paused") return "متوقف"
+  if (status === "ended") return "منتهي"
   if (status === "archived") return "مؤرشف"
   return status
 }
@@ -54,7 +138,13 @@ function getInitials(title: string) {
 }
 
 export default async function AdminCoursesPage() {
-  const courses = await getCourses()
+  const [courses, teachers, educationTypes, stages, grades] = await Promise.all([
+    getCourses(),
+    getTeachers(),
+    getEducationTypes(),
+    getStages(),
+    getGrades(),
+  ])
 
   const published = courses.filter((course) => course.status === "published").length
   const drafts = courses.filter((course) => course.status === "draft").length
@@ -68,7 +158,7 @@ export default async function AdminCoursesPage() {
           <span className="eyebrow">لوحة الإدارة</span>
           <h1 className="h1">إدارة الكورسات</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            راجع الكورسات المنشورة والمسودات، وعدد الحصص والطلاب لكل كورس.
+            أنشئ الكورسات من لوحة الأدمن، وحدد المدرس ونوع التعليم والمرحلة والصف.
           </p>
         </div>
       </section>
@@ -89,6 +179,13 @@ export default async function AdminCoursesPage() {
               <span className="muted font-bold">مسودات</span>
             </div>
           </div>
+
+          <AdminCourseCreateForm
+            teachers={teachers}
+            educationTypes={educationTypes}
+            stages={stages}
+            grades={grades}
+          />
 
           <div className="toolbar">
             <div className="search-row">
@@ -111,6 +208,7 @@ export default async function AdminCoursesPage() {
                 <tr>
                   <th>الكورس</th>
                   <th>المدرس</th>
+                  <th>التصنيف</th>
                   <th>الحالة</th>
                   <th>الحصص</th>
                   <th>الطلاب</th>
@@ -128,6 +226,12 @@ export default async function AdminCoursesPage() {
                     </td>
                     <td>{course.teacher_name || "غير محدد"}</td>
                     <td>
+                      <p>{course.education_type_name || "كل الأنواع"}</p>
+                      <p className="muted text-sm">
+                        {course.stage_name || "كل المراحل"} — {course.grade_name || "كل الصفوف"}
+                      </p>
+                    </td>
+                    <td>
                       <span className="badge">{getStatusLabel(course.status)}</span>
                     </td>
                     <td>{course.lessons_count} حصة</td>
@@ -142,7 +246,7 @@ export default async function AdminCoursesPage() {
 
                 {courses.length === 0 ? (
                   <tr>
-                    <td colSpan={6}>لا توجد كورسات بعد.</td>
+                    <td colSpan={7}>لا توجد كورسات بعد.</td>
                   </tr>
                 ) : null}
               </tbody>
