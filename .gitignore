@@ -17,3 +17,6 @@ project-report.txt
 public/uploads/assignments/
 public/uploads/videos/
 
+
+# Local assignment submissions
+public/uploads/assignment-submissions/
