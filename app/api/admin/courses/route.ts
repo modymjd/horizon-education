@@ -33,6 +33,8 @@ export async function GET() {
         c.description,
         c.cover_image_url,
         c.status,
+        c.stage_id,
+        c.grade_id,
         c.starts_at,
         c.ends_at,
         c.access_duration_days,
@@ -41,14 +43,16 @@ export async function GET() {
         u.full_name AS teacher_name,
         et.id AS education_type_id,
         et.name AS education_type_name,
+        es.name AS stage_name,
+        g.name AS grade_name,
         COUNT(DISTINCT ch.id) AS chapters_count,
         COUNT(DISTINCT l.id) AS lessons_count
       FROM courses c
       JOIN teachers t ON t.id = c.teacher_id
       JOIN users u ON u.id = t.user_id
       LEFT JOIN education_types et ON et.id = c.education_type_id
-LEFT JOIN educational_stages es ON es.id = c.stage_id
-LEFT JOIN grades g ON g.id = c.grade_id
+      LEFT JOIN educational_stages es ON es.id = c.stage_id
+      LEFT JOIN grades g ON g.id = c.grade_id
       LEFT JOIN chapters ch ON ch.course_id = c.id AND ch.deleted_at IS NULL
       LEFT JOIN lessons l ON l.chapter_id = ch.id AND l.deleted_at IS NULL
       WHERE c.deleted_at IS NULL
@@ -60,6 +64,8 @@ LEFT JOIN grades g ON g.id = c.grade_id
         c.description,
         c.cover_image_url,
         c.status,
+        c.stage_id,
+        c.grade_id,
         c.starts_at,
         c.ends_at,
         c.access_duration_days,
@@ -67,7 +73,9 @@ LEFT JOIN grades g ON g.id = c.grade_id
         t.id,
         u.full_name,
         et.id,
-        et.name
+        et.name,
+        es.name,
+        g.name
       ORDER BY c.id DESC
       `
     )
@@ -93,10 +101,28 @@ LEFT JOIN grades g ON g.id = c.grade_id
       `
     )
 
+    const stages = await query<any>(
+      `
+      SELECT id, name, education_type_id
+      FROM educational_stages
+      ORDER BY sort_order ASC, id ASC
+      `
+    )
+
+    const grades = await query<any>(
+      `
+      SELECT id, name, stage_id
+      FROM grades
+      ORDER BY sort_order ASC, id ASC
+      `
+    )
+
     return NextResponse.json({
       courses,
       teachers,
       educationTypes,
+      stages,
+      grades,
     })
   } catch (error) {
     console.error("GET_COURSES_ERROR", error)
@@ -122,7 +148,7 @@ export async function POST(req: Request) {
   try {
     await conn.beginTransaction()
 
-    await conn.execute(
+    const [result] = await conn.execute<any>(
       `
       INSERT INTO courses
         (
@@ -133,6 +159,8 @@ export async function POST(req: Request) {
           cover_image_url,
           teacher_id,
           education_type_id,
+          stage_id,
+          grade_id,
           status,
           starts_at,
           ends_at,
@@ -140,7 +168,7 @@ export async function POST(req: Request) {
           created_by
         )
       VALUES
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         slug,
@@ -160,20 +188,54 @@ export async function POST(req: Request) {
       ]
     )
 
+    const courseId = result.insertId
+
+    await conn.execute(
+      `
+      INSERT INTO chapters
+        (course_id, title, description, sort_order, status, published_at)
+      VALUES
+        (?, 'الفصل الأول', 'فصل افتراضي لبدء إضافة الحصص', 1, 'published', NOW())
+      `,
+      [courseId]
+    )
+
     await conn.execute(
       `
       INSERT INTO audit_logs
         (user_id, action, entity_type, entity_id, new_values)
       VALUES
-        (?, 'create_course', 'course', LAST_INSERT_ID(), JSON_OBJECT('title', ?, 'teacher_id', ?))
+        (
+          ?,
+          'create_course',
+          'course',
+          ?,
+          JSON_OBJECT(
+            'title', ?,
+            'teacher_id', ?,
+            'education_type_id', ?,
+            'stage_id', ?,
+            'grade_id', ?
+          )
+        )
       `,
-      [user.id, body.title, body.teacherId]
+      [
+        user.id,
+        courseId,
+        body.title,
+        body.teacherId,
+        body.educationTypeId || null,
+        body.stageId || null,
+        body.gradeId || null,
+      ]
     )
 
     await conn.commit()
 
     return NextResponse.json({
       message: "تم إنشاء الكورس بنجاح",
+      course_id: courseId,
+      slug,
     })
   } catch (error) {
     await conn.rollback()
@@ -188,4 +250,3 @@ export async function POST(req: Request) {
     conn.release()
   }
 }
-
