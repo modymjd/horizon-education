@@ -2,6 +2,7 @@
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 import { AdminCourseCreateForm } from "@/components/admin/AdminCourseCreateForm"
+import { AdminCourseDeleteButton } from "@/components/admin/AdminCourseDeleteButton"
 import { query } from "@/lib/db"
 
 type CourseRow = {
@@ -212,7 +213,7 @@ export default async function AdminCoursesPage() {
                   <th>الحالة</th>
                   <th>الحصص</th>
                   <th>الطلاب</th>
-                  <th>معاينة</th>
+                  <th>إجراءات</th>
                 </tr>
               </thead>
               <tbody>
@@ -237,9 +238,20 @@ export default async function AdminCoursesPage() {
                     <td>{course.lessons_count} حصة</td>
                     <td>{course.students_count} طالب</td>
                     <td>
-                      <Link href={`/courses/${course.slug}`} className="btn btn-soft btn-sm">
-                        فتح
-                      </Link>
+                      <div className="flex flex-wrap gap-2">
+                        <Link href={`/courses/${course.slug}`} className="btn btn-soft btn-sm">
+                          معاينة
+                        </Link>
+
+                        <Link href={`/admin/courses/${course.id}`} className="btn btn-outline btn-sm">
+                          تعديل
+                        </Link>
+
+                        <AdminCourseDeleteButton
+                          courseId={course.id}
+                          courseTitle={course.title}
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -259,3 +271,4 @@ export default async function AdminCoursesPage() {
     </main>
   )
 }
+

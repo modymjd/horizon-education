@@ -1,20 +1,138 @@
 ﻿import Link from "next/link"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
+import { StudentCourseRequestButton } from "@/components/student/StudentCourseRequestButton"
+import { query } from "@/lib/db"
+import { getCurrentUser } from "@/lib/session"
 
-const subjects = [
-  ["الرياضيات", "من الجبر للتفاضل والتكامل — بأسلوب خطوة بخطوة", "12 حصة", "ر"],
-  ["الفيزياء", "تجارب وقوانين وتطبيقات عملية", "10 حصص", "ف"],
-  ["الكيمياء", "شرح منظم للمعادلات والتفاعلات", "9 حصص", "ك"],
-  ["الأحياء", "رسومات ومراجعات ومتابعة مستمرة", "8 حصص", "أ"],
-  ["اللغة العربية", "نحو وبلاغة وقراءة بطريقة مبسطة", "11 حصة", "ع"],
-  ["اللغة الإنجليزية", "قواعد ومحادثة وتدريبات", "10 حصص", "E"],
-  ["اللغة الفرنسية", "تأسيس وتدريبات امتحانات", "7 حصص", "F"],
-  ["التاريخ", "أحداث مترابطة بدل الحفظ العشوائي", "8 حصص", "ت"],
-  ["الجغرافيا", "خرائط ومفاهيم بطريقة بصرية", "8 حصص", "ج"],
-]
+type CourseRow = {
+  id: number
+  slug: string
+  title: string
+  short_description: string | null
+  teacher_name: string | null
+  education_type_name: string | null
+  stage_name: string | null
+  grade_name: string | null
+  lessons_count: number
+  request_status: "pending" | "accepted" | "rejected" | null
+}
 
-export default function SubjectsPage() {
+async function getCourses(studentId?: number) {
+  if (studentId) {
+    return query<CourseRow>(
+      `
+      SELECT
+        c.id,
+        c.slug,
+        c.title,
+        c.short_description,
+        u.full_name AS teacher_name,
+        et.name AS education_type_name,
+        es.name AS stage_name,
+        g.name AS grade_name,
+        COUNT(DISTINCT l.id) AS lessons_count,
+        r.status AS request_status
+      FROM students s
+      JOIN courses c
+        ON c.deleted_at IS NULL
+        AND c.status = 'published'
+        AND (
+          c.education_type_id IS NULL
+          OR s.education_type_id IS NULL
+          OR c.education_type_id = s.education_type_id
+        )
+        AND (
+          c.stage_id IS NULL
+          OR s.stage_id IS NULL
+          OR c.stage_id = s.stage_id
+        )
+        AND (
+          c.grade_id IS NULL
+          OR s.grade_id IS NULL
+          OR c.grade_id = s.grade_id
+        )
+      JOIN teachers t ON t.id = c.teacher_id
+      JOIN users u ON u.id = t.user_id
+      LEFT JOIN education_types et ON et.id = c.education_type_id
+      LEFT JOIN educational_stages es ON es.id = c.stage_id
+      LEFT JOIN grades g ON g.id = c.grade_id
+      LEFT JOIN chapters ch ON ch.course_id = c.id AND ch.deleted_at IS NULL
+      LEFT JOIN lessons l ON l.chapter_id = ch.id AND l.deleted_at IS NULL
+      LEFT JOIN student_course_requests r
+        ON r.course_id = c.id
+        AND r.student_id = s.id
+      WHERE s.id = ?
+      GROUP BY
+        c.id,
+        c.slug,
+        c.title,
+        c.short_description,
+        u.full_name,
+        et.name,
+        es.name,
+        g.name,
+        r.status
+      ORDER BY c.id DESC
+      `,
+      [studentId]
+    )
+  }
+
+  return query<CourseRow>(
+    `
+    SELECT
+      c.id,
+      c.slug,
+      c.title,
+      c.short_description,
+      u.full_name AS teacher_name,
+      et.name AS education_type_name,
+      es.name AS stage_name,
+      g.name AS grade_name,
+      COUNT(DISTINCT l.id) AS lessons_count,
+      NULL AS request_status
+    FROM courses c
+    JOIN teachers t ON t.id = c.teacher_id
+    JOIN users u ON u.id = t.user_id
+    LEFT JOIN education_types et ON et.id = c.education_type_id
+    LEFT JOIN educational_stages es ON es.id = c.stage_id
+    LEFT JOIN grades g ON g.id = c.grade_id
+    LEFT JOIN chapters ch ON ch.course_id = c.id AND ch.deleted_at IS NULL
+    LEFT JOIN lessons l ON l.chapter_id = ch.id AND l.deleted_at IS NULL
+    WHERE c.deleted_at IS NULL
+      AND c.status = 'published'
+    GROUP BY
+      c.id,
+      c.slug,
+      c.title,
+      c.short_description,
+      u.full_name,
+      et.name,
+      es.name,
+      g.name
+    ORDER BY c.id DESC
+    `
+  )
+}
+
+function getInitials(title: string) {
+  return title.trim().slice(0, 1) || "ك"
+}
+
+function getRequestLabel(status: string | null) {
+  if (status === "pending") return "قيد المراجعة"
+  if (status === "accepted") return "مقبول"
+  if (status === "rejected") return "مرفوض"
+  return "متاح للطلب"
+}
+
+export default async function SubjectsPage() {
+  const user = await getCurrentUser()
+  const isStudent = user?.role === "student" && !!user.student_id
+  const studentId = isStudent ? Number(user.student_id) : undefined
+  const courses = await getCourses(studentId)
+
   return (
     <main>
       <SiteHeader />
@@ -22,22 +140,78 @@ export default function SubjectsPage() {
       <section className="section">
         <div className="wrap">
           <div className="section-head">
-            <span className="eyebrow">المواد الدراسية</span>
-            <h1 className="h1">اختار المادة اللي تدرسها</h1>
+            <span className="eyebrow">الكورسات المتاحة</span>
+            <h1 className="h1">اختار الكورس اللي تدرسه</h1>
             <p className="muted mt-6 text-lg">
-              تصفح المواد المتاحة، شوف المدرسين والحصص، وابدأ أول تجربة تعليمية.
+              تصفح الكورسات المنشورة، شوف المدرسين والحصص، واطلب الانضمام للكورس المناسب.
             </p>
           </div>
 
           <div className="grid-auto">
-            {subjects.map(([title, text, lessons, icon]) => (
-              <Link href="/courses/math-grade-one" className="card subject-card" key={title}>
-                <div className="icon-circle">{icon}</div>
-                <h3 className="mt-5 text-2xl font-black">{title}</h3>
-                <p className="muted mt-2">{text}</p>
-                <span className="badge mt-5">{lessons}</span>
-              </Link>
+            {courses.map((course) => (
+              <div className="card subject-card" key={course.id}>
+                <div className="icon-circle">{getInitials(course.title)}</div>
+                <h3 className="mt-5 text-2xl font-black">{course.title}</h3>
+                <p className="muted mt-2">
+                  {course.short_description || "لا يوجد وصف مختصر لهذا الكورس بعد."}
+                </p>
+
+                <p className="muted mt-3 text-sm">
+                  المدرس: {course.teacher_name || "غير محدد"}
+                </p>
+
+                <p className="muted mt-1 text-sm">
+                  {course.education_type_name || "كل الأنواع"} —{" "}
+                  {course.stage_name || "كل المراحل"} —{" "}
+                  {course.grade_name || "كل الصفوف"}
+                </p>
+
+                <span className="badge mt-5">
+                  {course.lessons_count} حصة
+                </span>
+
+                <span className="badge mt-3">
+                  {getRequestLabel(course.request_status)}
+                </span>
+
+                <div className="mt-5 grid gap-3">
+                  <Link href={`/courses/${course.slug}`} className="btn btn-soft">
+                    معاينة الكورس
+                  </Link>
+
+                  {isStudent ? (
+                    <StudentCourseRequestButton
+                      courseId={course.id}
+                      initialStatus={course.request_status}
+                    />
+                  ) : (
+                    <Link href="/register" className="btn">
+                      سجل كطالب للانضمام
+                    </Link>
+                  )}
+                </div>
+              </div>
             ))}
+
+            {courses.length === 0 ? (
+              <div className="card subject-card">
+                <div className="icon-circle">ك</div>
+                <h3 className="mt-5 text-2xl font-black">لا توجد كورسات متاحة</h3>
+                <p className="muted mt-2">
+                  عندما يتم نشر كورسات مناسبة ستظهر هنا.
+                </p>
+
+                {isStudent ? (
+                  <Link href="/student" className="btn mt-5">
+                    رجوع للوحة الطالب
+                  </Link>
+                ) : (
+                  <Link href="/register" className="btn mt-5">
+                    إنشاء حساب طالب
+                  </Link>
+                )}
+              </div>
+            ) : null}
           </div>
         </div>
       </section>
@@ -46,3 +220,4 @@ export default function SubjectsPage() {
     </main>
   )
 }
+
