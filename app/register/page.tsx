@@ -1,35 +1,43 @@
 ﻿"use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 
-const educationTypes = [
-  { id: 1, label: "عام / عربي" },
-  { id: 2, label: "أزهري" },
-  { id: 3, label: "لغات" },
-  { id: 4, label: "American" },
-  { id: 5, label: "IG" },
-  { id: 6, label: "IB" },
-  { id: 7, label: "STEM" },
-]
+type EducationTypeOption = {
+  id: number
+  name: string
+  slug: string
+}
 
-const stages = [
-  { id: 1, label: "ابتدائي" },
-  { id: 2, label: "إعدادي" },
-  { id: 3, label: "ثانوي" },
-]
+type StageOption = {
+  id: number
+  name: string
+  education_type_id: number | null
+}
 
-const grades = [
-  { id: 1, label: "الصف الأول" },
-  { id: 2, label: "الصف الثاني" },
-  { id: 3, label: "الصف الثالث" },
-]
+type GradeOption = {
+  id: number
+  name: string
+  stage_id: number
+}
+
+type EducationOptionsResponse = {
+  educationTypes: EducationTypeOption[]
+  stages: StageOption[]
+  grades: GradeOption[]
+}
 
 export default function RegisterPage() {
   const router = useRouter()
+
+  const [options, setOptions] = useState<EducationOptionsResponse>({
+    educationTypes: [],
+    stages: [],
+    grades: [],
+  })
 
   const [form, setForm] = useState({
     full_name: "",
@@ -43,21 +51,134 @@ export default function RegisterPage() {
     national_id: "",
     address: "",
     governorate: "",
-    education_type_id: "1",
-    stage_id: "3",
-    grade_id: "3",
+    education_type_id: "",
+    stage_id: "",
+    grade_id: "",
     consent_contact: false,
   })
 
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [studentCode, setStudentCode] = useState("")
 
+  const filteredStages = useMemo(() => {
+    if (!form.education_type_id) return options.stages
+
+    const matching = options.stages.filter((stage) => {
+      return (
+        !stage.education_type_id ||
+        String(stage.education_type_id) === form.education_type_id
+      )
+    })
+
+    return matching.length > 0 ? matching : options.stages
+  }, [form.education_type_id, options.stages])
+
+  const filteredGrades = useMemo(() => {
+    if (!form.stage_id) return options.grades
+
+    const matching = options.grades.filter((grade) => {
+      return String(grade.stage_id) === form.stage_id
+    })
+
+    return matching.length > 0 ? matching : options.grades
+  }, [form.stage_id, options.grades])
+
+  useEffect(() => {
+    let mounted = true
+
+    fetch("/api/education-options", {
+      cache: "no-store",
+    })
+      .then((res) => res.json())
+      .then((data: EducationOptionsResponse) => {
+        if (!mounted) return
+
+        const educationTypes = data.educationTypes || []
+        const stages = data.stages || []
+        const grades = data.grades || []
+
+        const defaultEducationType =
+          educationTypes.find((item) => item.slug === "languages") || educationTypes[0]
+        const defaultStages = defaultEducationType
+          ? stages.filter(
+              (stage) =>
+                !stage.education_type_id ||
+                stage.education_type_id === defaultEducationType.id
+            )
+          : stages
+        const defaultStage =
+          defaultStages.find((stage) => stage.name.includes("ثانوي")) ||
+          defaultStages[0]
+        const defaultGrades = defaultStage
+          ? grades.filter((grade) => grade.stage_id === defaultStage.id)
+          : grades
+        const defaultGrade =
+          defaultGrades.find((grade) => grade.name.includes("الثالث")) ||
+          defaultGrades[0]
+
+        setOptions({
+          educationTypes,
+          stages,
+          grades,
+        })
+
+        setForm((current) => ({
+          ...current,
+          education_type_id: defaultEducationType ? String(defaultEducationType.id) : "",
+          stage_id: defaultStage ? String(defaultStage.id) : "",
+          grade_id: defaultGrade ? String(defaultGrade.id) : "",
+        }))
+      })
+      .catch(() => {
+        if (mounted) {
+          setError("تعذر تحميل الخيارات الدراسية")
+        }
+      })
+      .finally(() => {
+        if (mounted) {
+          setIsLoadingOptions(false)
+        }
+      })
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
   function updateField(name: keyof typeof form, value: string | boolean) {
     setForm((current) => ({
       ...current,
       [name]: value,
+    }))
+  }
+
+  function handleEducationTypeChange(value: string) {
+    const nextStages = options.stages.filter((stage) => {
+      return !stage.education_type_id || String(stage.education_type_id) === value
+    })
+    const nextStage = nextStages[0]
+    const nextGrades = nextStage
+      ? options.grades.filter((grade) => grade.stage_id === nextStage.id)
+      : options.grades
+
+    setForm((current) => ({
+      ...current,
+      education_type_id: value,
+      stage_id: nextStage ? String(nextStage.id) : "",
+      grade_id: nextGrades[0] ? String(nextGrades[0].id) : "",
+    }))
+  }
+
+  function handleStageChange(value: string) {
+    const nextGrades = options.grades.filter((grade) => String(grade.stage_id) === value)
+
+    setForm((current) => ({
+      ...current,
+      stage_id: value,
+      grade_id: nextGrades[0] ? String(nextGrades[0].id) : "",
     }))
   }
 
@@ -243,11 +364,14 @@ export default function RegisterPage() {
                   <select
                     className="input mt-2"
                     value={form.education_type_id}
-                    onChange={(e) => updateField("education_type_id", e.target.value)}
+                    onChange={(e) => handleEducationTypeChange(e.target.value)}
+                    disabled={isLoadingOptions}
+                    required
                   >
-                    {educationTypes.map((item) => (
+                    <option value="">اختر نوع التعليم</option>
+                    {options.educationTypes.map((item) => (
                       <option key={item.id} value={item.id}>
-                        {item.label}
+                        {item.name}
                       </option>
                     ))}
                   </select>
@@ -258,11 +382,14 @@ export default function RegisterPage() {
                   <select
                     className="input mt-2"
                     value={form.stage_id}
-                    onChange={(e) => updateField("stage_id", e.target.value)}
+                    onChange={(e) => handleStageChange(e.target.value)}
+                    disabled={isLoadingOptions}
+                    required
                   >
-                    {stages.map((item) => (
+                    <option value="">اختر المرحلة</option>
+                    {filteredStages.map((item) => (
                       <option key={item.id} value={item.id}>
-                        {item.label}
+                        {item.name}
                       </option>
                     ))}
                   </select>
@@ -274,10 +401,13 @@ export default function RegisterPage() {
                     className="input mt-2"
                     value={form.grade_id}
                     onChange={(e) => updateField("grade_id", e.target.value)}
+                    disabled={isLoadingOptions}
+                    required
                   >
-                    {grades.map((item) => (
+                    <option value="">اختر الصف</option>
+                    {filteredGrades.map((item) => (
                       <option key={item.id} value={item.id}>
-                        {item.label}
+                        {item.name}
                       </option>
                     ))}
                   </select>
@@ -298,7 +428,7 @@ export default function RegisterPage() {
               </label>
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <button className="btn disabled:opacity-60" disabled={isLoading}>
+                <button className="btn disabled:opacity-60" disabled={isLoading || isLoadingOptions}>
                   {isLoading ? "جاري إنشاء الحساب..." : "إنشاء الحساب"}
                 </button>
 
