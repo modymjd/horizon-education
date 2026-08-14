@@ -48,7 +48,18 @@ type Params = {
   }>
 }
 
+function getCourseIdFromSlug(slug: string) {
+  const match = slug.match(/-(\d+)$/)
+  if (!match) return null
+
+  const value = Number(match[1])
+  return Number.isNaN(value) ? null : value
+}
+
 async function getCourse(slug: string, studentId?: number) {
+  const decodedSlug = decodeURIComponent(slug)
+  const possibleCourseId = getCourseIdFromSlug(decodedSlug)
+
   const rows = await query<CourseRow>(
     `
     SELECT
@@ -86,7 +97,11 @@ async function getCourse(slug: string, studentId?: number) {
     LEFT JOIN student_course_requests r
       ON r.course_id = c.id
       AND r.student_id = ?
-    WHERE c.slug = ?
+    WHERE (
+        c.slug = ?
+        OR c.slug = ?
+        OR (? IS NOT NULL AND c.id = ?)
+      )
       AND c.deleted_at IS NULL
       AND c.status = 'published'
     GROUP BY
@@ -105,7 +120,7 @@ async function getCourse(slug: string, studentId?: number) {
       r.status
     LIMIT 1
     `,
-    [studentId || 0, slug]
+    [studentId || 0, slug, decodedSlug, possibleCourseId, possibleCourseId]
   )
 
   return rows[0]
@@ -386,3 +401,4 @@ export default async function CoursePage({ params }: Params) {
     </main>
   )
 }
+
