@@ -149,7 +149,7 @@ export async function POST(req: Request, context: Params) {
         body.coverImageUrl || null,
         body.sortOrder || 0,
         body.status,
-        body.publishedAt || null,
+        body.status === "published" ? new Date().toISOString().slice(0, 19).replace("T", " ") : null,
       ]
     )
 
@@ -181,3 +181,4 @@ export async function POST(req: Request, context: Params) {
     conn.release()
   }
 }
+

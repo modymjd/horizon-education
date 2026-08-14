@@ -44,7 +44,7 @@ export function AdminChapterCreateForm({ courseId }: Props) {
           coverImageUrl,
           sortOrder: Number(sortOrder || 1),
           status,
-          publishedAt: status === "published" ? new Date().toISOString() : undefined,
+          publishedAt: undefined,
         }),
       })
 
@@ -143,3 +143,4 @@ export function AdminChapterCreateForm({ courseId }: Props) {
     </form>
   )
 }
+
