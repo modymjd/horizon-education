@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 import { AdminCourseEditForm } from "@/components/admin/AdminCourseEditForm"
+import { AdminChapterCreateForm } from "@/components/admin/AdminChapterCreateForm"
 import { query } from "@/lib/db"
 import { getCurrentUser } from "@/lib/session"
 
@@ -245,13 +246,17 @@ export default async function AdminCourseDetailsPage({ params }: Params) {
             </div>
           </aside>
 
-          <AdminCourseEditForm
-            course={course}
-            teachers={teachers}
-            educationTypes={educationTypes}
-            stages={stages}
-            grades={grades}
-          />
+          <div className="grid gap-6">
+            <AdminCourseEditForm
+              course={course}
+              teachers={teachers}
+              educationTypes={educationTypes}
+              stages={stages}
+              grades={grades}
+            />
+
+            <AdminChapterCreateForm courseId={course.id} />
+          </div>
         </div>
       </section>
 
@@ -301,3 +306,4 @@ export default async function AdminCourseDetailsPage({ params }: Params) {
     </main>
   )
 }
+
