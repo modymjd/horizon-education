@@ -19,7 +19,10 @@ type LessonRow = {
   description: string | null
   price: number
   status: string
+  chapter_id: number
   chapter_title: string
+  chapter_sort_order: number
+  lesson_sort_order: number
   videos_count: number
   assignments_count: number
   exams_count: number
@@ -62,43 +65,81 @@ async function getCourseLessons(courseId: number) {
       l.description,
       l.price,
       l.status,
+      ch.id AS chapter_id,
       ch.title AS chapter_title,
+      ch.sort_order AS chapter_sort_order,
+      l.sort_order AS lesson_sort_order,
       COUNT(DISTINCT lv.id) AS videos_count,
       COUNT(DISTINCT la.id) AS assignments_count,
       COUNT(DISTINCT le.id) AS exams_count,
       COUNT(DISTINCT sla.student_id) AS students_count
-    FROM lessons l
-    JOIN chapters ch ON ch.id = l.chapter_id
+    FROM chapters ch
+    LEFT JOIN lessons l
+      ON l.chapter_id = ch.id
+      AND l.deleted_at IS NULL
     LEFT JOIN lesson_videos lv ON lv.lesson_id = l.id
     LEFT JOIN lesson_assignments la ON la.lesson_id = l.id
     LEFT JOIN lesson_exams le ON le.lesson_id = l.id
     LEFT JOIN student_lesson_access sla ON sla.lesson_id = l.id
     WHERE ch.course_id = ?
-      AND l.deleted_at IS NULL
+      AND ch.deleted_at IS NULL
     GROUP BY
       l.id,
       l.title,
       l.description,
       l.price,
       l.status,
+      ch.id,
       ch.title,
+      ch.sort_order,
       l.sort_order
-    ORDER BY l.sort_order ASC, l.id ASC
+    ORDER BY ch.sort_order ASC, ch.id ASC, l.sort_order ASC, l.id ASC
     `,
     [courseId]
   )
 }
 
-function getStatusLabel(status: string) {
+function getStatusLabel(status: string | null) {
   if (status === "published") return "منشور"
   if (status === "draft") return "مسودة"
   if (status === "hidden") return "مخفي"
   if (status === "archived") return "مؤرشف"
-  return status
+  return status || "بدون حالة"
 }
 
 function money(value: number | string | null | undefined) {
   return `${Number(value || 0).toLocaleString("ar-EG")} ج.م`
+}
+
+function groupByChapter(lessons: LessonRow[]) {
+  const groups = new Map<
+    number,
+    {
+      chapter_id: number
+      chapter_title: string
+      chapter_sort_order: number
+      lessons: LessonRow[]
+    }
+  >()
+
+  for (const item of lessons) {
+    if (!groups.has(item.chapter_id)) {
+      groups.set(item.chapter_id, {
+        chapter_id: item.chapter_id,
+        chapter_title: item.chapter_title,
+        chapter_sort_order: item.chapter_sort_order,
+        lessons: [],
+      })
+    }
+
+    if (item.id) {
+      groups.get(item.chapter_id)?.lessons.push(item)
+    }
+  }
+
+  return Array.from(groups.values()).sort((a, b) => {
+    return a.chapter_sort_order - b.chapter_sort_order || a.chapter_id - b.chapter_id
+  })
 }
 
 export default async function TeacherCourseLessonsPage({ params }: Params) {
@@ -127,6 +168,9 @@ export default async function TeacherCourseLessonsPage({ params }: Params) {
   if (!course) {
     notFound()
   }
+
+  const lessonGroups = groupByChapter(lessons)
+  const realLessons = lessons.filter((lesson) => lesson.id)
 
   return (
     <main>
@@ -160,93 +204,119 @@ export default async function TeacherCourseLessonsPage({ params }: Params) {
         <div className="wrap">
           <div className="teacher-stat-grid mb-6">
             <div className="card teacher-stat-card">
-              <b>{lessons.length}</b>
+              <b>{realLessons.length}</b>
               <span className="muted font-bold">حصة</span>
             </div>
 
             <div className="card teacher-stat-card">
-              <b>{lessons.reduce((sum, lesson) => sum + Number(lesson.videos_count || 0), 0)}</b>
+              <b>{realLessons.reduce((sum, lesson) => sum + Number(lesson.videos_count || 0), 0)}</b>
               <span className="muted font-bold">فيديو</span>
             </div>
 
             <div className="card teacher-stat-card">
-              <b>{lessons.reduce((sum, lesson) => sum + Number(lesson.assignments_count || 0), 0)}</b>
+              <b>{realLessons.reduce((sum, lesson) => sum + Number(lesson.assignments_count || 0), 0)}</b>
               <span className="muted font-bold">واجب</span>
             </div>
 
             <div className="card teacher-stat-card">
-              <b>{lessons.reduce((sum, lesson) => sum + Number(lesson.exams_count || 0), 0)}</b>
+              <b>{realLessons.reduce((sum, lesson) => sum + Number(lesson.exams_count || 0), 0)}</b>
               <span className="muted font-bold">امتحان</span>
             </div>
           </div>
 
-          <div className="grid gap-5">
-            {lessons.map((lesson) => (
-              <div className="card course-management-card" key={lesson.id}>
+          <div className="grid gap-7">
+            {lessonGroups.map((group, index) => (
+              <div className="card course-management-card" key={group.chapter_id}>
                 <div className="course-management-head">
                   <div>
-                    <span className="status-pill status-published">
-                      {getStatusLabel(lesson.status)}
-                    </span>
-
-                    <div className="mt-4">
-                      <h2 className="text-3xl font-black">{lesson.title}</h2>
-                      <p className="muted mt-1">
-                        {lesson.description || "لا يوجد وصف لهذه الحصة بعد."}
-                      </p>
-                      <p className="muted mt-2 text-sm">
-                        الشابتر: {lesson.chapter_title} — السعر: {money(lesson.price)}
-                      </p>
-                    </div>
+                    <span className="badge">الشابتر {index + 1}</span>
+                    <h2 className="mt-4 text-3xl font-black">{group.chapter_title}</h2>
+                    <p className="muted mt-2">
+                      عدد الحصص داخل الشابتر: {group.lessons.length}
+                    </p>
                   </div>
 
-                  <div className="course-actions">
-                    <Link href={`/teacher/lessons/${lesson.id}`} className="btn btn-outline">
-                      إدارة الحصة
-                    </Link>
-
-                    <Link href={`/student/lessons/${lesson.id}`} className="btn btn-soft">
-                      معاينة الطالب
-                    </Link>
-                  </div>
+                  <Link href={`/teacher/courses/${course.id}/lessons/new`} className="btn btn-outline">
+                    إضافة حصة لهذا الكورس
+                  </Link>
                 </div>
 
-                <div className="course-metrics">
-                  <div className="metric-mini">
-                    <b>{lesson.videos_count}</b>
-                    <span className="muted">فيديو</span>
-                  </div>
+                <div className="mt-6 grid gap-5">
+                  {group.lessons.map((lesson) => (
+                    <div
+                      className="rounded-2xl border border-[var(--line)] bg-[var(--cream-2)] p-5"
+                      key={lesson.id}
+                    >
+                      <div className="course-management-head">
+                        <div>
+                          <span className="status-pill status-published">
+                            {getStatusLabel(lesson.status)}
+                          </span>
 
-                  <div className="metric-mini">
-                    <b>{lesson.assignments_count}</b>
-                    <span className="muted">واجب</span>
-                  </div>
+                          <div className="mt-4">
+                            <h3 className="text-2xl font-black">{lesson.title}</h3>
+                            <p className="muted mt-1">
+                              {lesson.description || "لا يوجد وصف لهذه الحصة بعد."}
+                            </p>
+                            <p className="muted mt-2 text-sm">
+                              السعر: {money(lesson.price)} — ترتيب الحصة: {lesson.lesson_sort_order}
+                            </p>
+                          </div>
+                        </div>
 
-                  <div className="metric-mini">
-                    <b>{lesson.exams_count}</b>
-                    <span className="muted">امتحان</span>
-                  </div>
+                        <div className="course-actions">
+                          <Link href={`/teacher/lessons/${lesson.id}`} className="btn btn-outline">
+                            إدارة الحصة
+                          </Link>
 
-                  <div className="metric-mini">
-                    <b>{lesson.students_count}</b>
-                    <span className="muted">طالب</span>
-                  </div>
+                          <Link href={`/student/lessons/${lesson.id}`} className="btn btn-soft">
+                            معاينة الطالب
+                          </Link>
+                        </div>
+                      </div>
+
+                      <div className="course-metrics">
+                        <div className="metric-mini">
+                          <b>{lesson.videos_count}</b>
+                          <span className="muted">فيديو</span>
+                        </div>
+
+                        <div className="metric-mini">
+                          <b>{lesson.assignments_count}</b>
+                          <span className="muted">واجب</span>
+                        </div>
+
+                        <div className="metric-mini">
+                          <b>{lesson.exams_count}</b>
+                          <span className="muted">امتحان</span>
+                        </div>
+
+                        <div className="metric-mini">
+                          <b>{lesson.students_count}</b>
+                          <span className="muted">طالب</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {group.lessons.length === 0 ? (
+                    <div className="rounded-2xl border border-[var(--line)] bg-[var(--cream-2)] p-5">
+                      <h3 className="text-2xl font-black">لا توجد حصص في هذا الشابتر</h3>
+                      <p className="muted mt-2">
+                        يمكنك إضافة حصة جديدة واختيار هذا الشابتر من صفحة إضافة الحصة.
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             ))}
 
-            {lessons.length === 0 ? (
+            {lessonGroups.length === 0 ? (
               <div className="card course-management-card">
-                <h2 className="text-2xl font-black">لا توجد حصص بعد</h2>
+                <h2 className="text-2xl font-black">لا توجد شابترات أو حصص بعد</h2>
                 <p className="muted mt-2">
-                  ابدأ بإضافة أول حصة داخل هذا الكورس.
+                  اطلب من الأدمن إضافة شابتر داخل الكورس أولًا.
                 </p>
-
-                <div className="mt-6">
-                  <Link href={`/teacher/courses/${course.id}/lessons/new`} className="btn">
-                    إضافة أول حصة
-                  </Link>
-                </div>
               </div>
             ) : null}
           </div>
