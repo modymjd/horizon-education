@@ -51,9 +51,9 @@ const emptyForm: FormState = {
 }
 
 const lessonStatusLabel: Record<Lesson["status"], string> = {
-  draft: "مسودة",
-  published: "منشور",
-  hidden: "مخفي",
+  draft: "Draft",
+  published: "Published",
+  hidden: "Hidden",
 }
 
 export default function ChapterLessonsClient({
@@ -75,9 +75,9 @@ export default function ChapterLessonsClient({
       <main className="grid min-h-screen place-items-center p-5">
         <div className="card max-w-md p-8 text-center">
           <span className="badge">404</span>
-          <h1 className="mt-4 text-3xl font-black">الشابتر غير موجود</h1>
+          <h1 className="mt-4 text-3xl font-black">Chapter not found</h1>
           <Link href="/admin/courses" className="btn btn-primary mt-6 inline-block">
-            العودة للكورسات
+            Back to Courses
           </Link>
         </div>
       </main>
@@ -123,16 +123,16 @@ export default function ChapterLessonsClient({
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "حدث خطأ أثناء إنشاء الحصة")
+        setError(data.message || "Unable to create lesson")
         return
       }
 
-      setMessage(data.message || "تم إنشاء الحصة بنجاح")
+      setMessage(data.message || "Lesson created successfully")
       setForm(emptyForm)
       setShowForm(false)
       await reloadLessons()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading(false)
     }
@@ -145,17 +145,17 @@ export default function ChapterLessonsClient({
           Horizon
         </Link>
 
-        <p className="mt-1 text-sm opacity-70">لوحة الأدمن</p>
+        <p className="mt-1 text-sm opacity-70">Admin Dashboard</p>
 
         <nav className="mt-8 grid gap-2">
           <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin">
-            الرئيسية
+            Home
           </Link>
           <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin/teachers">
-            المدرسون
+            Teachers
           </Link>
           <Link className="rounded-xl bg-white/10 px-3 py-3" href="/admin/courses">
-            الكورسات
+            Courses
           </Link>
         </nav>
       </aside>
@@ -163,32 +163,32 @@ export default function ChapterLessonsClient({
       <section className="flex-1 p-5 md:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <span className="badge">لوحة الأدمن / الشابترات / الحصص</span>
+            <span className="badge">Admin / Chapters / Lessons</span>
             <h1 className="mt-3 text-4xl font-black">{chapter.title}</h1>
             <p className="mt-2 opacity-70">
-              الكورس: {chapter.course_title} — المدرس: {chapter.teacher_name}
+              Course: {chapter.course_title} — Teacher: {chapter.teacher_name}
             </p>
           </div>
 
           <Link href={`/admin/courses/${chapter.course_id}`} className="btn btn-soft">
-            العودة للكورس
+            Back to Course
           </Link>
         </div>
 
         <div className="mt-8 grid-auto">
           <div className="card p-5">
-            <p className="text-sm opacity-60">عدد الحصص</p>
+            <p className="text-sm opacity-60">Lessons Count</p>
             <b className="mt-2 block text-xl">{lessons.length}</b>
           </div>
 
           <div className="card p-5">
-            <p className="text-sm opacity-60">ترتيب الشابتر</p>
+            <p className="text-sm opacity-60">Chapter Order</p>
             <b className="mt-2 block text-xl">{chapter.sort_order}</b>
           </div>
 
           <div className="card p-5">
-            <p className="text-sm opacity-60">الحالة</p>
-            <b className="mt-2 block text-xl">{chapter.status}</b>
+            <p className="text-sm opacity-60">Status</p>
+            <b className="mt-2 block text-xl">{lessonStatusLabel[chapter.status]}</b>
           </div>
         </div>
 
@@ -205,24 +205,24 @@ export default function ChapterLessonsClient({
         ) : null}
 
         <div className="mt-8 flex items-center justify-between gap-3">
-          <h2 className="text-3xl font-black">الحصص</h2>
+          <h2 className="text-3xl font-black">Lessons</h2>
 
           <button
             className="btn btn-primary"
             type="button"
             onClick={() => setShowForm((value) => !value)}
           >
-            {showForm ? "إغلاق النموذج" : "إضافة حصة"}
+            {showForm ? "Close Form" : "Add Lesson"}
           </button>
         </div>
 
         {showForm ? (
           <form onSubmit={handleSubmit} className="card mt-6 p-6">
-            <h3 className="text-2xl font-black">إضافة حصة جديدة</h3>
+            <h3 className="text-2xl font-black">Add New Lesson</h3>
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <label>
-                اسم الحصة
+                Lesson Name
                 <input
                   className="input mt-2"
                   value={form.title}
@@ -234,7 +234,7 @@ export default function ChapterLessonsClient({
               </label>
 
               <label>
-                السعر
+                Price
                 <input
                   className="input mt-2"
                   type="number"
@@ -249,7 +249,7 @@ export default function ChapterLessonsClient({
               </label>
 
               <label>
-                الترتيب
+                Order
                 <input
                   className="input mt-2"
                   type="number"
@@ -262,7 +262,7 @@ export default function ChapterLessonsClient({
               </label>
 
               <label>
-                حالة النشر
+                Publishing Status
                 <select
                   className="input mt-2"
                   value={form.status}
@@ -273,14 +273,14 @@ export default function ChapterLessonsClient({
                     })
                   }
                 >
-                  <option value="draft">مسودة</option>
-                  <option value="published">منشور</option>
-                  <option value="hidden">مخفي</option>
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="hidden">Hidden</option>
                 </select>
               </label>
 
               <label>
-                بداية الإتاحة
+                Available From
                 <input
                   className="input mt-2"
                   type="datetime-local"
@@ -292,7 +292,7 @@ export default function ChapterLessonsClient({
               </label>
 
               <label>
-                نهاية الإتاحة
+                Available Until
                 <input
                   className="input mt-2"
                   type="datetime-local"
@@ -304,7 +304,7 @@ export default function ChapterLessonsClient({
               </label>
 
               <label className="md:col-span-2">
-                رابط الصورة المصغرة
+                Thumbnail URL
                 <input
                   className="input mt-2"
                   value={form.thumbnailUrl}
@@ -315,7 +315,7 @@ export default function ChapterLessonsClient({
               </label>
 
               <label className="md:col-span-2">
-                وصف الحصة
+                Lesson Description
                 <textarea
                   className="input mt-2 min-h-28"
                   value={form.description}
@@ -331,27 +331,27 @@ export default function ChapterLessonsClient({
               disabled={isLoading}
               type="submit"
             >
-              {isLoading ? "جاري الحفظ..." : "حفظ الحصة"}
+              {isLoading ? "Saving..." : "Save Lesson"}
             </button>
           </form>
         ) : null}
 
         <div className="card mt-6 overflow-hidden p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="text-2xl font-black">قائمة الحصص</h3>
-            <span className="badge">{lessons.length} حصة</span>
+            <h3 className="text-2xl font-black">Lessons List</h3>
+            <span className="badge">{lessons.length} lessons</span>
           </div>
 
           <div className="mt-5 overflow-auto">
             <table className="table">
               <thead>
                 <tr>
-                  <th>الحصة</th>
-                  <th>السعر</th>
-                  <th>الترتيب</th>
-                  <th>الحالة</th>
-                  <th>بداية الإتاحة</th>
-                  <th>نهاية الإتاحة</th>
+                  <th>Lesson</th>
+                  <th>Price</th>
+                  <th>Order</th>
+                  <th>Status</th>
+                  <th>Available From</th>
+                  <th>Available Until</th>
                 </tr>
               </thead>
 
@@ -365,10 +365,10 @@ export default function ChapterLessonsClient({
                         </Link>
                       </b>
                       <p className="mt-1 text-xs opacity-60">
-                        {lesson.description || "بدون وصف"}
+                        {lesson.description || "No description"}
                       </p>
                     </td>
-                    <td>{lesson.price} ج</td>
+                    <td>{lesson.price} EGP</td>
                     <td>{lesson.sort_order}</td>
                     <td>
                       <span className="badge">
@@ -377,13 +377,13 @@ export default function ChapterLessonsClient({
                     </td>
                     <td>
                       {lesson.available_from
-                        ? new Date(lesson.available_from).toLocaleString("ar-EG")
-                        : "غير محدد"}
+                        ? new Date(lesson.available_from).toLocaleString("en-US")
+                        : "Not specified"}
                     </td>
                     <td>
                       {lesson.available_until
-                        ? new Date(lesson.available_until).toLocaleString("ar-EG")
-                        : "غير محدد"}
+                        ? new Date(lesson.available_until).toLocaleString("en-US")
+                        : "Not specified"}
                     </td>
                   </tr>
                 ))}
@@ -391,7 +391,7 @@ export default function ChapterLessonsClient({
                 {lessons.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="text-center opacity-60">
-                      لا توجد حصص بعد.
+                      No lessons yet.
                     </td>
                   </tr>
                 ) : null}

@@ -10,41 +10,41 @@ export default function AdminSettingsPage() {
       <section className="section">
         <div className="wrap">
           <div className="card p-6 md:p-10">
-            <span className="eyebrow">لوحة الأدمن</span>
-            <h1 className="h2">إعدادات المنصة</h1>
+            <span className="eyebrow">Admin Dashboard</span>
+            <h1 className="h2">Platform Settings</h1>
             <p className="muted mt-4">
-              إعدادات عامة للمنصة. لا تعرض بيانات دخول تجريبية في بيئة الإنتاج.
+              General platform settings. Do not expose test login details in production.
             </p>
 
             <div className="mt-8 grid gap-5 md:grid-cols-2">
               <label>
-                اسم المنصة
+                Platform Name
                 <input className="input mt-2" defaultValue="Horizon Education" />
               </label>
 
               <label>
-                البريد الرسمي
+                Official Email
                 <input className="input mt-2" defaultValue="support@horizon-education.com" />
               </label>
 
               <label>
-                العملة
-                <input className="input mt-2" defaultValue="ج.م" />
+                Currency
+                <input className="input mt-2" defaultValue="EGP" />
               </label>
 
               <label>
-                نسبة المنصة الافتراضية
+                Default Platform Percentage
                 <input className="input mt-2" defaultValue="20" />
               </label>
             </div>
 
             <div className="mt-8 flex gap-3">
               <button className="btn" type="button">
-                حفظ الإعدادات
+                Save Settings
               </button>
 
               <Link href="/admin" className="btn btn-outline">
-                رجوع للوحة الأدمن
+                Back to Admin Dashboard
               </Link>
             </div>
           </div>

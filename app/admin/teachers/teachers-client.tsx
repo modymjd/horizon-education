@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import Link from "next/link"
 import { useState } from "react"
@@ -38,9 +38,9 @@ const emptyForm: FormState = {
 }
 
 const statusLabel = {
-  active: "نشط",
-  suspended: "موقوف مؤقتًا",
-  banned: "محظور",
+  active: "Active",
+  suspended: "Suspended",
+  banned: "Banned",
 }
 
 export default function TeachersClient({
@@ -92,16 +92,16 @@ export default function TeachersClient({
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "حدث خطأ أثناء إنشاء المدرس")
+        setError(data.message || "Unable to create teacher")
         return
       }
 
-      setMessage(data.message || "تم إنشاء المدرس بنجاح")
+      setMessage(data.message || "Teacher created successfully")
       setForm(emptyForm)
       setShowForm(false)
       await reloadTeachers()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading(false)
     }
@@ -114,29 +114,29 @@ export default function TeachersClient({
           Horizon
         </Link>
 
-        <p className="mt-1 text-sm opacity-70">لوحة الأدمن</p>
+        <p className="mt-1 text-sm opacity-70">Admin Dashboard</p>
 
         <nav className="mt-8 grid gap-2">
           <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin">
-            الرئيسية
+            Home
           </Link>
           <Link
             className="rounded-xl bg-white/10 px-3 py-3"
             href="/admin/teachers"
           >
-            المدرسون
+            Teachers
           </Link>
-          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin">
-            الطلاب
+          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin/students">
+            Students
           </Link>
-          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin">
-            الكورسات
+          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin/courses">
+            Courses
           </Link>
-          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin">
-            المدفوعات
+          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin/payments">
+            Payments
           </Link>
-          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin">
-            التقارير
+          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin/reports">
+            Reports
           </Link>
         </nav>
       </aside>
@@ -144,10 +144,10 @@ export default function TeachersClient({
       <section className="flex-1 p-5 md:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <span className="badge">لوحة الأدمن / المدرسون</span>
-            <h1 className="mt-3 text-4xl font-black">إدارة المدرسين</h1>
+            <span className="badge">Admin Dashboard / Teachers</span>
+            <h1 className="mt-3 text-4xl font-black">Manage Teachers</h1>
             <p className="mt-2 opacity-70">
-              إنشاء حسابات المدرسين ومتابعة حالتهم ونسبة المنصة وعدد الكورسات.
+              Create teacher accounts and review their status, platform percentage, and number of courses.
             </p>
           </div>
 
@@ -156,7 +156,7 @@ export default function TeachersClient({
             type="button"
             onClick={() => setShowForm((value) => !value)}
           >
-            {showForm ? "إغلاق النموذج" : "إضافة مدرس"}
+            {showForm ? "Close Form" : "Add Teacher"}
           </button>
         </div>
 
@@ -174,11 +174,11 @@ export default function TeachersClient({
 
         {showForm ? (
           <form onSubmit={handleSubmit} className="card mt-8 p-6">
-            <h2 className="text-2xl font-black">إضافة مدرس جديد</h2>
+            <h2 className="text-2xl font-black">Add New Teacher</h2>
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <label>
-                الاسم الكامل
+                Full Name
                 <input
                   className="input mt-2"
                   value={form.fullName}
@@ -190,7 +190,7 @@ export default function TeachersClient({
               </label>
 
               <label>
-                البريد الإلكتروني
+                Email Address
                 <input
                   className="input mt-2"
                   type="email"
@@ -203,7 +203,7 @@ export default function TeachersClient({
               </label>
 
               <label>
-                رقم الهاتف
+                Phone Number
                 <input
                   className="input mt-2"
                   value={form.phone}
@@ -215,7 +215,7 @@ export default function TeachersClient({
               </label>
 
               <label>
-                كلمة المرور
+                Password
                 <input
                   className="input mt-2"
                   type="password"
@@ -228,7 +228,7 @@ export default function TeachersClient({
               </label>
 
               <label>
-                العنوان
+                Address
                 <input
                   className="input mt-2"
                   value={form.address}
@@ -239,7 +239,7 @@ export default function TeachersClient({
               </label>
 
               <label>
-                نسبة المنصة %
+                Platform Percentage %
                 <input
                   className="input mt-2"
                   type="number"
@@ -254,7 +254,7 @@ export default function TeachersClient({
               </label>
 
               <label>
-                حالة الحساب
+                Account Status
                 <select
                   className="input mt-2"
                   value={form.status}
@@ -265,14 +265,14 @@ export default function TeachersClient({
                     })
                   }
                 >
-                  <option value="active">نشط</option>
-                  <option value="suspended">موقوف مؤقتًا</option>
-                  <option value="banned">محظور</option>
+                  <option value="active">Active</option>
+                  <option value="suspended">Suspended</option>
+                  <option value="banned">Banned</option>
                 </select>
               </label>
 
               <label className="md:col-span-2">
-                نبذة عن المدرس
+                Teacher Bio
                 <textarea
                   className="input mt-2 min-h-28"
                   value={form.bio}
@@ -288,27 +288,27 @@ export default function TeachersClient({
               disabled={isLoading}
               type="submit"
             >
-              {isLoading ? "جاري الحفظ..." : "حفظ المدرس"}
+              {isLoading ? "Saving..." : "Save Teacher"}
             </button>
           </form>
         ) : null}
 
         <div className="card mt-8 overflow-hidden p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-2xl font-black">قائمة المدرسين</h2>
-            <span className="badge">{teachers.length} مدرس</span>
+            <h2 className="text-2xl font-black">Teachers List</h2>
+            <span className="badge">{teachers.length} teachers</span>
           </div>
 
           <div className="mt-5 overflow-auto">
             <table className="table">
               <thead>
                 <tr>
-                  <th>الاسم</th>
-                  <th>البريد</th>
-                  <th>الهاتف</th>
-                  <th>الحالة</th>
-                  <th>نسبة المنصة</th>
-                  <th>الكورسات</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Status</th>
+                  <th>Platform Percentage</th>
+                  <th>Courses</th>
                 </tr>
               </thead>
 
@@ -318,7 +318,7 @@ export default function TeachersClient({
                     <td>
                       <b>{teacher.full_name}</b>
                       <p className="mt-1 text-xs opacity-60">
-                        {teacher.address || "بدون عنوان"}
+                        {teacher.address || "No address"}
                       </p>
                     </td>
                     <td>{teacher.email}</td>
@@ -336,7 +336,7 @@ export default function TeachersClient({
                 {teachers.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="text-center opacity-60">
-                      لا يوجد مدرسون بعد.
+                      No teachers yet.
                     </td>
                   </tr>
                 ) : null}
