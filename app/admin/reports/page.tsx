@@ -125,7 +125,7 @@ async function getRecentPayments() {
 }
 
 function money(value: number | string | null | undefined) {
-  return `${Number(value || 0).toLocaleString("ar-EG")} ج.م`
+  return `${Number(value || 0).toLocaleString("en-US")} EGP`
 }
 
 function percent(value: number, total: number) {
@@ -157,10 +157,10 @@ export default async function AdminReportsPage() {
   )
 
   const reports = [
-    [money(summary?.revenue_total || 0), "إجمالي الإيرادات"],
-    [String(Number(summary?.active_students || 0)), "طالب نشط"],
-    [String(Number(summary?.courses_count || 0)), "كورس متاح"],
-    [`${completionRate}%`, "معدل فتح الحصص"],
+    [money(summary?.revenue_total || 0), "Total Revenue"],
+    [String(Number(summary?.active_students || 0)), "Active Students"],
+    [String(Number(summary?.courses_count || 0)), "Available Courses"],
+    [`${completionRate}%`, "Lesson Unlock Rate"],
   ]
 
   const bars = [
@@ -177,10 +177,10 @@ export default async function AdminReportsPage() {
 
       <section className="admin-page-hero">
         <div className="wrap">
-          <span className="eyebrow">لوحة الإدارة</span>
-          <h1 className="h1">التقارير</h1>
+          <span className="eyebrow">Admin Dashboard</span>
+          <h1 className="h1">Reports</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            راقب أداء المنصة، الإيرادات، الكورسات، ومعدلات تقدم الطلاب.
+            Monitor platform performance, revenue, courses, and student progress.
           </p>
         </div>
       </section>
@@ -189,12 +189,12 @@ export default async function AdminReportsPage() {
         <div className="wrap">
           <div className="toolbar">
             <div>
-              <span className="eyebrow">نظرة عامة</span>
-              <h2 className="text-3xl font-black">ملخص الأداء</h2>
+              <span className="eyebrow">Overview</span>
+              <h2 className="text-3xl font-black">Performance Summary</h2>
             </div>
 
             <Link href="/admin" className="btn btn-outline">
-              رجوع للوحة الإدارة
+              Back to Admin Dashboard
             </Link>
           </div>
 
@@ -209,8 +209,8 @@ export default async function AdminReportsPage() {
 
           <div className="mt-7 grid gap-7 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="card chart-card">
-              <span className="eyebrow">طلبات ودفع</span>
-              <h2 className="text-3xl font-black">مؤشرات المنصة</h2>
+              <span className="eyebrow">Requests and Payments</span>
+              <h2 className="text-3xl font-black">Platform Indicators</h2>
 
               <div className="fake-chart mt-6">
                 {bars.map((value, index) => (
@@ -224,29 +224,29 @@ export default async function AdminReportsPage() {
               </div>
 
               <div className="mt-5 grid gap-2 text-sm font-bold">
-                <p>طلبات قيد المراجعة: {summary?.pending_requests || 0}</p>
-                <p>طلبات مقبولة: {summary?.accepted_requests || 0}</p>
-                <p>طلبات مرفوضة: {summary?.rejected_requests || 0}</p>
-                <p>عدد الدفعات: {summary?.payments_count || 0}</p>
+                <p>Pending requests: {summary?.pending_requests || 0}</p>
+                <p>Accepted requests: {summary?.accepted_requests || 0}</p>
+                <p>Rejected requests: {summary?.rejected_requests || 0}</p>
+                <p>Payments count: {summary?.payments_count || 0}</p>
               </div>
             </div>
 
             <div className="card admin-panel">
-              <span className="eyebrow">الإيرادات</span>
-              <h2 className="text-3xl font-black">توزيع الإيرادات</h2>
+              <span className="eyebrow">Revenue</span>
+              <h2 className="text-3xl font-black">Revenue Distribution</h2>
 
               <div className="admin-row-list mt-6">
                 <div className="payment-row">
                   <div>
-                    <h3 className="font-black">إجمالي الإيرادات</h3>
-                    <p className="muted text-sm">كل المدفوعات المكتملة</p>
+                    <h3 className="font-black">Total Revenue</h3>
+                    <p className="muted text-sm">All completed payments</p>
                   </div>
                   <div className="amount">{money(summary?.revenue_total || 0)}</div>
                 </div>
 
                 <div className="payment-row">
                   <div>
-                    <h3 className="font-black">نصيب المنصة</h3>
+                    <h3 className="font-black">Platform Share</h3>
                     <p className="muted text-sm">Platform amount</p>
                   </div>
                   <div className="amount">{money(summary?.platform_total || 0)}</div>
@@ -254,7 +254,7 @@ export default async function AdminReportsPage() {
 
                 <div className="payment-row">
                   <div>
-                    <h3 className="font-black">نصيب المدرسين</h3>
+                    <h3 className="font-black">Teacher Share</h3>
                     <p className="muted text-sm">Teacher amount</p>
                   </div>
                   <div className="amount">{money(summary?.teacher_total || 0)}</div>
@@ -265,40 +265,40 @@ export default async function AdminReportsPage() {
 
           <div className="mt-7 grid gap-7 lg:grid-cols-2">
             <div className="card admin-panel">
-              <span className="eyebrow">الأعلى أداءً</span>
-              <h2 className="text-3xl font-black">أفضل الكورسات</h2>
+              <span className="eyebrow">Top Performance</span>
+              <h2 className="text-3xl font-black">Top Courses</h2>
 
               <div className="admin-row-list mt-6">
                 {topCourses.map((course) => (
                   <div className="payment-row" key={course.course_id}>
                     <div>
                       <h3 className="font-black">{course.course_title}</h3>
-                      <p className="muted text-sm">{course.students_count} طالب</p>
+                      <p className="muted text-sm">{course.students_count} students</p>
                     </div>
                     <div className="amount">{money(course.revenue)}</div>
                   </div>
                 ))}
 
-                {topCourses.length === 0 ? <p className="muted">لا توجد بيانات كورسات بعد.</p> : null}
+                {topCourses.length === 0 ? <p className="muted">No course data yet.</p> : null}
               </div>
             </div>
 
             <div className="card admin-panel">
-              <span className="eyebrow">المدرسون</span>
-              <h2 className="text-3xl font-black">أفضل المدرسين</h2>
+              <span className="eyebrow">Teachers</span>
+              <h2 className="text-3xl font-black">Top Teachers</h2>
 
               <div className="admin-row-list mt-6">
                 {topTeachers.map((teacher) => (
                   <div className="payment-row" key={teacher.teacher_id}>
                     <div>
                       <h3 className="font-black">{teacher.teacher_name}</h3>
-                      <p className="muted text-sm">{teacher.courses_count} كورس</p>
+                      <p className="muted text-sm">{teacher.courses_count} courses</p>
                     </div>
                     <div className="amount">{money(teacher.revenue)}</div>
                   </div>
                 ))}
 
-                {topTeachers.length === 0 ? <p className="muted">لا توجد بيانات مدرسين بعد.</p> : null}
+                {topTeachers.length === 0 ? <p className="muted">No teacher data yet.</p> : null}
               </div>
             </div>
           </div>
@@ -306,12 +306,12 @@ export default async function AdminReportsPage() {
           <div className="card admin-panel mt-7">
             <div className="toolbar">
               <div>
-                <span className="eyebrow">المدفوعات</span>
-                <h2 className="text-3xl font-black">أحدث المدفوعات</h2>
+                <span className="eyebrow">Payments</span>
+                <h2 className="text-3xl font-black">Latest Payments</h2>
               </div>
 
               <Link href="/admin/payments" className="btn btn-soft">
-                فتح المدفوعات
+                Open Payments
               </Link>
             </div>
 
@@ -328,7 +328,7 @@ export default async function AdminReportsPage() {
                 </div>
               ))}
 
-              {recentPayments.length === 0 ? <p className="muted">لا توجد مدفوعات بعد.</p> : null}
+              {recentPayments.length === 0 ? <p className="muted">No payments yet.</p> : null}
             </div>
           </div>
         </div>

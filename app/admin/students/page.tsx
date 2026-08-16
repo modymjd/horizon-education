@@ -86,13 +86,13 @@ async function getStudents() {
 }
 
 function getInitials(name: string) {
-  return name.trim().slice(0, 1) || "ط"
+  return name.trim().slice(0, 1) || "S"
 }
 
 function getStatusLabel(status: string) {
-  if (status === "active") return "نشط"
-  if (status === "suspended") return "موقوف"
-  if (status === "banned") return "محظور"
+  if (status === "active") return "Active"
+  if (status === "suspended") return "Suspended"
+  if (status === "banned") return "Banned"
   return status
 }
 
@@ -119,10 +119,10 @@ export default async function AdminStudentsPage() {
 
       <section className="admin-page-hero">
         <div className="wrap">
-          <span className="eyebrow">لوحة الإدارة</span>
-          <h1 className="h1">إدارة الطلاب</h1>
+          <span className="eyebrow">Admin Dashboard</span>
+          <h1 className="h1">Manage Students</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            تابع حسابات الطلاب، بيانات التواصل، ولي الأمر، وحالة الاشتراكات والطلبات.
+            Review student accounts, contact details, guardian information, subscriptions, and join requests.
           </p>
         </div>
       </section>
@@ -132,34 +132,34 @@ export default async function AdminStudentsPage() {
           <div className="admin-summary-grid">
             <div className="card summary-card">
               <b>{students.length}</b>
-              <span className="muted font-bold">إجمالي الطلاب</span>
+              <span className="muted font-bold">Total Students</span>
             </div>
             <div className="card summary-card">
               <b>{activeStudents}</b>
-              <span className="muted font-bold">طلاب نشطون</span>
+              <span className="muted font-bold">Active Students</span>
             </div>
             <div className="card summary-card">
               <b>{suspendedStudents}</b>
-              <span className="muted font-bold">طلاب موقوفون</span>
+              <span className="muted font-bold">Suspended Students</span>
             </div>
             <div className="card summary-card">
               <b>{followUpStudents}</b>
-              <span className="muted font-bold">يحتاجون متابعة</span>
+              <span className="muted font-bold">Need Follow-up</span>
             </div>
           </div>
 
           <div className="toolbar">
             <div className="search-row">
-              <input className="input" placeholder="ابحث باسم الطالب أو البريد..." />
+              <input className="input" placeholder="Search by student name or email..." />
               <select className="input" defaultValue="all">
-                <option value="all">كل الحالات</option>
-                <option value="active">نشط</option>
-                <option value="suspended">موقوف</option>
+                <option value="all">All statuses</option>
+                <option value="active">Active</option>
+                <option value="suspended">Suspended</option>
               </select>
             </div>
 
             <Link href="/admin" className="btn btn-outline">
-              رجوع للوحة الإدارة
+              Back to Admin Dashboard
             </Link>
           </div>
 
@@ -181,7 +181,7 @@ export default async function AdminStudentsPage() {
                       <div>
                         <h2 className="text-3xl font-black">{student.full_name}</h2>
                         <p className="muted mt-1">{student.email}</p>
-                        <p className="muted mt-1 text-sm">{grade || "غير محدد"}</p>
+                        <p className="muted mt-1 text-sm">{grade || "Not specified"}</p>
                       </div>
                     </div>
 
@@ -198,37 +198,37 @@ export default async function AdminStudentsPage() {
                   <div className="course-metrics">
                     <div className="metric-mini">
                       <b>{student.student_code || "—"}</b>
-                      <span className="muted">كود الطالب</span>
+                      <span className="muted">Student Code</span>
                     </div>
 
                     <div className="metric-mini">
                       <b>{student.phone || "—"}</b>
-                      <span className="muted">هاتف الطالب</span>
+                      <span className="muted">Student Phone</span>
                     </div>
 
                     <div className="metric-mini">
                       <b>{student.whatsapp_phone || "—"}</b>
-                      <span className="muted">واتساب الطالب</span>
+                      <span className="muted">Student WhatsApp</span>
                     </div>
 
                     <div className="metric-mini">
                       <b>{student.subscriptions_count}</b>
-                      <span className="muted">حصص مفعّلة</span>
+                      <span className="muted">Activated Lessons</span>
                     </div>
 
                     <div className="metric-mini">
                       <b>{student.requests_count}</b>
-                      <span className="muted">طلبات انضمام</span>
+                      <span className="muted">Join Requests</span>
                     </div>
                   </div>
 
                   <div className="mt-5 grid gap-3 text-sm font-bold md:grid-cols-2">
-                    <p>الرقم القومي: {student.national_id || "غير محدد"}</p>
-                    <p>المحافظة: {student.governorate || "غير محدد"}</p>
-                    <p>العنوان: {student.address || "غير محدد"}</p>
-                    <p>ولي الأمر: {student.guardian_name || "غير محدد"}</p>
-                    <p>رقم ولي الأمر: {student.guardian_phone || "غير محدد"}</p>
-                    <p>واتساب ولي الأمر: {student.guardian_whatsapp_phone || "غير محدد"}</p>
+                    <p>National ID: {student.national_id || "Not specified"}</p>
+                    <p>Governorate: {student.governorate || "Not specified"}</p>
+                    <p>Address: {student.address || "Not specified"}</p>
+                    <p>Guardian: {student.guardian_name || "Not specified"}</p>
+                    <p>Guardian Phone: {student.guardian_phone || "Not specified"}</p>
+                    <p>Guardian WhatsApp: {student.guardian_whatsapp_phone || "Not specified"}</p>
                   </div>
                 </div>
               )
@@ -236,9 +236,9 @@ export default async function AdminStudentsPage() {
 
             {students.length === 0 ? (
               <div className="card course-management-card">
-                <h2 className="text-2xl font-black">لا يوجد طلاب بعد</h2>
+                <h2 className="text-2xl font-black">No students yet</h2>
                 <p className="muted mt-2">
-                  عندما يسجل الطلاب في المنصة، سيظهرون هنا.
+                  Students will appear here after they register on the platform.
                 </p>
               </div>
             ) : null}

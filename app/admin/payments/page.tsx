@@ -102,14 +102,14 @@ async function getPaymentFormOptions() {
 }
 
 function money(value: number | string | null | undefined) {
-  return `${Number(value || 0).toLocaleString("ar-EG")} ج.م`
+  return `${Number(value || 0).toLocaleString("en-US")} EGP`
 }
 
 function getStatusLabel(status: string) {
-  if (status === "completed") return "مكتمل"
-  if (status === "pending") return "معلق"
-  if (status === "refunded") return "مسترد"
-  if (status === "cancelled") return "ملغي"
+  if (status === "completed") return "Completed"
+  if (status === "pending") return "Pending"
+  if (status === "refunded") return "Refunded"
+  if (status === "cancelled") return "Cancelled"
   return status
 }
 
@@ -138,10 +138,10 @@ export default async function AdminPaymentsPage() {
 
       <section className="admin-page-hero">
         <div className="wrap">
-          <span className="eyebrow">لوحة الإدارة</span>
-          <h1 className="h1">المدفوعات</h1>
+          <span className="eyebrow">Admin Dashboard</span>
+          <h1 className="h1">Payments</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            راجع المدفوعات، سجّل دفعة جديدة، وتابع نصيب المنصة والمدرسين.
+            Review payments, record new payments, and track platform and teacher shares.
           </p>
         </div>
       </section>
@@ -158,26 +158,26 @@ export default async function AdminPaymentsPage() {
             <div className="admin-summary-grid">
               <div className="card summary-card">
                 <b>{money(totalRevenue)}</b>
-                <span className="muted font-bold">إجمالي الإيرادات</span>
+                <span className="muted font-bold">Total Revenue</span>
               </div>
               <div className="card summary-card">
                 <b>{money(platformRevenue)}</b>
-                <span className="muted font-bold">نصيب المنصة</span>
+                <span className="muted font-bold">Platform Share</span>
               </div>
               <div className="card summary-card">
                 <b>{money(teacherRevenue)}</b>
-                <span className="muted font-bold">نصيب المدرسين</span>
+                <span className="muted font-bold">Teacher Share</span>
               </div>
             </div>
 
             <div className="toolbar">
               <div>
-                <span className="eyebrow">السجل</span>
-                <h2 className="text-3xl font-black">آخر المدفوعات</h2>
+                <span className="eyebrow">History</span>
+                <h2 className="text-3xl font-black">Latest Payments</h2>
               </div>
 
               <Link href="/admin" className="btn btn-outline">
-                رجوع للوحة الإدارة
+                Back to Admin Dashboard
               </Link>
             </div>
 
@@ -185,13 +185,13 @@ export default async function AdminPaymentsPage() {
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>الفاتورة</th>
-                    <th>الطالب</th>
-                    <th>الحصة</th>
-                    <th>الطريقة</th>
-                    <th>المبلغ</th>
-                    <th>الحالة</th>
-                    <th>التاريخ</th>
+                    <th>Invoice</th>
+                    <th>Student</th>
+                    <th>Lesson</th>
+                    <th>Method</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -200,9 +200,9 @@ export default async function AdminPaymentsPage() {
                       <td>
                         <b>{payment.invoice_number}</b>
                       </td>
-                      <td>{payment.student_name || "غير محدد"}</td>
-                      <td>{payment.lesson_title || "غير محدد"}</td>
-                      <td>{payment.payment_method_name || "غير محدد"}</td>
+                      <td>{payment.student_name || "Not specified"}</td>
+                      <td>{payment.lesson_title || "Not specified"}</td>
+                      <td>{payment.payment_method_name || "Not specified"}</td>
                       <td className="amount">{money(payment.amount_paid)}</td>
                       <td>
                         <span className="badge">
@@ -215,7 +215,7 @@ export default async function AdminPaymentsPage() {
 
                   {payments.length === 0 ? (
                     <tr>
-                      <td colSpan={7}>لا توجد مدفوعات مسجلة بعد.</td>
+                      <td colSpan={7}>No payments recorded yet.</td>
                     </tr>
                   ) : null}
                 </tbody>
