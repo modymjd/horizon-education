@@ -14,7 +14,7 @@ export function AdminCourseDeleteButton({ courseId, courseTitle }: Props) {
   const [error, setError] = useState("")
 
   async function handleDelete() {
-    const confirmed = window.confirm(`هل أنت متأكد من حذف كورس "${courseTitle}"؟`)
+    const confirmed = window.confirm(`Are you sure you want to delete course "${courseTitle}"?`)
 
     if (!confirmed) {
       return
@@ -31,13 +31,13 @@ export function AdminCourseDeleteButton({ courseId, courseTitle }: Props) {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر حذف الكورس")
+        setError(data.message || "Unable to delete course")
         return
       }
 
       router.refresh()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading(false)
     }
@@ -51,7 +51,7 @@ export function AdminCourseDeleteButton({ courseId, courseTitle }: Props) {
         onClick={handleDelete}
         disabled={isLoading}
       >
-        {isLoading ? "جاري الحذف..." : "حذف"}
+        {isLoading ? "Deleting..." : "Delete"}
       </button>
 
       {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}

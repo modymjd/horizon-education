@@ -122,12 +122,12 @@ export function AdminCourseEditForm({
     setSuccess("")
 
     if (!title.trim()) {
-      setError("اكتب اسم الكورس")
+      setError("Enter the course name")
       return
     }
 
     if (!teacherId) {
-      setError("اختار المدرس")
+      setError("Choose a teacher")
       return
     }
 
@@ -156,14 +156,14 @@ export function AdminCourseEditForm({
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر تعديل الكورس")
+        setError(data.message || "Unable to update course")
         return
       }
 
-      setSuccess(data.message || "تم تعديل الكورس بنجاح")
+      setSuccess(data.message || "Course updated successfully")
       router.refresh()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading(false)
     }
@@ -171,10 +171,10 @@ export function AdminCourseEditForm({
 
   return (
     <form onSubmit={handleSubmit} className="card payment-form">
-      <span className="eyebrow">تعديل الكورس</span>
-      <h2 className="text-3xl font-black">بيانات الكورس</h2>
+      <span className="eyebrow">Edit Course</span>
+      <h2 className="text-3xl font-black">Course Details</h2>
       <p className="muted mt-3">
-        عدّل بيانات الكورس وتأكد من تطابق نوع التعليم والمرحلة والصف مع الطلاب المستهدفين.
+        Update course details and make sure the education type, stage, and grade match the target students.
       </p>
 
       {error ? <div className="alert-error mt-5">{error}</div> : null}
@@ -182,7 +182,7 @@ export function AdminCourseEditForm({
 
       <div className="form-grid mt-6">
         <label className="font-bold">
-          اسم الكورس
+          Course Name
           <input
             className="input mt-2"
             value={title}
@@ -192,14 +192,14 @@ export function AdminCourseEditForm({
         </label>
 
         <label className="font-bold">
-          المدرس
+          Teacher
           <select
             className="input mt-2"
             value={teacherId}
             onChange={(e) => setTeacherId(e.target.value)}
             required
           >
-            <option value="">اختر المدرس</option>
+            <option value="">Select teacher</option>
             {teachers.map((teacher) => (
               <option value={teacher.id} key={teacher.id}>
                 {teacher.full_name}
@@ -209,13 +209,13 @@ export function AdminCourseEditForm({
         </label>
 
         <label className="font-bold">
-          نوع التعليم
+          Education Type
           <select
             className="input mt-2"
             value={educationTypeId}
             onChange={(e) => handleEducationTypeChange(e.target.value)}
           >
-            <option value="">كل أنواع التعليم</option>
+            <option value="">All education types</option>
             {educationTypes.map((item) => (
               <option value={item.id} key={item.id}>
                 {item.name}
@@ -225,13 +225,13 @@ export function AdminCourseEditForm({
         </label>
 
         <label className="font-bold">
-          المرحلة
+          Stage
           <select
             className="input mt-2"
             value={stageId}
             onChange={(e) => handleStageChange(e.target.value)}
           >
-            <option value="">كل المراحل</option>
+            <option value="">All stages</option>
             {filteredStages.map((stage) => (
               <option value={stage.id} key={stage.id}>
                 {stage.name}
@@ -241,13 +241,13 @@ export function AdminCourseEditForm({
         </label>
 
         <label className="font-bold">
-          الصف
+          Grade
           <select
             className="input mt-2"
             value={gradeId}
             onChange={(e) => setGradeId(e.target.value)}
           >
-            <option value="">كل الصفوف</option>
+            <option value="">All grades</option>
             {filteredGrades.map((grade) => (
               <option value={grade.id} key={grade.id}>
                 {grade.name}
@@ -257,21 +257,21 @@ export function AdminCourseEditForm({
         </label>
 
         <label className="font-bold">
-          الحالة
+          Status
           <select
             className="input mt-2"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >
-            <option value="published">منشور</option>
-            <option value="draft">مسودة</option>
-            <option value="paused">متوقف مؤقتًا</option>
-            <option value="ended">منتهي</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+            <option value="paused">Paused</option>
+            <option value="ended">Ended</option>
           </select>
         </label>
 
         <label className="font-bold">
-          مدة الوصول بالأيام
+          Access Duration (Days)
           <input
             className="input mt-2"
             type="number"
@@ -282,18 +282,18 @@ export function AdminCourseEditForm({
         </label>
 
         <label className="font-bold">
-          رابط صورة الغلاف
+          Cover Image URL
           <input
             className="input mt-2"
             value={coverImageUrl}
             onChange={(e) => setCoverImageUrl(e.target.value)}
-            placeholder="اختياري"
+            placeholder="Optional"
           />
         </label>
       </div>
 
       <label className="mt-4 block font-bold">
-        وصف مختصر
+        Short Description
         <input
           className="input mt-2"
           value={shortDescription}
@@ -302,7 +302,7 @@ export function AdminCourseEditForm({
       </label>
 
       <label className="mt-4 block font-bold">
-        وصف كامل
+        Full Description
         <textarea
           className="input mt-2 min-h-28"
           value={description}
@@ -311,7 +311,7 @@ export function AdminCourseEditForm({
       </label>
 
       <button className="btn btn-block mt-6 disabled:opacity-60" disabled={isLoading}>
-        {isLoading ? "جاري الحفظ..." : "حفظ التعديلات"}
+        {isLoading ? "Saving..." : "Save changes"}
       </button>
     </form>
   )

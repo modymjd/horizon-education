@@ -28,7 +28,7 @@ type Props = {
 }
 
 function money(value: number | string | null | undefined) {
-  return `${Number(value || 0).toLocaleString("ar-EG")} ج.م`
+  return `${Number(value || 0).toLocaleString("en-US")} EGP`
 }
 
 export function PaymentCreateForm({
@@ -81,11 +81,11 @@ export function PaymentCreateForm({
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر تسجيل الدفعة")
+        setError(data.message || "Unable to record payment")
         return
       }
 
-      setSuccess(`تم تسجيل الدفعة بنجاح. رقم الفاتورة: ${data.invoice_number}`)
+      setSuccess(`Payment recorded successfully. Invoice number: ${data.invoice_number}`)
       setStudentId("")
       setLessonId("")
       setAmountPaid("")
@@ -93,7 +93,7 @@ export function PaymentCreateForm({
       setNotes("")
       router.refresh()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading(false)
     }
@@ -101,10 +101,10 @@ export function PaymentCreateForm({
 
   return (
     <form onSubmit={handleSubmit} className="card payment-form">
-      <span className="eyebrow">تسجيل دفعة</span>
-      <h2 className="text-3xl font-black">إضافة دفعة جديدة</h2>
+      <span className="eyebrow">Record Payment</span>
+      <h2 className="text-3xl font-black">Add New Payment</h2>
       <p className="muted mt-3">
-        اختر الطالب والحصة وطريقة الدفع، وسيتم حساب نصيب المنصة والمدرس تلقائيًا.
+        Choose the student, lesson, and payment method. Platform and teacher shares will be calculated automatically.
       </p>
 
       {error ? <div className="alert-error mt-5">{error}</div> : null}
@@ -112,14 +112,14 @@ export function PaymentCreateForm({
 
       <div className="form-grid mt-6">
         <label className="font-bold">
-          الطالب
+          Student
           <select
             className="input mt-2"
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
             required
           >
-            <option value="">اختر الطالب</option>
+            <option value="">Select student</option>
             {students.map((student) => (
               <option value={student.id} key={student.id}>
                 {student.full_name}
@@ -130,14 +130,14 @@ export function PaymentCreateForm({
         </label>
 
         <label className="font-bold">
-          الحصة
+          Lesson
           <select
             className="input mt-2"
             value={lessonId}
             onChange={(e) => handleLessonChange(e.target.value)}
             required
           >
-            <option value="">اختر الحصة</option>
+            <option value="">Select lesson</option>
             {lessons.map((lesson) => (
               <option value={lesson.id} key={lesson.id}>
                 {lesson.course_title ? `${lesson.course_title} — ` : ""}
@@ -149,7 +149,7 @@ export function PaymentCreateForm({
         </label>
 
         <label className="font-bold">
-          المبلغ
+          Amount
           <input
             className="input mt-2"
             type="number"
@@ -163,14 +163,14 @@ export function PaymentCreateForm({
         </label>
 
         <label className="font-bold">
-          طريقة الدفع
+          Payment Method
           <select
             className="input mt-2"
             value={paymentMethodId}
             onChange={(e) => setPaymentMethodId(e.target.value)}
             required
           >
-            <option value="">اختر طريقة الدفع</option>
+            <option value="">Select payment method</option>
             {paymentMethods.map((method) => (
               <option value={method.id} key={method.id}>
                 {method.name}
@@ -181,17 +181,17 @@ export function PaymentCreateForm({
       </div>
 
       <label className="mt-4 block font-bold">
-        ملاحظات
+        Notes
         <textarea
           className="input mt-2 min-h-24"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="ملاحظات اختيارية عن الدفعة"
+          placeholder="Optional notes about this payment"
         />
       </label>
 
       <button className="btn btn-block mt-6 disabled:opacity-60" disabled={isLoading}>
-        {isLoading ? "جاري تسجيل الدفعة..." : "تسجيل الدفعة"}
+        {isLoading ? "Recording payment..." : "Record payment"}
       </button>
     </form>
   )

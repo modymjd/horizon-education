@@ -26,7 +26,7 @@ export function AdminChapterCreateForm({ courseId }: Props) {
     setSuccess("")
 
     if (!title.trim()) {
-      setError("اكتب اسم الشابتر")
+      setError("Enter the chapter name")
       return
     }
 
@@ -51,11 +51,11 @@ export function AdminChapterCreateForm({ courseId }: Props) {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر إنشاء الشابتر")
+        setError(data.message || "Unable to create chapter")
         return
       }
 
-      setSuccess(data.message || "تم إنشاء الشابتر بنجاح")
+      setSuccess(data.message || "Chapter created successfully")
       setTitle("")
       setDescription("")
       setCoverImageUrl("")
@@ -63,7 +63,7 @@ export function AdminChapterCreateForm({ courseId }: Props) {
       setStatus("published")
       router.refresh()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading(false)
     }
@@ -71,39 +71,39 @@ export function AdminChapterCreateForm({ courseId }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="card payment-form">
-      <span className="eyebrow">إضافة شابتر</span>
-      <h2 className="text-3xl font-black">شابتر جديد</h2>
+      <span className="eyebrow">Add Chapter</span>
+      <h2 className="text-3xl font-black">New Chapter</h2>
       <p className="muted mt-3">
-        أضف شابتر داخل الكورس، وبعدها يمكنك إضافة الحصص داخله.
+        Add a chapter inside this course, then add lessons under it.
       </p>
 
       {error ? <div className="alert-error mt-5">{error}</div> : null}
       {success ? <div className="alert-success mt-5">{success}</div> : null}
 
       <label className="mt-6 block font-bold">
-        اسم الشابتر
+        Chapter Name
         <input
           className="input mt-2"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="مثال: الوحدة الأولى"
+          placeholder="Example: Unit One"
           required
         />
       </label>
 
       <label className="mt-4 block font-bold">
-        وصف الشابتر
+        Chapter Description
         <textarea
           className="input mt-2 min-h-24"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="وصف اختياري"
+          placeholder="Optional description"
         />
       </label>
 
       <div className="form-grid mt-4">
         <label className="font-bold">
-          ترتيب الشابتر
+          Chapter Order
           <input
             className="input mt-2"
             type="number"
@@ -114,33 +114,32 @@ export function AdminChapterCreateForm({ courseId }: Props) {
         </label>
 
         <label className="font-bold">
-          الحالة
+          Status
           <select
             className="input mt-2"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >
-            <option value="published">منشور</option>
-            <option value="draft">مسودة</option>
-            <option value="hidden">مخفي</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+            <option value="hidden">Hidden</option>
           </select>
         </label>
       </div>
 
       <label className="mt-4 block font-bold">
-        رابط صورة الغلاف
+        Cover Image URL
         <input
           className="input mt-2"
           value={coverImageUrl}
           onChange={(e) => setCoverImageUrl(e.target.value)}
-          placeholder="اختياري"
+          placeholder="Optional"
         />
       </label>
 
       <button className="btn btn-block mt-6 disabled:opacity-60" disabled={isLoading}>
-        {isLoading ? "جاري إنشاء الشابتر..." : "إنشاء الشابتر"}
+        {isLoading ? "Creating chapter..." : "Create chapter"}
       </button>
     </form>
   )
 }
-

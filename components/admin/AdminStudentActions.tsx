@@ -30,20 +30,20 @@ export function AdminStudentActions({ userId, studentName, status }: Props) {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر تحديث حالة الطالب")
+        setError(data.message || "Unable to update student status")
         return
       }
 
       router.refresh()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading("")
     }
   }
 
   async function deleteStudent() {
-    const confirmed = window.confirm(`هل أنت متأكد من حذف الطالب "${studentName}"؟`)
+    const confirmed = window.confirm(`Are you sure you want to delete student "${studentName}"?`)
 
     if (!confirmed) {
       return
@@ -60,13 +60,13 @@ export function AdminStudentActions({ userId, studentName, status }: Props) {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر حذف الطالب")
+        setError(data.message || "Unable to delete student")
         return
       }
 
       router.refresh()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading("")
     }
@@ -81,7 +81,7 @@ export function AdminStudentActions({ userId, studentName, status }: Props) {
           onClick={() => updateStatus("suspend")}
           disabled={!!isLoading}
         >
-          {isLoading === "suspend" ? "جاري التعطيل..." : "تعطيل"}
+          {isLoading === "suspend" ? "Suspending..." : "Suspend"}
         </button>
       ) : (
         <button
@@ -90,7 +90,7 @@ export function AdminStudentActions({ userId, studentName, status }: Props) {
           onClick={() => updateStatus("activate")}
           disabled={!!isLoading}
         >
-          {isLoading === "activate" ? "جاري التفعيل..." : "تفعيل"}
+          {isLoading === "activate" ? "Activating..." : "Activate"}
         </button>
       )}
 
@@ -100,7 +100,7 @@ export function AdminStudentActions({ userId, studentName, status }: Props) {
         onClick={deleteStudent}
         disabled={!!isLoading}
       >
-        {isLoading === "delete" ? "جاري الحذف..." : "حذف"}
+        {isLoading === "delete" ? "Deleting..." : "Delete"}
       </button>
 
       {error ? <p className="w-full text-sm text-red-700">{error}</p> : null}
