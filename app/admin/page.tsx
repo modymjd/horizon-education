@@ -43,12 +43,12 @@ type ActivityRow = {
 }
 
 const navCards = [
-  ["المدرسون", "إضافة وتعديل بيانات المدرسين", "/admin/teachers"],
-  ["الطلاب", "متابعة الطلاب والحسابات", "/admin/students"],
-  ["الكورسات", "إدارة الكورسات والحصص", "/admin/courses"],
-  ["المدفوعات", "تسجيل ومراجعة المدفوعات", "/admin/payments"],
-  ["التقارير", "إحصائيات المنصة والإيرادات", "/admin/reports"],
-  ["الإعدادات", "إعدادات المنصة العامة", "/admin/settings"],
+  ["Teachers", "Add and edit teacher profiles", "/admin/teachers"],
+  ["Students", "Manage students and accounts", "/admin/students"],
+  ["Courses", "Manage courses and lessons", "/admin/courses"],
+  ["Payments", "Record and review payments", "/admin/payments"],
+  ["Reports", "Platform statistics and revenue", "/admin/reports"],
+  ["Settings", "General platform settings", "/admin/settings"],
 ]
 
 async function getSummary() {
@@ -134,7 +134,7 @@ async function getActivities() {
   return query<ActivityRow>(
     `
     SELECT
-      CONCAT(u.full_name, ' طلب الانضمام إلى ', c.title) AS text,
+      CONCAT(u.full_name, ' requested to join ', c.title) AS text,
       DATE_FORMAT(r.requested_at, '%Y-%m-%d %H:%i') AS activity_time
     FROM student_course_requests r
     JOIN students s ON s.id = r.student_id
@@ -147,11 +147,11 @@ async function getActivities() {
 }
 
 function money(value: number | string | null | undefined) {
-  return `${Number(value || 0).toLocaleString("ar-EG")} ج.م`
+  return `${Number(value || 0).toLocaleString("en-US")} EGP`
 }
 
 function getInitials(name: string) {
-  return name.trim().slice(0, 1) || "م"
+  return name.trim().slice(0, 1) || "A"
 }
 
 export default async function AdminDashboard() {
@@ -174,10 +174,10 @@ export default async function AdminDashboard() {
   ])
 
   const stats = [
-    [String(Number(summary?.students_count || 0)), "طالب"],
-    [String(Number(summary?.teachers_count || 0)), "مدرس"],
-    [String(Number(summary?.courses_count || 0)), "كورس"],
-    [money(summary?.revenue_total || 0), "إيرادات"],
+    [String(Number(summary?.students_count || 0)), "Students"],
+    [String(Number(summary?.teachers_count || 0)), "Teachers"],
+    [String(Number(summary?.courses_count || 0)), "Courses"],
+    [money(summary?.revenue_total || 0), "Revenue"],
   ]
 
   return (
@@ -187,36 +187,36 @@ export default async function AdminDashboard() {
       <div className="wrap">
         <section className="admin-dashboard-grid">
           <div className="card admin-welcome">
-            <span className="eyebrow">لوحة الإدارة</span>
-            <h1 className="welcome-title">أهلًا، {user.full_name || "مدير النظام"} 👋</h1>
+            <span className="eyebrow">Admin Dashboard</span>
+            <h1 className="welcome-title">Welcome, {user.full_name || "Admin"} 👋</h1>
             <p className="muted mt-4 text-lg">
-              تابع أداء المنصة، المدرسين، الطلاب، المدفوعات، والكورسات من مكان واحد.
+              Track platform performance, teachers, students, payments, and courses from one place.
             </p>
 
             <div className="mt-7 flex flex-wrap gap-3">
               <Link href="/admin/teachers" className="btn">
-                إدارة المدرسين
+                Manage Teachers
               </Link>
               <Link href="/admin/payments" className="btn btn-outline">
-                تسجيل دفعة
+                Record Payment
               </Link>
               <Link href="/admin/courses" className="btn btn-outline">
-                إدارة الكورسات
+                Manage Courses
               </Link>
             </div>
           </div>
 
           <div className="admin-actions">
             <Link href="/admin/courses" className="admin-action-card">
-              <span className="badge">الكورسات</span>
-              <h3 className="mt-4 text-2xl font-black">راجع الكورسات المنشورة</h3>
-              <p className="muted mt-2">تابع حالة الكورسات والحصص المتاحة للطلاب.</p>
+              <span className="badge">Courses</span>
+              <h3 className="mt-4 text-2xl font-black">Review published courses</h3>
+              <p className="muted mt-2">Monitor course status and lessons available to students.</p>
             </Link>
 
             <Link href="/admin/reports" className="admin-action-card">
-              <span className="badge">التقارير</span>
-              <h3 className="mt-4 text-2xl font-black">إحصائيات وإيرادات</h3>
-              <p className="muted mt-2">راقب نمو المنصة والمدفوعات الشهرية.</p>
+              <span className="badge">Reports</span>
+              <h3 className="mt-4 text-2xl font-black">Statistics and revenue</h3>
+              <p className="muted mt-2">Monitor platform growth and monthly payments.</p>
             </Link>
           </div>
         </section>
@@ -232,12 +232,12 @@ export default async function AdminDashboard() {
 
         {Number(summary?.pending_requests || 0) > 0 ? (
           <section className="card mt-7 p-6 md:p-8">
-            <span className="eyebrow">تنبيه</span>
+            <span className="eyebrow">Alert</span>
             <h2 className="text-3xl font-black">
-              يوجد {summary.pending_requests} طلب انضمام قيد المراجعة
+              {summary.pending_requests} join requests are pending review
             </h2>
             <p className="muted mt-3">
-              يمكن للمدرسين مراجعة الطلبات من صفحاتهم، ويمكنك متابعة النشاط من التقارير.
+              Teachers can review requests from their pages, and you can track activity from reports.
             </p>
           </section>
         ) : null}
@@ -246,8 +246,8 @@ export default async function AdminDashboard() {
       <section className="section">
         <div className="wrap">
           <div className="section-head">
-            <span className="eyebrow">الإدارة السريعة</span>
-            <h2 className="h2">أقسام لوحة التحكم</h2>
+            <span className="eyebrow">Quick Management</span>
+            <h2 className="h2">Dashboard Sections</h2>
           </div>
 
           <div className="admin-nav-grid">
@@ -266,11 +266,11 @@ export default async function AdminDashboard() {
           <div className="card admin-panel">
             <div className="toolbar">
               <div>
-                <span className="eyebrow">المدرسون</span>
-                <h2 className="text-3xl font-black">أحدث المدرسين</h2>
+                <span className="eyebrow">Teachers</span>
+                <h2 className="text-3xl font-black">Latest Teachers</h2>
               </div>
               <Link href="/admin/teachers" className="btn btn-soft">
-                عرض الكل
+                View All
               </Link>
             </div>
 
@@ -281,25 +281,25 @@ export default async function AdminDashboard() {
                   <div>
                     <h3 className="font-black">{teacher.full_name}</h3>
                     <p className="muted text-sm">
-                      {teacher.courses_count} كورس · {teacher.students_count} طالب
+                      {teacher.courses_count} courses · {teacher.students_count} students
                     </p>
                   </div>
-                  <span className="badge">نشط</span>
+                  <span className="badge">Active</span>
                 </div>
               ))}
 
-              {teachers.length === 0 ? <p className="muted">لا يوجد مدرسون بعد.</p> : null}
+              {teachers.length === 0 ? <p className="muted">No teachers yet.</p> : null}
             </div>
           </div>
 
           <div className="card admin-panel">
             <div className="toolbar">
               <div>
-                <span className="eyebrow">الطلاب</span>
-                <h2 className="text-3xl font-black">أحدث الطلاب</h2>
+                <span className="eyebrow">Students</span>
+                <h2 className="text-3xl font-black">Latest Students</h2>
               </div>
               <Link href="/admin/students" className="btn btn-soft">
-                عرض الكل
+                View All
               </Link>
             </div>
 
@@ -310,14 +310,14 @@ export default async function AdminDashboard() {
                   <div>
                     <h3 className="font-black">{student.full_name}</h3>
                     <p className="muted text-sm">
-                      {student.education_type_name || "غير محدد"} · {student.stage_name || "غير محدد"} · {student.grade_name || "غير محدد"}
+                      {student.education_type_name || "Not specified"} · {student.stage_name || "Not specified"} · {student.grade_name || "Not specified"}
                     </p>
                   </div>
                   <span className="badge">{student.student_code}</span>
                 </div>
               ))}
 
-              {students.length === 0 ? <p className="muted">لا يوجد طلاب بعد.</p> : null}
+              {students.length === 0 ? <p className="muted">No students yet.</p> : null}
             </div>
           </div>
         </div>
@@ -328,11 +328,11 @@ export default async function AdminDashboard() {
           <div className="card admin-panel">
             <div className="toolbar">
               <div>
-                <span className="eyebrow">المدفوعات</span>
-                <h2 className="text-3xl font-black">آخر المدفوعات</h2>
+                <span className="eyebrow">Payments</span>
+                <h2 className="text-3xl font-black">Latest Payments</h2>
               </div>
               <Link href="/admin/payments" className="btn btn-soft">
-                فتح المدفوعات
+                Open Payments
               </Link>
             </div>
 
@@ -349,13 +349,13 @@ export default async function AdminDashboard() {
                 </div>
               ))}
 
-              {payments.length === 0 ? <p className="muted">لا توجد مدفوعات بعد.</p> : null}
+              {payments.length === 0 ? <p className="muted">No payments yet.</p> : null}
             </div>
           </div>
 
           <div className="card admin-panel">
-            <span className="eyebrow">النشاطات</span>
-            <h2 className="text-3xl font-black">آخر النشاطات</h2>
+            <span className="eyebrow">Activity</span>
+            <h2 className="text-3xl font-black">Latest Activity</h2>
 
             <div className="activity-list mt-6">
               {activities.map((activity) => (
@@ -372,8 +372,8 @@ export default async function AdminDashboard() {
                 <div className="activity-item">
                   <div className="activity-dot" />
                   <div>
-                    <p className="font-bold">لا توجد نشاطات حديثة</p>
-                    <p className="muted text-sm">ستظهر طلبات الانضمام والتحديثات هنا.</p>
+                    <p className="font-bold">No recent activity</p>
+                    <p className="muted text-sm">Join requests and updates will appear here.</p>
                   </div>
                 </div>
               ) : null}

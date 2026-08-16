@@ -166,10 +166,10 @@ async function getGrades() {
 }
 
 function getStatusLabel(status: string) {
-  if (status === "published") return "منشور"
-  if (status === "draft") return "مسودة"
-  if (status === "paused") return "متوقف"
-  if (status === "ended") return "منتهي"
+  if (status === "published") return "Published"
+  if (status === "draft") return "Draft"
+  if (status === "paused") return "Paused"
+  if (status === "ended") return "Ended"
   return status
 }
 
@@ -211,19 +211,19 @@ export default async function AdminCourseDetailsPage({ params }: Params) {
 
       <section className="admin-page-hero">
         <div className="wrap">
-          <span className="eyebrow">لوحة الإدارة</span>
+          <span className="eyebrow">Admin Dashboard</span>
           <h1 className="h1">{course.title}</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            تعديل بيانات الكورس ومراجعة الشابترات والحصص المرتبطة به.
+            Edit course details and review related chapters and lessons.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
             <Link href="/admin/courses" className="btn">
-              رجوع للكورسات
+              Back to Courses
             </Link>
 
             <Link href={`/courses/${course.slug}`} className="btn btn-outline">
-              معاينة الكورس
+              Preview Course
             </Link>
           </div>
         </div>
@@ -232,17 +232,17 @@ export default async function AdminCourseDetailsPage({ params }: Params) {
       <section className="section pt-6">
         <div className="wrap grid gap-7 lg:grid-cols-[0.9fr_1.1fr]">
           <aside className="card price-card">
-            <span className="eyebrow">ملخص الكورس</span>
+            <span className="eyebrow">Course Summary</span>
             <h2 className="text-3xl font-black">{course.title}</h2>
 
             <div className="mt-5 grid gap-3 text-sm font-bold">
-              <p>✓ المدرس: {course.teacher_name}</p>
-              <p>✓ الحالة: {getStatusLabel(course.status)}</p>
-              <p>✓ نوع التعليم: {course.education_type_name || "كل الأنواع"}</p>
-              <p>✓ المرحلة: {course.stage_name || "كل المراحل"}</p>
-              <p>✓ الصف: {course.grade_name || "كل الصفوف"}</p>
-              <p>✓ مدة الوصول: {course.access_duration_days || 30} يوم</p>
-              <p>✓ عدد الشابترات: {chapters.length}</p>
+              <p>✓ Teacher: {course.teacher_name}</p>
+              <p>✓ Status: {getStatusLabel(course.status)}</p>
+              <p>✓ Education type: {course.education_type_name || "All types"}</p>
+              <p>✓ Stage: {course.stage_name || "All stages"}</p>
+              <p>✓ Grade: {course.grade_name || "All grades"}</p>
+              <p>✓ Access duration: {course.access_duration_days || 30} days</p>
+              <p>✓ Chapters: {chapters.length}</p>
             </div>
           </aside>
 
@@ -263,10 +263,10 @@ export default async function AdminCourseDetailsPage({ params }: Params) {
       <section className="section tint-section">
         <div className="wrap">
           <div className="card p-8 md:p-12">
-            <span className="eyebrow">الشابترات</span>
-            <h2 className="h2">شابترات الكورس</h2>
+            <span className="eyebrow">Chapters</span>
+            <h2 className="h2">Course Chapters</h2>
             <p className="muted mt-5 max-w-3xl">
-              يمكنك إدارة الشابترات والحصص من صفحات الإدارة الحالية.
+              Manage chapters and lessons from the current admin pages.
             </p>
 
             <div className="mt-8 grid gap-4">
@@ -283,19 +283,19 @@ export default async function AdminCourseDetailsPage({ params }: Params) {
                         <p className="muted mt-2">{chapter.description}</p>
                       ) : null}
                       <p className="muted mt-2 text-sm">
-                        عدد الحصص: {chapter.lessons_count}
+                        Lessons: {chapter.lessons_count}
                       </p>
                     </div>
 
                     <Link href={`/admin/chapters/${chapter.id}`} className="btn btn-outline">
-                      إدارة الشابتر
+                      Manage Chapter
                     </Link>
                   </div>
                 </div>
               ))}
 
               {chapters.length === 0 ? (
-                <p className="muted">لا توجد شابترات داخل هذا الكورس بعد.</p>
+                <p className="muted">No chapters inside this course yet.</p>
               ) : null}
             </div>
           </div>
@@ -306,4 +306,3 @@ export default async function AdminCourseDetailsPage({ params }: Params) {
     </main>
   )
 }
-

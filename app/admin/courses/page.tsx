@@ -126,16 +126,16 @@ async function getGrades() {
 }
 
 function getStatusLabel(status: string) {
-  if (status === "published") return "منشور"
-  if (status === "draft") return "مسودة"
-  if (status === "paused") return "متوقف"
-  if (status === "ended") return "منتهي"
-  if (status === "archived") return "مؤرشف"
+  if (status === "published") return "Published"
+  if (status === "draft") return "Draft"
+  if (status === "paused") return "Paused"
+  if (status === "ended") return "Ended"
+  if (status === "archived") return "Archived"
   return status
 }
 
 function getInitials(title: string) {
-  return title.trim().slice(0, 1) || "ك"
+  return title.trim().slice(0, 1) || "C"
 }
 
 export default async function AdminCoursesPage() {
@@ -156,10 +156,10 @@ export default async function AdminCoursesPage() {
 
       <section className="admin-page-hero">
         <div className="wrap">
-          <span className="eyebrow">لوحة الإدارة</span>
-          <h1 className="h1">إدارة الكورسات</h1>
+          <span className="eyebrow">Admin Dashboard</span>
+          <h1 className="h1">Manage Courses</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            أنشئ الكورسات من لوحة الأدمن، وحدد المدرس ونوع التعليم والمرحلة والصف.
+            Create courses from the admin panel and select the teacher, education type, stage, and grade.
           </p>
         </div>
       </section>
@@ -169,15 +169,15 @@ export default async function AdminCoursesPage() {
           <div className="admin-summary-grid">
             <div className="card summary-card">
               <b>{courses.length}</b>
-              <span className="muted font-bold">إجمالي الكورسات</span>
+              <span className="muted font-bold">Total Courses</span>
             </div>
             <div className="card summary-card">
               <b>{published}</b>
-              <span className="muted font-bold">منشورة</span>
+              <span className="muted font-bold">Published</span>
             </div>
             <div className="card summary-card">
               <b>{drafts}</b>
-              <span className="muted font-bold">مسودات</span>
+              <span className="muted font-bold">Drafts</span>
             </div>
           </div>
 
@@ -190,16 +190,16 @@ export default async function AdminCoursesPage() {
 
           <div className="toolbar">
             <div className="search-row">
-              <input className="input" placeholder="ابحث عن كورس..." />
+              <input className="input" placeholder="Search courses..." />
               <select className="input" defaultValue="all">
-                <option value="all">كل الكورسات</option>
-                <option value="published">منشور</option>
-                <option value="draft">مسودة</option>
+                <option value="all">All courses</option>
+                <option value="published">Published</option>
+                <option value="draft">Draft</option>
               </select>
             </div>
 
             <Link href="/admin" className="btn btn-outline">
-              رجوع للوحة الإدارة
+              Back to Admin Dashboard
             </Link>
           </div>
 
@@ -207,13 +207,13 @@ export default async function AdminCoursesPage() {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>الكورس</th>
-                  <th>المدرس</th>
-                  <th>التصنيف</th>
-                  <th>الحالة</th>
-                  <th>الحصص</th>
-                  <th>الطلاب</th>
-                  <th>إجراءات</th>
+                  <th>Course</th>
+                  <th>Teacher</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Lessons</th>
+                  <th>Students</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -225,26 +225,26 @@ export default async function AdminCoursesPage() {
                         <b>{course.title}</b>
                       </div>
                     </td>
-                    <td>{course.teacher_name || "غير محدد"}</td>
+                    <td>{course.teacher_name || "Not specified"}</td>
                     <td>
-                      <p>{course.education_type_name || "كل الأنواع"}</p>
+                      <p>{course.education_type_name || "All types"}</p>
                       <p className="muted text-sm">
-                        {course.stage_name || "كل المراحل"} — {course.grade_name || "كل الصفوف"}
+                        {course.stage_name || "All stages"} — {course.grade_name || "All grades"}
                       </p>
                     </td>
                     <td>
                       <span className="badge">{getStatusLabel(course.status)}</span>
                     </td>
-                    <td>{course.lessons_count} حصة</td>
-                    <td>{course.students_count} طالب</td>
+                    <td>{course.lessons_count} lessons</td>
+                    <td>{course.students_count} students</td>
                     <td>
                       <div className="flex flex-wrap gap-2">
                         <Link href={`/courses/${course.slug}`} className="btn btn-soft btn-sm">
-                          معاينة
+                          Preview
                         </Link>
 
                         <Link href={`/admin/courses/${course.id}`} className="btn btn-outline btn-sm">
-                          تعديل
+                          Edit
                         </Link>
 
                         <AdminCourseDeleteButton
@@ -258,7 +258,7 @@ export default async function AdminCoursesPage() {
 
                 {courses.length === 0 ? (
                   <tr>
-                    <td colSpan={7}>لا توجد كورسات بعد.</td>
+                    <td colSpan={7}>No courses yet.</td>
                   </tr>
                 ) : null}
               </tbody>
@@ -271,4 +271,3 @@ export default async function AdminCoursesPage() {
     </main>
   )
 }
-
