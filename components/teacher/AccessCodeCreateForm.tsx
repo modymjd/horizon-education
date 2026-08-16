@@ -16,9 +16,9 @@ type Props = {
 }
 
 function getLessonStatusLabel(status: string) {
-  if (status === "published") return "منشورة"
-  if (status === "draft") return "مسودة"
-  if (status === "hidden") return "مخفية"
+  if (status === "published") return "Published"
+  if (status === "draft") return "Draft"
+  if (status === "hidden") return "Hidden"
   return status
 }
 
@@ -40,7 +40,7 @@ export function AccessCodeCreateForm({ lessons }: Props) {
     setCodes([])
 
     if (!lessonId) {
-      setError("اختر الحصة أولًا")
+      setError("Choose a lesson first")
       return
     }
 
@@ -63,14 +63,14 @@ export function AccessCodeCreateForm({ lessons }: Props) {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر إنشاء الأكواد")
+        setError(data.message || "Unable to create codes")
         return
       }
 
       setCodes(data.codes || [])
       router.refresh()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading(false)
     }
@@ -78,17 +78,17 @@ export function AccessCodeCreateForm({ lessons }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="card code-generator">
-      <span className="eyebrow">إنشاء أكواد</span>
-      <h2 className="text-3xl font-black">ولّد أكواد جديدة</h2>
+      <span className="eyebrow">Create Codes</span>
+      <h2 className="text-3xl font-black">Generate New Codes</h2>
       <p className="muted mt-3">
-        اختر أي حصة من حصصك وعدد الأكواد، وسيتم عرض الأكواد الخام مرة واحدة فقط.
+        Choose one of your lessons and the number of codes. Raw codes will be shown only once.
       </p>
 
       {error ? <div className="alert-error mt-5">{error}</div> : null}
 
       {codes.length ? (
         <div className="alert-success mt-5">
-          <p className="font-black">تم إنشاء الأكواد بنجاح. انسخها الآن:</p>
+          <p className="font-black">Codes created successfully. Copy them now:</p>
           <div className="mt-3 grid gap-2">
             {codes.map((code) => (
               <code className="code-preview" key={code}>
@@ -101,14 +101,14 @@ export function AccessCodeCreateForm({ lessons }: Props) {
 
       <div className="form-grid mt-6">
         <label className="font-bold">
-          الحصة
+          Lesson
           <select
             className="input mt-2"
             value={lessonId}
             onChange={(e) => setLessonId(e.target.value)}
             required
           >
-            <option value="">اختر الحصة</option>
+            <option value="">Select lesson</option>
             {lessons.map((lesson) => (
               <option value={lesson.id} key={lesson.id}>
                 {lesson.course_title ? `${lesson.course_title} — ` : ""}
@@ -120,7 +120,7 @@ export function AccessCodeCreateForm({ lessons }: Props) {
         </label>
 
         <label className="font-bold">
-          عدد الأكواد
+          Number of Codes
           <input
             className="input mt-2"
             type="number"
@@ -133,7 +133,7 @@ export function AccessCodeCreateForm({ lessons }: Props) {
         </label>
 
         <label className="font-bold">
-          تاريخ الانتهاء
+          Expiry Date
           <input
             className="input mt-2"
             type="date"
@@ -143,20 +143,20 @@ export function AccessCodeCreateForm({ lessons }: Props) {
         </label>
 
         <label className="font-bold">
-          نوع الكود
+          Code Type
           <select
             className="input mt-2"
             value={singleUse ? "single" : "multi"}
             onChange={(e) => setSingleUse(e.target.value === "single")}
           >
-            <option value="single">استخدام مرة واحدة</option>
-            <option value="multi">متعدد الاستخدام</option>
+            <option value="single">Single use</option>
+            <option value="multi">Multi use</option>
           </select>
         </label>
       </div>
 
       <button className="btn btn-block mt-6 disabled:opacity-60" disabled={isLoading}>
-        {isLoading ? "جاري إنشاء الأكواد..." : "إنشاء الأكواد"}
+        {isLoading ? "Creating codes..." : "Create codes"}
       </button>
     </form>
   )

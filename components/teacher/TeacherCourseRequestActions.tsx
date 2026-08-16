@@ -9,9 +9,9 @@ type Props = {
 }
 
 function getStatusLabel(status: string) {
-  if (status === "pending") return "قيد المراجعة"
-  if (status === "accepted") return "مقبول"
-  if (status === "rejected") return "مرفوض"
+  if (status === "pending") return "Pending Review"
+  if (status === "accepted") return "Accepted"
+  if (status === "rejected") return "Rejected"
   return status
 }
 
@@ -44,14 +44,14 @@ export function TeacherCourseRequestActions({
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر تحديث الطلب")
+        setError(data.message || "Unable to update request")
         return
       }
 
       setStatus(nextStatus)
       router.refresh()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading("")
     }
@@ -69,7 +69,7 @@ export function TeacherCourseRequestActions({
             disabled={!!isLoading}
             onClick={() => updateStatus("accepted")}
           >
-            {isLoading === "accepted" ? "جاري القبول..." : "قبول"}
+            {isLoading === "accepted" ? "Accepting..." : "Accept"}
           </button>
 
           <button
@@ -78,7 +78,7 @@ export function TeacherCourseRequestActions({
             disabled={!!isLoading}
             onClick={() => updateStatus("rejected")}
           >
-            {isLoading === "rejected" ? "جاري الرفض..." : "رفض"}
+            {isLoading === "rejected" ? "Rejecting..." : "Reject"}
           </button>
         </div>
       ) : null}

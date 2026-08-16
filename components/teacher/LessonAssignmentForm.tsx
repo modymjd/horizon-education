@@ -25,7 +25,7 @@ export function LessonAssignmentForm({ lessonId }: Props) {
     setSuccess("")
 
     if (!title.trim()) {
-      setError("اكتب عنوان الواجب")
+      setError("Enter the assignment title")
       return
     }
 
@@ -50,18 +50,18 @@ export function LessonAssignmentForm({ lessonId }: Props) {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر إضافة الواجب")
+        setError(data.message || "Unable to add assignment")
         return
       }
 
-      setSuccess(data.message || "تم إضافة الواجب بنجاح")
+      setSuccess(data.message || "Assignment added successfully")
       setTitle("")
       setDescription("")
       setDueAt("")
       setFile(null)
       router.refresh()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading(false)
     }
@@ -69,38 +69,38 @@ export function LessonAssignmentForm({ lessonId }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="card payment-form">
-      <span className="eyebrow">واجبات الحصة</span>
-      <h2 className="text-3xl font-black">إضافة واجب</h2>
+      <span className="eyebrow">Lesson Assignments</span>
+      <h2 className="text-3xl font-black">Add Assignment</h2>
       <p className="muted mt-3">
-        أضف واجبًا مرتبطًا بهذه الحصة، مع ملف اختياري وتعليمات للطالب.
+        Add an assignment linked to this lesson, with an optional file and student instructions.
       </p>
 
       {error ? <div className="alert-error mt-5">{error}</div> : null}
       {success ? <div className="alert-success mt-5">{success}</div> : null}
 
       <label className="mt-6 block font-bold">
-        عنوان الواجب
+        Assignment Title
         <input
           className="input mt-2"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="مثال: واجب الدرس الأول"
+          placeholder="Example: Lesson One Assignment"
           required
         />
       </label>
 
       <label className="mt-4 block font-bold">
-        تعليمات الواجب
+        Assignment Instructions
         <textarea
           className="input mt-2 min-h-28"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="اكتب المطلوب من الطالب..."
+          placeholder="Write what the student needs to do..."
         />
       </label>
 
       <label className="mt-4 block font-bold">
-        موعد التسليم
+        Due Date
         <input
           className="input mt-2"
           type="datetime-local"
@@ -110,7 +110,7 @@ export function LessonAssignmentForm({ lessonId }: Props) {
       </label>
 
       <label className="mt-4 block font-bold">
-        ملف مرفق اختياري
+        Optional Attachment
         <input
           className="input mt-2"
           type="file"
@@ -121,12 +121,12 @@ export function LessonAssignmentForm({ lessonId }: Props) {
 
       {file ? (
         <p className="muted mt-3 text-sm">
-          الملف المختار: {file.name}
+          Selected file: {file.name}
         </p>
       ) : null}
 
       <button className="btn btn-block mt-6 disabled:opacity-60" disabled={isLoading}>
-        {isLoading ? "جاري الإضافة..." : "إضافة الواجب"}
+        {isLoading ? "Adding..." : "Add assignment"}
       </button>
     </form>
   )

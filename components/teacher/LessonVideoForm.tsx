@@ -11,7 +11,7 @@ type Props = {
 export function LessonVideoForm({ lessonId, initialVideoUrl }: Props) {
   const router = useRouter()
 
-  const [title, setTitle] = useState("فيديو الدرس")
+  const [title, setTitle] = useState("Lesson Video")
   const [file, setFile] = useState<File | null>(null)
   const [currentVideoUrl, setCurrentVideoUrl] = useState(initialVideoUrl)
   const [isLoading, setIsLoading] = useState(false)
@@ -25,7 +25,7 @@ export function LessonVideoForm({ lessonId, initialVideoUrl }: Props) {
     setSuccess("")
 
     if (!file) {
-      setError("اختار ملف فيديو أولًا")
+      setError("Choose a video file first")
       return
     }
 
@@ -34,7 +34,7 @@ export function LessonVideoForm({ lessonId, initialVideoUrl }: Props) {
     try {
       const formData = new FormData()
       formData.append("lesson_id", String(lessonId))
-      formData.append("title", title || "فيديو جديد")
+      formData.append("title", title || "New Video")
       formData.append("video", file)
 
       const res = await fetch("/api/teacher/lessons", {
@@ -45,16 +45,16 @@ export function LessonVideoForm({ lessonId, initialVideoUrl }: Props) {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر رفع الفيديو")
+        setError(data.message || "Unable to upload video")
         return
       }
 
-      setSuccess(data.message || "تم رفع الفيديو بنجاح")
+      setSuccess(data.message || "Video uploaded successfully")
       setCurrentVideoUrl(data.video_url || null)
       setFile(null)
       router.refresh()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading(false)
     }
@@ -62,10 +62,10 @@ export function LessonVideoForm({ lessonId, initialVideoUrl }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="card payment-form">
-      <span className="eyebrow">فيديوهات الحصة</span>
-      <h2 className="text-3xl font-black">رفع فيديو جديد</h2>
+      <span className="eyebrow">Lesson Videos</span>
+      <h2 className="text-3xl font-black">Upload New Video</h2>
       <p className="muted mt-3">
-        يمكنك رفع أكثر من فيديو داخل نفس الحصة، وسيظهروا للطالب بالترتيب.
+        You can upload more than one video inside the same lesson. Students will see them in order.
       </p>
 
       {error ? <div className="alert-error mt-5">{error}</div> : null}
@@ -73,30 +73,30 @@ export function LessonVideoForm({ lessonId, initialVideoUrl }: Props) {
 
       {currentVideoUrl ? (
         <div className="mt-6">
-          <p className="mb-2 font-bold">آخر فيديو تم رفعه</p>
+          <p className="mb-2 font-bold">Latest uploaded video</p>
           <video controls className="w-full rounded-2xl" src={currentVideoUrl}>
-            المتصفح لا يدعم تشغيل الفيديو.
+            Your browser does not support video playback.
           </video>
         </div>
       ) : (
         <div className="mt-6 rounded-2xl bg-[var(--cream-2)] p-4 text-sm font-bold">
-          لا يوجد فيديو مرفوع لهذه الحصة حتى الآن.
+          No video has been uploaded for this lesson yet.
         </div>
       )}
 
       <label className="mt-6 block font-bold">
-        عنوان الفيديو
+        Video Title
         <input
           className="input mt-2"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="مثال: شرح الجزء الأول"
+          placeholder="Example: Part One Explanation"
           required
         />
       </label>
 
       <label className="mt-4 block font-bold">
-        اختر فيديو من جهازك
+        Choose Video From Your Device
         <input
           className="input mt-2"
           type="file"
@@ -108,12 +108,12 @@ export function LessonVideoForm({ lessonId, initialVideoUrl }: Props) {
 
       {file ? (
         <p className="muted mt-3 text-sm">
-          الملف المختار: {file.name}
+          Selected file: {file.name}
         </p>
       ) : null}
 
       <button className="btn btn-block mt-6 disabled:opacity-60" disabled={isLoading}>
-        {isLoading ? "جاري رفع الفيديو..." : "رفع الفيديو"}
+        {isLoading ? "Uploading video..." : "Upload video"}
       </button>
     </form>
   )

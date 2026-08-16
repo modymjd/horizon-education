@@ -25,7 +25,7 @@ export function LessonExamForm({ lessonId }: Props) {
     setSuccess("")
 
     if (!title.trim()) {
-      setError("اكتب عنوان الامتحان")
+      setError("Enter the exam title")
       return
     }
 
@@ -50,18 +50,18 @@ export function LessonExamForm({ lessonId }: Props) {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر إضافة الامتحان")
+        setError(data.message || "Unable to add exam")
         return
       }
 
-      setSuccess(data.message || "تم إضافة الامتحان بنجاح")
+      setSuccess(data.message || "Exam added successfully")
       setTitle("")
       setDescription("")
       setPassScore("60")
       setRequired(false)
       setPlacement("after_content")
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading(false)
     }
@@ -69,10 +69,10 @@ export function LessonExamForm({ lessonId }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="card p-6 md:p-8">
-      <span className="eyebrow">امتحانات الحصة</span>
-      <h2 className="text-3xl font-black">إضافة امتحان</h2>
+      <span className="eyebrow">Lesson Exams</span>
+      <h2 className="text-3xl font-black">Add Exam</h2>
       <p className="muted mt-2">
-        أضف امتحانًا للحصة وحدد مكان ظهوره للطالب قبل محتوى الحصة أو بعده.
+        Add an exam for this lesson and choose whether students see it before or after the lesson content.
       </p>
 
       {error ? (
@@ -88,39 +88,39 @@ export function LessonExamForm({ lessonId }: Props) {
       ) : null}
 
       <label className="mt-5 block">
-        عنوان الامتحان
+        Exam Title
         <input
           className="input mt-2"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="مثال: امتحان تمهيدي على الحصة"
+          placeholder="Example: Pre-lesson exam"
         />
       </label>
 
       <label className="mt-4 block">
-        وصف الامتحان
+        Exam Description
         <textarea
           className="input mt-2 min-h-28"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="اكتب تعليمات الامتحان..."
+          placeholder="Write exam instructions..."
         />
       </label>
 
       <label className="mt-4 block">
-        مكان ظهور الامتحان
+        Exam Placement
         <select
           className="input mt-2"
           value={placement}
           onChange={(e) => setPlacement(e.target.value as ExamPlacement)}
         >
-          <option value="before_content">قبل الحصة</option>
-          <option value="after_content">بعد الحصة</option>
+          <option value="before_content">Before lesson</option>
+          <option value="after_content">After lesson</option>
         </select>
       </label>
 
       <label className="mt-4 block">
-        درجة النجاح
+        Passing Score
         <input
           className="input mt-2"
           type="number"
@@ -137,11 +137,11 @@ export function LessonExamForm({ lessonId }: Props) {
           checked={required}
           onChange={(e) => setRequired(e.target.checked)}
         />
-        مطلوب اجتيازه لفتح الحصة التالية
+        Required to unlock the next lesson
       </label>
 
       <button className="btn mt-6 w-full" type="submit" disabled={isLoading}>
-        {isLoading ? "جاري الإضافة..." : "إضافة الامتحان"}
+        {isLoading ? "Adding..." : "Add exam"}
       </button>
     </form>
   )
