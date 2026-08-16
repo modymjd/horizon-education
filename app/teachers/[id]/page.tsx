@@ -112,7 +112,7 @@ async function getTeacherCourses(teacherId: number) {
 }
 
 function getInitials(name: string) {
-  return name.trim().slice(0, 1) || "م"
+  return name.trim().slice(0, 1) || "T"
 }
 
 export default async function TeacherProfilePage({ params }: Params) {
@@ -140,35 +140,35 @@ export default async function TeacherProfilePage({ params }: Params) {
         <div className="wrap course-hero-grid">
           <div className="card course-panel">
             <div className="course-meta">
-              <span className="badge">{teacher.courses_count} كورس</span>
-              <span className="badge">{teacher.lessons_count} حصة</span>
-              <span className="badge">{teacher.students_count} طالب</span>
+              <span className="badge">{teacher.courses_count} courses</span>
+              <span className="badge">{teacher.lessons_count} lessons</span>
+              <span className="badge">{teacher.students_count} students</span>
             </div>
 
             <h1 className="h1 mt-6">{teacher.full_name}</h1>
 
             <p className="muted mt-6 text-lg">
-              {teacher.bio || "مدرس على منصة حورايزون تعليم. يمكنك تصفح الكورسات المنشورة لهذا المدرس."}
+              {teacher.bio || "Teacher on Horizon Education. Browse this teacher's published courses below."}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/teachers" className="btn">
-                كل المدرسين
+                All Teachers
               </Link>
 
               <Link href="/subjects" className="btn btn-outline">
-                تصفح الكورسات
+                Browse Courses
               </Link>
             </div>
           </div>
 
           <aside className="course-preview">
-            <span className="lesson-pill">مدرس</span>
+            <span className="lesson-pill">Teacher</span>
             <h2 className="mt-5 font-[var(--display)] text-6xl font-bold leading-none">
               {getInitials(teacher.full_name)}
             </h2>
             <p className="mt-4 max-w-sm opacity-80">
-              شاهد الكورسات المنشورة واطلب الانضمام للكورس المناسب.
+              View published courses and request to join the course that fits you.
             </p>
           </aside>
         </div>
@@ -177,8 +177,8 @@ export default async function TeacherProfilePage({ params }: Params) {
       <section className="section">
         <div className="wrap">
           <div className="section-head">
-            <span className="eyebrow">كورسات المدرس</span>
-            <h2 className="h2">الكورسات المتاحة</h2>
+            <span className="eyebrow">Teacher Courses</span>
+            <h2 className="h2">Available Courses</h2>
           </div>
 
           <div className="grid-auto">
@@ -193,25 +193,25 @@ export default async function TeacherProfilePage({ params }: Params) {
                 <h3 className="mt-5 text-2xl font-black">{course.title}</h3>
 
                 <p className="muted mt-2">
-                  {course.short_description || "لا يوجد وصف مختصر لهذا الكورس بعد."}
+                  {course.short_description || "No short description is available for this course yet."}
                 </p>
 
                 <p className="muted mt-3 text-sm">
-                  {course.education_type_name || "كل الأنواع"} —{" "}
-                  {course.stage_name || "كل المراحل"} —{" "}
-                  {course.grade_name || "كل الصفوف"}
+                  {course.education_type_name || "All types"} —{" "}
+                  {course.stage_name || "All stages"} —{" "}
+                  {course.grade_name || "All grades"}
                 </p>
 
-                <span className="badge mt-5">{course.lessons_count} حصة</span>
+                <span className="badge mt-5">{course.lessons_count} lessons</span>
               </Link>
             ))}
 
             {courses.length === 0 ? (
               <div className="card subject-card">
-                <div className="icon-circle">ك</div>
-                <h3 className="mt-5 text-2xl font-black">لا توجد كورسات منشورة</h3>
+                <div className="icon-circle">C</div>
+                <h3 className="mt-5 text-2xl font-black">No published courses</h3>
                 <p className="muted mt-2">
-                  لا توجد كورسات منشورة لهذا المدرس حاليًا.
+                  This teacher does not have published courses yet.
                 </p>
               </div>
             ) : null}

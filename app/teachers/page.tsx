@@ -51,7 +51,7 @@ async function getTeachers() {
 }
 
 function getInitials(name: string) {
-  return name.trim().slice(0, 1) || "م"
+  return name.trim().slice(0, 1) || "T"
 }
 
 export default async function TeachersPage() {
@@ -64,10 +64,10 @@ export default async function TeachersPage() {
       <section className="section">
         <div className="wrap">
           <div className="section-head">
-            <span className="eyebrow">المدرسون</span>
-            <h1 className="h1">اختار المدرس المناسب لك</h1>
+            <span className="eyebrow">Teachers</span>
+            <h1 className="h1">Choose the right teacher for you</h1>
             <p className="muted mt-6 text-lg">
-              تصفح المدرسين المتاحين على المنصة وشاهد الكورسات والحصص المنشورة لكل مدرس.
+              Browse active teachers, view their published courses, and explore available lessons.
             </p>
           </div>
 
@@ -94,23 +94,23 @@ export default async function TeachersPage() {
                 <h3 className="mt-5 text-2xl font-black">{teacher.full_name}</h3>
 
                 <p className="muted mt-2">
-                  {teacher.bio || "مدرس على منصة حورايزون تعليم."}
+                  {teacher.bio || "Teacher on Horizon Education."}
                 </p>
 
                 <div className="mt-5 flex flex-wrap gap-2">
-                  <span className="badge">{teacher.courses_count} كورس</span>
-                  <span className="badge">{teacher.lessons_count} حصة</span>
-                  <span className="badge">{teacher.students_count} طالب</span>
+                  <span className="badge">{teacher.courses_count} courses</span>
+                  <span className="badge">{teacher.lessons_count} lessons</span>
+                  <span className="badge">{teacher.students_count} students</span>
                 </div>
               </Link>
             ))}
 
             {teachers.length === 0 ? (
               <div className="card subject-card">
-                <div className="icon-circle">م</div>
-                <h3 className="mt-5 text-2xl font-black">لا يوجد مدرسون بعد</h3>
+                <div className="icon-circle">T</div>
+                <h3 className="mt-5 text-2xl font-black">No teachers yet</h3>
                 <p className="muted mt-2">
-                  عندما يضيف الأدمن مدرسين نشطين، سيظهرون هنا.
+                  Active teachers will appear here after they are added by the admin.
                 </p>
               </div>
             ) : null}
