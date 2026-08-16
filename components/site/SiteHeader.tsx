@@ -10,9 +10,9 @@ export function SiteHeader() {
           <BrandMark />
 
           <div className="nav-links">
-            <Link href="/subjects">المواد</Link>
-            <Link href="/teachers">المدرّسين</Link>
-            <Link href="/certificates">الشهادات</Link>
+            <Link href="/subjects">Courses</Link>
+            <Link href="/teachers">Teachers</Link>
+            <Link href="/certificates">Certificates</Link>
           </div>
 
           <AuthHeaderActions />

@@ -73,11 +73,11 @@ export function AuthHeaderActions() {
     return (
       <div className="nav-cta">
         <Link href="/login" className="btn btn-outline btn-sm">
-          تسجيل الدخول
+          Login
         </Link>
 
         <Link href="/subjects" className="btn btn-sm">
-          ابدأ الآن
+          Get Started
         </Link>
       </div>
     )
@@ -87,7 +87,7 @@ export function AuthHeaderActions() {
     return (
       <div className="nav-cta">
         <Link href={roleHome[data.user.role]} className="btn btn-outline btn-sm">
-          لوحة التحكم
+          Dashboard
         </Link>
 
         <button
@@ -96,7 +96,7 @@ export function AuthHeaderActions() {
           onClick={handleLogout}
           disabled={isLoggingOut}
         >
-          {isLoggingOut ? "جاري الخروج..." : "تسجيل خروج"}
+          {isLoggingOut ? "Logging out..." : "Logout"}
         </button>
       </div>
     )
@@ -105,11 +105,11 @@ export function AuthHeaderActions() {
   return (
     <div className="nav-cta">
       <Link href="/login" className="btn btn-outline btn-sm">
-        تسجيل الدخول
+        Login
       </Link>
 
       <Link href="/subjects" className="btn btn-sm">
-        ابدأ الآن
+        Get Started
       </Link>
     </div>
   )

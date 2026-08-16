@@ -5,7 +5,7 @@ export function BrandMark() {
     <Link href="/" className="mark" aria-label="Horizon Education">
       <span className="mark-symbol">H</span>
       <span className="mark-word">
-        حورايزون <b>تعليم</b>
+        Horizon <b>Education</b>
       </span>
     </Link>
   )

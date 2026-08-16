@@ -35,14 +35,14 @@ export default function LoginPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر تسجيل الدخول")
+        setError(data.message || "Unable to log in")
         return
       }
 
       router.push(data.redirectTo || "/")
       router.refresh()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading(false)
     }
@@ -55,15 +55,15 @@ export default function LoginPage() {
       <section className="auth-section">
         <div className="wrap auth-grid">
           <div className="auth-copy">
-            <span className="eyebrow">تسجيل الدخول</span>
-            <h1 className="h1">ادخل إلى حسابك في Horizon</h1>
+            <span className="eyebrow">Login</span>
+            <h1 className="h1">Log in to your Horizon account</h1>
             <p className="muted mt-5 text-lg">
-              استخدم البريد وكلمة المرور الخاصة بحسابك للوصول إلى لوحة الطالب أو المدرس أو الأدمن.
+              Use your email and password to access the right dashboard for your role.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="card auth-card">
-            <h2 className="text-3xl font-black">تسجيل الدخول</h2>
+            <h2 className="text-3xl font-black">Login</h2>
 
             {error ? (
               <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
@@ -72,7 +72,7 @@ export default function LoginPage() {
             ) : null}
 
             <label className="mt-6 block">
-              البريد الإلكتروني
+              Email Address
               <input
                 className="input mt-2"
                 type="email"
@@ -84,7 +84,7 @@ export default function LoginPage() {
             </label>
 
             <label className="mt-4 block">
-              كلمة المرور
+              Password
               <input
                 className="input mt-2"
                 type="password"
@@ -100,15 +100,15 @@ export default function LoginPage() {
               disabled={isLoading}
               type="submit"
             >
-              {isLoading ? "جاري الدخول..." : "دخول"}
+              {isLoading ? "Logging in..." : "Login"}
             </button>
 
             <div className="mt-5 flex items-center justify-between text-sm">
               <Link href="/forgot-password" className="font-bold">
-                نسيت كلمة المرور؟
+                Forgot password?
               </Link>
               <Link href="/register" className="font-bold">
-                إنشاء حساب طالب
+                Create student account
               </Link>
             </div>
           </form>
