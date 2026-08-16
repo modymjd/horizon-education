@@ -93,10 +93,10 @@ async function getAvailableCourses(studentId: number) {
 }
 
 function getRequestLabel(status: string | null) {
-  if (status === "pending") return "قيد المراجعة"
-  if (status === "accepted") return "مقبول"
-  if (status === "rejected") return "مرفوض"
-  return "لم تطلب الانضمام"
+  if (status === "pending") return "Pending Review"
+  if (status === "accepted") return "Accepted"
+  if (status === "rejected") return "Rejected"
+  return "Not requested yet"
 }
 
 export default async function StudentCoursesPage() {
@@ -121,19 +121,19 @@ export default async function StudentCoursesPage() {
 
       <section className="teacher-page-hero">
         <div className="wrap">
-          <span className="eyebrow">لوحة الطالب</span>
-          <h1 className="h1">الكورسات المناسبة لك</h1>
+          <span className="eyebrow">Student Dashboard</span>
+          <h1 className="h1">Courses that match your profile</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            تصفح الكورسات المناسبة لبياناتك الدراسية، واطلب الانضمام ليظهر طلبك للمدرس.
+            Browse courses that match your education profile and request to join. Your request will be sent to the teacher.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
             <Link href="/student" className="btn">
-              رجوع للوحة الطالب
+              Back to Student Dashboard
             </Link>
 
             <Link href="/student/activate" className="btn btn-outline">
-              تفعيل كود وصول
+              Activate Access Code
             </Link>
           </div>
         </div>
@@ -142,11 +142,11 @@ export default async function StudentCoursesPage() {
       <section className="section pt-6">
         <div className="wrap">
           <div className="card p-6 md:p-8 mb-6">
-            <span className="eyebrow">بياناتك الدراسية</span>
+            <span className="eyebrow">Your Education Profile</span>
             <div className="mt-4 grid gap-3 text-sm font-bold md:grid-cols-3">
-              <p>✓ نوع التعليم: {profile?.education_type_name || "غير محدد"}</p>
-              <p>✓ المرحلة: {profile?.stage_name || "غير محدد"}</p>
-              <p>✓ الصف: {profile?.grade_name || "غير محدد"}</p>
+              <p>✓ Education type: {profile?.education_type_name || "Not specified"}</p>
+              <p>✓ Stage: {profile?.stage_name || "Not specified"}</p>
+              <p>✓ Grade: {profile?.grade_name || "Not specified"}</p>
             </div>
           </div>
 
@@ -162,17 +162,17 @@ export default async function StudentCoursesPage() {
                     <div className="mt-4">
                       <h2 className="text-3xl font-black">{course.title}</h2>
                       <p className="muted mt-1">
-                        {course.short_description || "لا يوجد وصف مختصر بعد."}
+                        {course.short_description || "No short description yet."}
                       </p>
                       <p className="muted mt-2 text-sm">
-                        المدرس: {course.teacher_name} — نوع التعليم: {course.education_type_name || "عام"} — عدد الحصص: {course.lessons_count}
+                        Teacher: {course.teacher_name} — Education type: {course.education_type_name || "General"} — Lessons: {course.lessons_count}
                       </p>
                     </div>
                   </div>
 
                   <div className="course-actions">
                     <Link href={`/courses/${course.slug}`} className="btn btn-soft">
-                      معاينة
+                      Preview
                     </Link>
                   </div>
                 </div>
@@ -186,9 +186,9 @@ export default async function StudentCoursesPage() {
 
             {courses.length === 0 ? (
               <div className="card course-management-card">
-                <h2 className="text-2xl font-black">لا توجد كورسات مناسبة حاليًا</h2>
+                <h2 className="text-2xl font-black">No matching courses right now</h2>
                 <p className="muted mt-2">
-                  عندما يتم نشر كورسات مناسبة لنوع تعليمك، ستظهر هنا.
+                  When courses that match your education profile are published, they will appear here.
                 </p>
               </div>
             ) : null}

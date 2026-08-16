@@ -127,11 +127,11 @@ export default async function StudentExamPage({
       <section className="section">
         <div className="wrap">
           <div className="card p-6 md:p-10">
-            <span className="eyebrow">امتحان الحصة</span>
+            <span className="eyebrow">Lesson Exam</span>
             <h1 className="h2">{exam.title}</h1>
 
             <p className="muted mt-4">
-              الحصة: {exam.lesson_title}
+              Lesson: {exam.lesson_title}
             </p>
 
             {exam.description ? (
@@ -139,17 +139,16 @@ export default async function StudentExamPage({
             ) : null}
 
             <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-900">
-              <b>تنبيه مهم:</b>
+              <b>Important notice:</b>
               <p className="mt-2">
-                بمجرد بدء الامتحان، لو خرجت من الصفحة أو عملت تحديث أو قفلت التبويب،
-                سيتم إغلاق الامتحان وتسجيل المحاولة بدرجة صفر، ولن تتمكن من دخوله مرة أخرى.
+                Once you start the exam, leaving the page, refreshing it, or closing the tab will close the exam and record the attempt with a zero score. You will not be able to take it again.
               </p>
             </div>
 
             {exam.attempted ? (
               <div className="alert-success mt-6">
-                تم دخول هذا الامتحان من قبل — الدرجة: {exam.score}% —{" "}
-                {exam.passed ? "ناجح" : "غير ناجح"}
+                You have already taken this exam — score: {exam.score}% —{" "}
+                {exam.passed ? "Passed" : "Not passed"}
               </div>
             ) : (
               <StudentExamPageForm
@@ -162,7 +161,7 @@ export default async function StudentExamPage({
 
             <div className="mt-8">
               <Link href={`/student/lessons/${exam.lesson_id}`} className="btn btn-outline">
-                رجوع للحصة
+                Back to Lesson
               </Link>
             </div>
           </div>

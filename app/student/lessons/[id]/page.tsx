@@ -164,22 +164,22 @@ function ExamCard({ exam }: { exam: ExamRow }) {
         <p className="muted mt-2">{exam.description}</p>
       ) : null}
 
-      <p className="muted mt-2 text-sm">درجة النجاح: {exam.pass_score}%</p>
+      <p className="muted mt-2 text-sm">Passing score: {exam.pass_score}%</p>
 
-      <p className="muted mt-1 text-sm">عدد الأسئلة: {exam.questions_count}</p>
+      <p className="muted mt-1 text-sm">Questions: {exam.questions_count}</p>
 
       <p className="muted mt-1 text-sm">
-        شرط فتح التالي: {exam.is_required_to_unlock_next ? "نعم" : "لا"}
+        Required to unlock next lesson: {exam.is_required_to_unlock_next ? "Yes" : "No"}
       </p>
 
       {exam.attempted ? (
         <div className="alert-success mt-4">
-          تم تسليم الامتحان — الدرجة: {exam.score}% —{" "}
-          {exam.passed ? "ناجح" : "غير ناجح"}
+          Exam submitted — score: {exam.score}% —{" "}
+          {exam.passed ? "Passed" : "Not passed"}
         </div>
       ) : (
         <Link href={`/student/exams/${exam.id}`} className="btn mt-4">
-          بدء الامتحان
+          Start Exam
         </Link>
       )}
     </div>
@@ -229,38 +229,38 @@ export default async function StudentLessonPage({
               <span className="badge">{lesson.course_title}</span>
               <span className="badge">{lesson.chapter_title}</span>
               <span className="badge">
-                تم التفعيل: {lesson.activated_at || "غير محدد"}
+                Activated: {lesson.activated_at || "Not specified"}
               </span>
-              <span className="badge">{videos.length} فيديو</span>
-              <span className="badge">{assignments.length} واجب</span>
-              <span className="badge">{exams.length} امتحان</span>
+              <span className="badge">{videos.length} videos</span>
+              <span className="badge">{assignments.length} assignments</span>
+              <span className="badge">{exams.length} exams</span>
             </div>
 
             <h1 className="h1 mt-6">{lesson.lesson_title}</h1>
 
             <p className="muted mt-6 text-lg">
               {lesson.lesson_description ||
-                "هذه الحصة متاحة لك الآن. ابدأ بالامتحانات التمهيدية إن وجدت، ثم شاهد الفيديوهات وراجع الواجبات والامتحانات."}
+                "This lesson is available now. Start with any pre-lesson exams, then watch videos and review assignments and exams."}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/student" className="btn">
-                رجوع للوحة الطالب
+                Back to Student Dashboard
               </Link>
 
               <Link href={`/courses/${lesson.course_slug}`} className="btn btn-outline">
-                فتح صفحة الكورس
+                Open Course Page
               </Link>
             </div>
           </div>
 
           <aside className="course-preview">
-            <span className="lesson-pill">حصة مفعّلة</span>
+            <span className="lesson-pill">Activated Lesson</span>
             <h2 className="mt-5 font-[var(--display)] text-6xl font-bold leading-none">
-              {beforeExams.length > 0 ? "ابدأ بامتحان تمهيدي" : "جاهز تبدأ؟"}
+              {beforeExams.length > 0 ? "Start with a pre-lesson exam" : "Ready to start?"}
             </h2>
             <p className="mt-4 max-w-sm opacity-80">
-              تابع محتوى الحصة بالترتيب: امتحان قبل الحصة إن وجد، ثم الفيديوهات، ثم الواجبات والامتحانات.
+              Follow the lesson content in order: pre-lesson exam if available, then videos, assignments, and exams.
             </p>
           </aside>
         </div>
@@ -271,10 +271,10 @@ export default async function StudentLessonPage({
           <div className="grid gap-6">
             {beforeExams.length > 0 ? (
               <div className="card p-6 md:p-8">
-                <span className="eyebrow">قبل الحصة</span>
-                <h2 className="text-3xl font-black">امتحان تمهيدي</h2>
+                <span className="eyebrow">Before Lesson</span>
+                <h2 className="text-3xl font-black">Pre-lesson Exam</h2>
                 <p className="muted mt-2">
-                  حل الامتحان التمهيدي قبل مشاهدة محتوى الحصة لقياس مستواك الحالي.
+                  Take the pre-lesson exam before watching the lesson content to measure your current level.
                 </p>
 
                 <div className="mt-6 grid gap-4">
@@ -291,12 +291,12 @@ export default async function StudentLessonPage({
                 key={video.id}
                 id={`video-${video.id}`}
               >
-                <span className="eyebrow">الفيديو {index + 1}</span>
+                <span className="eyebrow">Video {index + 1}</span>
                 <h2 className="text-3xl font-black">{video.title}</h2>
 
                 <div className="mt-6 overflow-hidden rounded-[28px] border border-[var(--line)] bg-[var(--ember)]">
                   <video controls className="w-full" src={video.video_url}>
-                    المتصفح لا يدعم تشغيل الفيديو.
+                    Your browser does not support video playback.
                   </video>
                 </div>
               </div>
@@ -304,16 +304,16 @@ export default async function StudentLessonPage({
 
             {videos.length === 0 ? (
               <div className="card p-6 md:p-8">
-                <span className="eyebrow">مشاهدة الحصة</span>
-                <h2 className="text-3xl font-black">فيديو الدرس</h2>
+                <span className="eyebrow">Watch Lesson</span>
+                <h2 className="text-3xl font-black">Lesson Video</h2>
 
                 <div className="mt-6 overflow-hidden rounded-[28px] border border-[var(--line)] bg-[var(--ember)]">
                   <div className="grid min-h-[320px] place-items-center p-8 text-center text-[var(--cream)]">
                     <div>
                       <div className="mx-auto mb-5 h-24 w-24 rounded-full border-[18px] border-[var(--orange)] border-b-0" />
-                      <h3 className="text-3xl font-black">لا توجد فيديوهات بعد</h3>
+                      <h3 className="text-3xl font-black">No videos yet</h3>
                       <p className="mt-3 opacity-80">
-                        لم يتم رفع فيديوهات لهذه الحصة بعد. ستظهر هنا بعد إضافتها من لوحة المدرس.
+                        No videos have been uploaded for this lesson yet. They will appear here after the teacher adds them.
                       </p>
                     </div>
                   </div>
@@ -322,8 +322,8 @@ export default async function StudentLessonPage({
             ) : null}
 
             <div className="card p-6 md:p-8">
-              <span className="eyebrow">واجبات الحصة</span>
-              <h2 className="text-3xl font-black">المطلوب منك</h2>
+              <span className="eyebrow">Lesson Assignments</span>
+              <h2 className="text-3xl font-black">What you need to do</h2>
 
               <div className="mt-6 grid gap-4">
                 {assignments.map((assignment) => (
@@ -338,7 +338,7 @@ export default async function StudentLessonPage({
                     ) : null}
 
                     <p className="muted mt-2 text-sm">
-                      موعد التسليم: {assignment.due_at || "غير محدد"}
+                      Due date: {assignment.due_at || "Not specified"}
                     </p>
 
                     {assignment.attachment_url ? (
@@ -347,13 +347,13 @@ export default async function StudentLessonPage({
                         className="btn btn-soft mt-4"
                         target="_blank"
                       >
-                        تحميل ملف الواجب
+                        Download Assignment File
                       </a>
                     ) : null}
 
                     {assignment.submission_url ? (
                       <p className="muted mt-3 text-sm">
-                        تم التسليم: {assignment.submitted_at || "تم الاستلام"}
+                        Submitted: {assignment.submitted_at || "Received"}
                       </p>
                     ) : null}
 
@@ -365,14 +365,14 @@ export default async function StudentLessonPage({
                 ))}
 
                 {assignments.length === 0 ? (
-                  <p className="muted">لا توجد واجبات لهذه الحصة بعد.</p>
+                  <p className="muted">There are no assignments for this lesson yet.</p>
                 ) : null}
               </div>
             </div>
 
             <div className="card p-6 md:p-8">
-              <span className="eyebrow">بعد الحصة</span>
-              <h2 className="text-3xl font-black">امتحانات الحصة</h2>
+              <span className="eyebrow">After Lesson</span>
+              <h2 className="text-3xl font-black">Lesson Exams</h2>
 
               <div className="mt-6 grid gap-4">
                 {afterExams.map((exam) => (
@@ -380,40 +380,40 @@ export default async function StudentLessonPage({
                 ))}
 
                 {afterExams.length === 0 ? (
-                  <p className="muted">لا توجد امتحانات بعد الحصة حتى الآن.</p>
+                  <p className="muted">There are no after-lesson exams yet.</p>
                 ) : null}
               </div>
             </div>
           </div>
 
           <aside className="card price-card">
-            <span className="eyebrow">بيانات الوصول</span>
-            <h2 className="text-3xl font-black">الحصة متاحة</h2>
+            <span className="eyebrow">Access Details</span>
+            <h2 className="text-3xl font-black">Lesson available</h2>
 
             <div className="mt-5 grid gap-3 text-sm font-bold">
-              <p>✓ تم تفعيل الوصول لهذه الحصة</p>
-              <p>✓ الكورس: {lesson.course_title}</p>
-              <p>✓ الباب: {lesson.chapter_title}</p>
-              <p>✓ امتحانات قبل الحصة: {beforeExams.length}</p>
-              <p>✓ عدد الفيديوهات: {videos.length}</p>
-              <p>✓ عدد الواجبات: {assignments.length}</p>
-              <p>✓ امتحانات بعد الحصة: {afterExams.length}</p>
+              <p>✓ Access is active for this lesson</p>
+              <p>✓ Course: {lesson.course_title}</p>
+              <p>✓ Chapter: {lesson.chapter_title}</p>
+              <p>✓ Before-lesson exams: {beforeExams.length}</p>
+              <p>✓ Videos: {videos.length}</p>
+              <p>✓ Assignments: {assignments.length}</p>
+              <p>✓ After-lesson exams: {afterExams.length}</p>
               <p>
-                ✓ متاح حتى: {lesson.access_until ? lesson.access_until : "بدون تاريخ انتهاء"}
+                ✓ Available until: {lesson.access_until ? lesson.access_until : "No expiry date"}
               </p>
             </div>
 
             {beforeExams.length > 0 ? (
               <Link href={`/student/exams/${beforeExams[0].id}`} className="btn btn-block mt-6">
-                بدء الامتحان التمهيدي
+                Start Pre-lesson Exam
               </Link>
             ) : firstVideo ? (
               <a href={`#video-${firstVideo.id}`} className="btn btn-block mt-6">
-                بدء المشاهدة
+                Start Watching
               </a>
             ) : (
               <Link href="/student/activate" className="btn btn-block mt-6">
-                تفعيل كود آخر
+                Activate Another Code
               </Link>
             )}
           </aside>

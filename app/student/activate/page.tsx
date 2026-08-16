@@ -32,14 +32,14 @@ export default function StudentActivatePage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر تفعيل الكود")
+        setError(data.message || "Unable to activate code")
         return
       }
 
-      setSuccess(data.message || "تم تفعيل الحصة بنجاح")
+      setSuccess(data.message || "Lesson activated successfully")
       setCode("")
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading(false)
     }
@@ -52,10 +52,10 @@ export default function StudentActivatePage() {
       <section className="section">
         <div className="wrap grid gap-7 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="card code-generator">
-            <span className="eyebrow">تفعيل الحصة</span>
-            <h1 className="h2">فعّل كود الوصول</h1>
+            <span className="eyebrow">Lesson Access</span>
+            <h1 className="h2">Activate your access code</h1>
             <p className="muted mt-4">
-              ادخل الكود اللي حصلت عليه من المدرس أو الإدارة لتفعيل الوصول للحصة.
+              Enter the code you received from your teacher or the administration to unlock the lesson.
             </p>
 
             {error ? <div className="alert-error mt-5">{error}</div> : null}
@@ -63,7 +63,7 @@ export default function StudentActivatePage() {
 
             <form onSubmit={handleSubmit} className="mt-6">
               <label className="font-bold">
-                كود الوصول
+                Access Code
                 <input
                   className="input mt-2"
                   value={code}
@@ -75,24 +75,24 @@ export default function StudentActivatePage() {
               </label>
 
               <button className="btn btn-block mt-6 disabled:opacity-60" disabled={isLoading}>
-                {isLoading ? "جاري التفعيل..." : "تفعيل الكود"}
+                {isLoading ? "Activating..." : "Activate code"}
               </button>
             </form>
 
             <div className="mt-6">
               <Link href="/student" className="btn btn-outline">
-                رجوع للوحة الطالب
+                Back to Student Dashboard
               </Link>
             </div>
           </div>
 
           <div className="course-preview">
-            <span className="lesson-pill">وصول آمن للحصص</span>
+            <span className="lesson-pill">Secure lesson access</span>
             <h2 className="mt-5 font-[var(--display)] text-6xl font-bold leading-none">
-              كل كود يفتح لك حصة محددة
+              Each code unlocks a specific lesson
             </h2>
             <p className="mt-4 max-w-sm opacity-80">
-              بعد التفعيل، هتظهر الحصة داخل لوحة الطالب وتقدر تبدأ مذاكرتها.
+              After activation, the lesson will appear in your student dashboard and you can start studying.
             </p>
           </div>
         </div>
