@@ -70,9 +70,9 @@ async function getAccessCodes(teacherId: number) {
 }
 
 function getStatusLabel(status: string) {
-  if (status === "new") return "جديد"
-  if (status === "used") return "مستخدم"
-  if (status === "cancelled") return "ملغي"
+  if (status === "new") return "New"
+  if (status === "used") return "Used"
+  if (status === "cancelled") return "Cancelled"
   return status
 }
 
@@ -98,10 +98,10 @@ export default async function TeacherAccessCodesPage() {
 
       <section className="teacher-page-hero">
         <div className="wrap">
-          <span className="eyebrow">لوحة المدرس</span>
-          <h1 className="h1">أكواد الوصول</h1>
+          <span className="eyebrow">Teacher Dashboard</span>
+          <h1 className="h1">Access Codes</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            أنشئ أكواد وصول للحصص، وراجع حالة الأكواد المستخدمة والجديدة.
+            Create access codes for lessons and review new, used, and cancelled codes.
           </p>
         </div>
       </section>
@@ -113,12 +113,12 @@ export default async function TeacherAccessCodesPage() {
           <div>
             <div className="toolbar">
               <div>
-                <span className="eyebrow">الأكواد</span>
-                <h2 className="h2">آخر الأكواد</h2>
+                <span className="eyebrow">Codes</span>
+                <h2 className="h2">Latest Codes</h2>
               </div>
 
               <Link href="/teacher" className="btn btn-outline">
-                رجوع للوحة المدرس
+                Back to Teacher Dashboard
               </Link>
             </div>
 
@@ -131,7 +131,7 @@ export default async function TeacherAccessCodesPage() {
                     </div>
                     <p className="muted mt-1">
                       {item.course_title ? `${item.course_title} — ` : ""}
-                      {item.lesson_title || "غير محدد"}
+                      {item.lesson_title || "Not specified"}
                     </p>
                   </div>
 
@@ -139,11 +139,11 @@ export default async function TeacherAccessCodesPage() {
 
                   <div>
                     <p className="font-bold">
-                      الدفعة: {item.batch_id?.slice(0, 8) || "—"}
+                      Batch: {item.batch_id?.slice(0, 8) || "—"}
                     </p>
                     <p className="muted text-sm">
-                      الإنشاء: {item.created_at}
-                      {item.expires_at ? ` · ينتهي: ${item.expires_at}` : ""}
+                      Created: {item.created_at}
+                      {item.expires_at ? ` · Expires: ${item.expires_at}` : ""}
                     </p>
                   </div>
                 </div>
@@ -151,9 +151,9 @@ export default async function TeacherAccessCodesPage() {
 
               {codes.length === 0 ? (
                 <div className="card access-code-card">
-                  <h3 className="text-xl font-black">لا توجد أكواد بعد</h3>
+                  <h3 className="text-xl font-black">No codes yet</h3>
                   <p className="muted mt-2">
-                    أنشئ أول دفعة أكواد من النموذج.
+                    Create your first code batch from the form.
                   </p>
                 </div>
               ) : null}

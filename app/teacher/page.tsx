@@ -108,7 +108,7 @@ async function getActivities(teacherId: number) {
   return query<ActivityRow>(
     `
     SELECT
-      CONCAT(u.full_name, ' طلب الانضمام إلى ', c.title) AS text,
+      CONCAT(u.full_name, ' requested to join ', c.title) AS text,
       DATE_FORMAT(r.requested_at, '%Y-%m-%d %H:%i') AS activity_time
     FROM student_course_requests r
     JOIN courses c ON c.id = r.course_id
@@ -123,41 +123,19 @@ async function getActivities(teacherId: number) {
 }
 
 function money(value: number | string | null | undefined) {
-  return `${Number(value || 0).toLocaleString("ar-EG")} ج.م`
+  return `${Number(value || 0).toLocaleString("en-US")} EGP`
 }
 
 function getStatusLabel(status: string) {
-  if (status === "published") return "منشور"
-  if (status === "draft") return "مسودة"
-  if (status === "paused") return "متوقف"
-  if (status === "ended") return "منتهي"
+  if (status === "published") return "Published"
+  if (status === "draft") return "Draft"
+  if (status === "paused") return "Paused"
+  if (status === "ended") return "Ended"
   return status
 }
 
 function getInitials(title: string) {
-  return title.trim().slice(0, 1) || "ك"
-}
-
-function ProgressRing({ value }: { value: number }) {
-  const radius = 28
-  const circumference = 2 * Math.PI * radius
-  const dash = (value / 100) * circumference
-
-  return (
-    <div className="ring">
-      <svg width="68" height="68" viewBox="0 0 68 68">
-        <circle className="ring-bg" cx="34" cy="34" r={radius} />
-        <circle
-          className="ring-fg"
-          cx="34"
-          cy="34"
-          r={radius}
-          strokeDasharray={`${dash} ${circumference - dash}`}
-        />
-      </svg>
-      <div className="ring-label">{value}%</div>
-    </div>
-  )
+  return title.trim().slice(0, 1) || "C"
 }
 
 export default async function TeacherDashboard() {
@@ -179,10 +157,10 @@ export default async function TeacherDashboard() {
   ])
 
   const stats = [
-    [String(Number(summary?.active_students || 0)), "طالب نشط"],
-    [String(Number(summary?.published_courses || 0)), "كورسات منشورة"],
-    [String(Number(summary?.lessons_count || 0)), "حصة متاحة"],
-    [money(summary?.teacher_revenue || 0), "إجمالي الأرباح"],
+    [String(Number(summary?.active_students || 0)), "Active Students"],
+    [String(Number(summary?.published_courses || 0)), "Published Courses"],
+    [String(Number(summary?.lessons_count || 0)), "Available Lessons"],
+    [money(summary?.teacher_revenue || 0), "Total Earnings"],
   ]
 
   const firstCourse = courses[0]
@@ -194,48 +172,48 @@ export default async function TeacherDashboard() {
       <div className="wrap">
         <section className="teacher-dashboard-grid">
           <div className="card teacher-welcome">
-            <span className="eyebrow">لوحة المدرس</span>
-            <h1 className="welcome-title">أهلًا، {user.full_name || "المدرس"} 👋</h1>
+            <span className="eyebrow">Teacher Dashboard</span>
+            <h1 className="welcome-title">Welcome, {user.full_name || "Teacher"} 👋</h1>
             <p className="muted mt-4 text-lg">
-              لديك {Number(summary?.pending_requests || 0)} طلب انضمام قيد المراجعة، ويمكنك إدارة حصصك وأكواد الوصول من هنا.
+              You have {Number(summary?.pending_requests || 0)} pending join requests. Manage your lessons and access codes from here.
             </p>
 
             <div className="mt-7 flex flex-wrap gap-3">
               <Link href="/teacher/courses" className="btn">
-                إدارة الكورسات
+                Manage Courses
               </Link>
 
               <Link href="/teacher/requests" className="btn btn-outline">
-                طلبات الانضمام
+                Join Requests
               </Link>
 
               <Link href="/teacher/students" className="btn btn-outline">
-                طلابي
+                My Students
               </Link>
 
               <Link href="/teacher/access-codes" className="btn btn-outline">
-                إنشاء أكواد وصول
+                Create Access Codes
               </Link>
             </div>
           </div>
 
           <div className="teacher-actions">
             <Link href="/teacher/requests" className="teacher-action-card">
-              <span className="badge">الطلبات</span>
-              <h3 className="mt-4 text-2xl font-black">راجع طلبات الطلاب</h3>
-              <p className="muted mt-2">اقبل أو ارفض طلبات الانضمام لكورساتك.</p>
+              <span className="badge">Requests</span>
+              <h3 className="mt-4 text-2xl font-black">Review student requests</h3>
+              <p className="muted mt-2">Accept or reject join requests for your courses.</p>
             </Link>
 
             <Link href="/teacher/students" className="teacher-action-card">
-              <span className="badge">الطلاب</span>
-              <h3 className="mt-4 text-2xl font-black">قائمة الطلاب المقبولين</h3>
-              <p className="muted mt-2">راجع بيانات الطلاب وأرقام التواصل وولي الأمر.</p>
+              <span className="badge">Students</span>
+              <h3 className="mt-4 text-2xl font-black">Accepted students</h3>
+              <p className="muted mt-2">Review student contact details and guardian information.</p>
             </Link>
 
             <Link href="/teacher/access-codes" className="teacher-action-card">
-              <span className="badge">الأكواد</span>
-              <h3 className="mt-4 text-2xl font-black">ولّد أكواد للطلاب</h3>
-              <p className="muted mt-2">أنشئ أكواد وصول لحصة أو مجموعة حصص.</p>
+              <span className="badge">Codes</span>
+              <h3 className="mt-4 text-2xl font-black">Generate student codes</h3>
+              <p className="muted mt-2">Create access codes for one lesson or multiple lessons.</p>
             </Link>
           </div>
         </section>
@@ -251,19 +229,19 @@ export default async function TeacherDashboard() {
 
         <section className="card continue-card mt-7">
           <div>
-            <span className="lesson-pill">إدارة المحتوى</span>
+            <span className="lesson-pill">Content Management</span>
             <h2 className="mt-5 font-[var(--display)] text-5xl font-bold leading-none">
-              {firstCourse ? firstCourse.title : "ابدأ بإدارة كورساتك"}
+              {firstCourse ? firstCourse.title : "Start managing your courses"}
             </h2>
             <p className="muted mt-4">
               {firstCourse
-                ? "افتح الكورس لإضافة حصص وفيديوهات وواجبات وامتحانات."
-                : "عندما يضيف الأدمن كورسًا لك، سيظهر هنا."}
+                ? "Open the course to add lessons, videos, assignments, and exams."
+                : "When the admin assigns a course to you, it will appear here."}
             </p>
           </div>
 
           <Link href="/teacher/courses" className="btn">
-            إدارة الكورسات
+            Manage Courses
           </Link>
         </section>
       </div>
@@ -272,8 +250,8 @@ export default async function TeacherDashboard() {
         <div className="wrap grid gap-7 lg:grid-cols-[1fr_360px]">
           <div>
             <div className="section-head">
-              <span className="eyebrow">كورساتي</span>
-              <h2 className="h2">الكورسات والحصص</h2>
+              <span className="eyebrow">My Courses</span>
+              <h2 className="h2">Courses and Lessons</h2>
             </div>
 
             <div className="grid gap-4">
@@ -284,7 +262,7 @@ export default async function TeacherDashboard() {
                   <div>
                     <h3 className="text-xl font-black">{course.title}</h3>
                     <p className="muted">
-                      {course.lessons_count} حصة · {course.students_count} طالب · {getStatusLabel(course.status)}
+                      {course.lessons_count} lessons · {course.students_count} students · {getStatusLabel(course.status)}
                     </p>
 
                     <div className="progress-track mt-4">
@@ -296,16 +274,16 @@ export default async function TeacherDashboard() {
                   </div>
 
                   <Link href={`/teacher/courses/${course.id}/lessons`} className="btn btn-soft">
-                    فتح
+                    Open
                   </Link>
                 </div>
               ))}
 
               {courses.length === 0 ? (
                 <div className="card course-management-card">
-                  <h3 className="text-2xl font-black">لا توجد كورسات بعد</h3>
+                  <h3 className="text-2xl font-black">No courses yet</h3>
                   <p className="muted mt-2">
-                    عندما يضيف الأدمن كورسات لهذا الحساب ستظهر هنا.
+                    Courses assigned to this account will appear here.
                   </p>
                 </div>
               ) : null}
@@ -314,23 +292,23 @@ export default async function TeacherDashboard() {
 
           <aside>
             <div className="section-head">
-              <span className="eyebrow">أكواد الوصول</span>
-              <h2 className="h2">آخر الأكواد</h2>
+              <span className="eyebrow">Access Codes</span>
+              <h2 className="h2">Latest Codes</h2>
             </div>
 
             <div className="grid gap-4">
               {codes.map((item) => (
                 <div className="card access-code-card" key={item.id}>
-                  <h3 className="text-xl font-black">{item.lesson_title || "حصة غير محددة"}</h3>
-                  <p className="muted mt-2">{item.available_count} كود متاح</p>
+                  <h3 className="text-xl font-black">{item.lesson_title || "Unspecified lesson"}</h3>
+                  <p className="muted mt-2">{item.available_count} available codes</p>
                   <span className="code-preview">{item.code_prefix || "HZ-***"}</span>
                 </div>
               ))}
 
               {codes.length === 0 ? (
                 <div className="card access-code-card">
-                  <h3 className="text-xl font-black">لا توجد أكواد حديثة</h3>
-                  <p className="muted mt-2">أنشئ أكواد وصول للطلاب من صفحة الأكواد.</p>
+                  <h3 className="text-xl font-black">No recent codes</h3>
+                  <p className="muted mt-2">Create student access codes from the codes page.</p>
                 </div>
               ) : null}
             </div>
@@ -341,10 +319,10 @@ export default async function TeacherDashboard() {
       <section className="section tint-section">
         <div className="wrap grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
-            <span className="eyebrow">النشاطات</span>
-            <h2 className="h2">آخر النشاطات</h2>
+            <span className="eyebrow">Activity</span>
+            <h2 className="h2">Latest Activity</h2>
             <p className="muted mt-5">
-              متابعة سريعة لما يحدث داخل كورساتك وحصصك.
+              A quick overview of what is happening inside your courses and lessons.
             </p>
           </div>
 
@@ -363,8 +341,8 @@ export default async function TeacherDashboard() {
               <div className="activity-item">
                 <div className="activity-dot" />
                 <div>
-                  <p className="font-bold">لا توجد نشاطات حديثة</p>
-                  <p className="muted text-sm">ستظهر طلبات الانضمام والتحديثات هنا.</p>
+                  <p className="font-bold">No recent activity</p>
+                  <p className="muted text-sm">Join requests and updates will appear here.</p>
                 </div>
               </div>
             ) : null}
@@ -376,4 +354,3 @@ export default async function TeacherDashboard() {
     </main>
   )
 }
-

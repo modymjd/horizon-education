@@ -48,9 +48,9 @@ async function getTeacherCourses(teacherId: number) {
 }
 
 function getStatusLabel(status: string) {
-  if (status === "published") return "منشور"
-  if (status === "draft") return "مسودة"
-  if (status === "archived") return "مؤرشف"
+  if (status === "published") return "Published"
+  if (status === "draft") return "Draft"
+  if (status === "archived") return "Archived"
   return status
 }
 
@@ -62,11 +62,11 @@ function getStatusClass(status: string) {
 }
 
 function getInitials(title: string) {
-  return title.trim().slice(0, 1) || "ك"
+  return title.trim().slice(0, 1) || "C"
 }
 
 function money(value: number | string | null | undefined) {
-  return `${Number(value || 0).toLocaleString("ar-EG")} ج.م`
+  return `${Number(value || 0).toLocaleString("en-US")} EGP`
 }
 
 export default async function TeacherCoursesPage() {
@@ -103,10 +103,10 @@ export default async function TeacherCoursesPage() {
 
       <section className="teacher-page-hero">
         <div className="wrap">
-          <span className="eyebrow">لوحة المدرس</span>
-          <h1 className="h1">إدارة الكورسات</h1>
+          <span className="eyebrow">Teacher Dashboard</span>
+          <h1 className="h1">Manage Courses</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            راجع كورساتك، أضف حصص جديدة، وتابع أعداد الطلاب والإيرادات.
+            Review your courses, add lessons, and track students and revenue.
           </p>
         </div>
       </section>
@@ -116,37 +116,37 @@ export default async function TeacherCoursesPage() {
           <div className="teacher-stat-grid mb-6">
             <div className="card teacher-stat-card">
               <b>{courses.length}</b>
-              <span className="muted font-bold">كورسات</span>
+              <span className="muted font-bold">Courses</span>
             </div>
 
             <div className="card teacher-stat-card">
               <b>{totalLessons}</b>
-              <span className="muted font-bold">حصة</span>
+              <span className="muted font-bold">Lessons</span>
             </div>
 
             <div className="card teacher-stat-card">
               <b>{totalStudents}</b>
-              <span className="muted font-bold">طالب لديه وصول</span>
+              <span className="muted font-bold">Students with access</span>
             </div>
 
             <div className="card teacher-stat-card">
               <b>{money(totalRevenue)}</b>
-              <span className="muted font-bold">إجمالي الأرباح</span>
+              <span className="muted font-bold">Total Earnings</span>
             </div>
           </div>
 
           <div className="toolbar">
             <div className="search-row">
-              <input className="input" placeholder="ابحث عن كورس..." />
+              <input className="input" placeholder="Search courses..." />
               <select className="input" defaultValue="all">
-                <option value="all">كل الحالات</option>
-                <option value="published">منشور</option>
-                <option value="draft">مسودة</option>
+                <option value="all">All statuses</option>
+                <option value="published">Published</option>
+                <option value="draft">Draft</option>
               </select>
             </div>
 
             <Link href="/teacher" className="btn btn-outline">
-              رجوع للوحة المدرس
+              Back to Teacher Dashboard
             </Link>
           </div>
 
@@ -165,7 +165,7 @@ export default async function TeacherCoursesPage() {
                       <div>
                         <h2 className="text-3xl font-black">{course.title}</h2>
                         <p className="muted mt-1">
-                          {course.short_description || "لا يوجد وصف مختصر بعد."}
+                          {course.short_description || "No short description yet."}
                         </p>
                       </div>
                     </div>
@@ -173,21 +173,21 @@ export default async function TeacherCoursesPage() {
 
                   <div className="course-actions">
                     <Link href={`/courses/${course.slug}`} className="btn btn-soft">
-                      معاينة
+                      Preview
                     </Link>
 
                     <Link
                       href={`/teacher/courses/${course.id}/lessons`}
                       className="btn btn-outline"
                     >
-                      عرض الحصص
+                      View Lessons
                     </Link>
 
                     <Link
                       href={`/teacher/courses/${course.id}/lessons/new`}
                       className="btn btn-outline"
                     >
-                      إضافة حصة
+                      Add Lesson
                     </Link>
                   </div>
                 </div>
@@ -195,17 +195,17 @@ export default async function TeacherCoursesPage() {
                 <div className="course-metrics">
                   <div className="metric-mini">
                     <b>{course.lessons_count}</b>
-                    <span className="muted">حصة</span>
+                    <span className="muted">Lessons</span>
                   </div>
 
                   <div className="metric-mini">
                     <b>{course.students_count}</b>
-                    <span className="muted">طالب</span>
+                    <span className="muted">Students</span>
                   </div>
 
                   <div className="metric-mini">
                     <b>{money(course.teacher_revenue)}</b>
-                    <span className="muted">أرباح</span>
+                    <span className="muted">Earnings</span>
                   </div>
                 </div>
               </div>
@@ -213,9 +213,9 @@ export default async function TeacherCoursesPage() {
 
             {courses.length === 0 ? (
               <div className="card course-management-card">
-                <h2 className="text-2xl font-black">لا توجد كورسات بعد</h2>
+                <h2 className="text-2xl font-black">No courses yet</h2>
                 <p className="muted mt-2">
-                  عندما يتم إضافة كورسات لهذا المدرس ستظهر هنا.
+                  Courses assigned to this teacher will appear here.
                 </p>
               </div>
             ) : null}
