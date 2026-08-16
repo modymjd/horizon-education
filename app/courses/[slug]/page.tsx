@@ -172,13 +172,13 @@ async function getLessons(courseId: number, studentId?: number) {
 }
 
 function money(value: number | string | null | undefined) {
-  return `${Number(value || 0).toLocaleString("ar-EG")} ج.م`
+  return `${Number(value || 0).toLocaleString("en-US")} EGP`
 }
 
 function getRequestText(status: string | null) {
-  if (status === "pending") return "طلبك قيد المراجعة لدى المدرس."
-  if (status === "accepted") return "تم قبولك في الكورس. تواصل مع المدرس للحصول على كود الوصول."
-  if (status === "rejected") return "لم يتم قبول طلبك. يمكنك التواصل مع الإدارة أو طلب كورس آخر."
+  if (status === "pending") return "Your request is pending teacher review."
+  if (status === "accepted") return "You were accepted into this course. Contact the teacher to get your access code."
+  if (status === "rejected") return "Your request was not accepted. You can contact administration or request another course."
   return ""
 }
 
@@ -210,39 +210,39 @@ export default async function CoursePage({ params }: Params) {
         <div className="wrap course-hero-grid">
           <div className="card course-panel">
             <div className="course-meta">
-              <span className="badge">{course.education_type_name || "كل الأنواع"}</span>
-              <span className="badge">{course.stage_name || "كل المراحل"}</span>
-              <span className="badge">{course.grade_name || "كل الصفوف"}</span>
-              <span className="badge">{course.lessons_count} حصة</span>
+              <span className="badge">{course.education_type_name || "All types"}</span>
+              <span className="badge">{course.stage_name || "All stages"}</span>
+              <span className="badge">{course.grade_name || "All grades"}</span>
+              <span className="badge">{course.lessons_count} lessons</span>
             </div>
 
             <h1 className="h1 mt-6">{course.title}</h1>
 
             <p className="muted mt-6 text-lg">
-              {course.description || course.short_description || "كورس منشور على منصة حورايزون تعليم."}
+              {course.description || course.short_description || "Published course on Horizon Education."}
             </p>
 
             <p className="muted mt-4">
-              المدرس: {course.teacher_name}
+              Teacher: {course.teacher_name}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
               {firstUnlockedLesson ? (
                 <Link href={`/student/lessons/${firstUnlockedLesson.id}`} className="btn">
-                  فتح أول حصة مفعّلة
+                  Open first unlocked lesson
                 </Link>
               ) : isStudent ? (
                 <Link href="/student/activate" className="btn">
-                  تفعيل كود وصول
+                  Activate access code
                 </Link>
               ) : (
                 <Link href="/register" className="btn">
-                  سجل كطالب للانضمام
+                  Register as a student to join
                 </Link>
               )}
 
               <Link href="/subjects" className="btn btn-outline">
-                رجوع للكورسات
+                Back to Courses
               </Link>
             </div>
 
@@ -263,12 +263,12 @@ export default async function CoursePage({ params }: Params) {
           </div>
 
           <aside className="course-preview">
-            <span className="lesson-pill">كورس منشور</span>
+            <span className="lesson-pill">Published course</span>
             <h2 className="mt-5 font-[var(--display)] text-6xl font-bold leading-none">
-              {course.lessons_count} حصة
+              {course.lessons_count} lessons
             </h2>
             <p className="mt-4 max-w-sm opacity-80">
-              {course.short_description || "شاهد محتوى الكورس واطلب الانضمام إذا كان مناسبًا لك."}
+              {course.short_description || "View course content and request to join if it suits you."}
             </p>
           </aside>
         </div>
@@ -279,8 +279,8 @@ export default async function CoursePage({ params }: Params) {
           <div className="space-y-8">
             <div>
               <div className="section-head">
-                <span className="eyebrow">المحتوى</span>
-                <h2 className="h2">الشابترات والحصص</h2>
+                <span className="eyebrow">Content</span>
+                <h2 className="h2">Chapters and Lessons</h2>
               </div>
 
               <div className="lesson-list">
@@ -293,14 +293,14 @@ export default async function CoursePage({ params }: Params) {
                     <div className="card p-5" key={chapter.id}>
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
-                          <span className="badge">شابتر {chapterIndex + 1}</span>
+                          <span className="badge">Chapter {chapterIndex + 1}</span>
                           <h3 className="mt-3 text-2xl font-black">{chapter.title}</h3>
                           {chapter.description ? (
                             <p className="muted mt-2">{chapter.description}</p>
                           ) : null}
                         </div>
 
-                        <span className="badge">{chapterLessons.length} حصة</span>
+                        <span className="badge">{chapterLessons.length} lessons</span>
                       </div>
 
                       <div className="mt-5 grid gap-3">
@@ -310,13 +310,13 @@ export default async function CoursePage({ params }: Params) {
                             <div>
                               <h4 className="text-xl font-black">{lesson.title}</h4>
                               <p className="muted">
-                                {lesson.description || "فيديو ومحتوى تعليمي"}
+                                {lesson.description || "Video and learning content"}
                               </p>
                             </div>
 
                             {Number(lesson.has_access) === 1 ? (
                               <Link href={`/student/lessons/${lesson.id}`} className="btn btn-soft">
-                                فتح
+                                Open
                               </Link>
                             ) : (
                               <span className="badge">{money(lesson.price)}</span>
@@ -325,7 +325,7 @@ export default async function CoursePage({ params }: Params) {
                         ))}
 
                         {chapterLessons.length === 0 ? (
-                          <p className="muted">لا توجد حصص منشورة داخل هذا الشابتر بعد.</p>
+                          <p className="muted">No published lessons in this chapter yet.</p>
                         ) : null}
                       </div>
                     </div>
@@ -334,9 +334,9 @@ export default async function CoursePage({ params }: Params) {
 
                 {chapters.length === 0 ? (
                   <div className="card p-5">
-                    <h3 className="text-2xl font-black">لا يوجد محتوى منشور بعد</h3>
+                    <h3 className="text-2xl font-black">No published content yet</h3>
                     <p className="muted mt-2">
-                      سيتم عرض الشابترات والحصص هنا بعد نشرها.
+                      Chapters and lessons will appear here after publishing.
                     </p>
                   </div>
                 ) : null}
@@ -345,17 +345,17 @@ export default async function CoursePage({ params }: Params) {
           </div>
 
           <aside className="card price-card">
-            <span className="eyebrow">معلومات الكورس</span>
+            <span className="eyebrow">Course Information</span>
             <div className="price">{course.lessons_count}</div>
-            <p className="muted mt-3">حصة منشورة داخل هذا الكورس.</p>
+            <p className="muted mt-3">Published lessons in this course.</p>
 
             <div className="mt-6 grid gap-3 text-sm font-bold">
-              <p>✓ المدرس: {course.teacher_name}</p>
-              <p>✓ الشابترات: {course.chapters_count}</p>
-              <p>✓ الطلاب المفعّلين: {course.students_count}</p>
-              <p>✓ نوع التعليم: {course.education_type_name || "كل الأنواع"}</p>
-              <p>✓ المرحلة: {course.stage_name || "كل المراحل"}</p>
-              <p>✓ الصف: {course.grade_name || "كل الصفوف"}</p>
+              <p>✓ Teacher: {course.teacher_name}</p>
+              <p>✓ Chapters: {course.chapters_count}</p>
+              <p>✓ Activated students: {course.students_count}</p>
+              <p>✓ Education type: {course.education_type_name || "All types"}</p>
+              <p>✓ Stage: {course.stage_name || "All stages"}</p>
+              <p>✓ Grade: {course.grade_name || "All grades"}</p>
             </div>
 
             {isStudent ? (
@@ -367,7 +367,7 @@ export default async function CoursePage({ params }: Params) {
               </div>
             ) : (
               <Link href="/register" className="btn btn-block mt-6">
-                سجل كطالب للانضمام
+                Register as a student to join
               </Link>
             )}
           </aside>
@@ -377,19 +377,19 @@ export default async function CoursePage({ params }: Params) {
       <section className="section tint-section">
         <div className="wrap">
           <div className="card p-8 md:p-12">
-            <span className="eyebrow">جاهز تبدأ؟</span>
-            <h2 className="h2">اطلب الانضمام أو فعّل كود الوصول</h2>
+            <span className="eyebrow">Ready to start?</span>
+            <h2 className="h2">Request to join or activate an access code</h2>
             <p className="muted mt-5 max-w-3xl">
-              قبول طلب الانضمام لا يفتح الحصص تلقائيًا. بعد قبول المدرس، استخدم كود الوصول الذي يرسله لك لفتح الحصص.
+              Approval does not unlock lessons automatically. After teacher approval, use the access code sent to you to unlock lessons.
             </p>
             <div className="mt-8">
               {isStudent ? (
                 <Link href="/student/activate" className="btn">
-                  تفعيل كود وصول
+                  Activate access code
                 </Link>
               ) : (
                 <Link href="/register" className="btn">
-                  إنشاء حساب طالب
+                  Create student account
                 </Link>
               )}
             </div>
@@ -401,4 +401,3 @@ export default async function CoursePage({ params }: Params) {
     </main>
   )
 }
-

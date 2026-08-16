@@ -9,9 +9,9 @@ type Props = {
 }
 
 function getStatusMessage(status?: string | null) {
-  if (status === "pending") return "طلبك قيد المراجعة"
-  if (status === "accepted") return "تم قبولك. تواصل مع المدرس للحصول على كود الوصول"
-  if (status === "rejected") return "تم رفض الطلب. يمكنك التواصل مع المدرس أو الإدارة"
+  if (status === "pending") return "Your request is pending review."
+  if (status === "accepted") return "You were accepted. Contact the teacher to get the access code."
+  if (status === "rejected") return "Your request was rejected. You can contact the teacher or administration."
   return ""
 }
 
@@ -40,14 +40,14 @@ export function StudentCourseRequestButton({ courseId, initialStatus }: Props) {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر إرسال طلب الانضمام")
+        setError(data.message || "Unable to send join request")
         return
       }
 
       setStatus(data.status || "pending")
       router.refresh()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading(false)
     }
@@ -75,7 +75,7 @@ export function StudentCourseRequestButton({ courseId, initialStatus }: Props) {
         onClick={handleRequest}
         disabled={isLoading}
       >
-        {isLoading ? "جاري إرسال الطلب..." : "طلب الانضمام للكورس"}
+        {isLoading ? "Sending request..." : "Request to join course"}
       </button>
     </div>
   )

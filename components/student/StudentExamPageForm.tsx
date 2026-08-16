@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -83,19 +83,19 @@ export function StudentExamPageForm({
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر تسليم الامتحان")
+        setError(data.message || "Unable to submit exam")
         submittedRef.current = false
         return
       }
 
-      setSuccess(data.message || "تم تسليم الامتحان بنجاح")
+      setSuccess(data.message || "Exam submitted successfully")
 
       setTimeout(() => {
         router.push(`/student/lessons/${lessonId}`)
         router.refresh()
       }, 800)
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
       submittedRef.current = false
     } finally {
       setIsLoading(false)
@@ -130,7 +130,7 @@ export function StudentExamPageForm({
             startedRef.current = true
           }}
         >
-          أوافق وأبدأ الامتحان
+          I agree and start the exam
         </button>
       </div>
     )
@@ -147,7 +147,7 @@ export function StudentExamPageForm({
         )
 
         if (missingQuestion) {
-          setError("يجب الإجابة على كل الأسئلة قبل التسليم")
+          setError("You must answer all questions before submitting")
           return
         }
 
@@ -166,7 +166,7 @@ export function StudentExamPageForm({
             {index + 1}. {question.question_text}
           </h3>
 
-          <p className="muted mt-1 text-sm">{question.points} درجة</p>
+          <p className="muted mt-1 text-sm">{question.points} points</p>
 
           <div className="mt-4 grid gap-2">
             {choices
@@ -202,7 +202,7 @@ export function StudentExamPageForm({
         className="btn btn-block disabled:opacity-60"
         disabled={isLoading}
       >
-        {isLoading ? "جاري تسليم الامتحان..." : "تسليم الامتحان"}
+        {isLoading ? "Submitting exam..." : "Submit exam"}
       </button>
     </form>
   )

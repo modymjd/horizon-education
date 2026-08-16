@@ -27,7 +27,7 @@ export function StudentAssignmentSubmitForm({
     setSuccess("")
 
     if (!file) {
-      setError("اختار ملف التسليم أولًا")
+      setError("Choose a submission file first")
       return
     }
 
@@ -47,16 +47,16 @@ export function StudentAssignmentSubmitForm({
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر تسليم الواجب")
+        setError(data.message || "Unable to submit assignment")
         return
       }
 
-      setSuccess(data.message || "تم تسليم الواجب بنجاح")
+      setSuccess(data.message || "Assignment submitted successfully")
       setNotes("")
       setFile(null)
       router.refresh()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading(false)
     }
@@ -66,7 +66,7 @@ export function StudentAssignmentSubmitForm({
     <form onSubmit={handleSubmit} className="mt-4 rounded-2xl border border-[var(--line)] bg-white/50 p-4">
       {existingSubmissionUrl ? (
         <div className="alert-success mb-4">
-          تم تسليم هذا الواجب من قبل. يمكنك رفع ملف جديد لتحديث التسليم.
+          This assignment was submitted before. You can upload a new file to update your submission.
         </div>
       ) : null}
 
@@ -74,17 +74,17 @@ export function StudentAssignmentSubmitForm({
       {success ? <div className="alert-success mb-4">{success}</div> : null}
 
       <label className="block font-bold">
-        ملاحظات التسليم
+        Submission Notes
         <textarea
           className="input mt-2 min-h-24"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="اكتب أي ملاحظات للمدرس..."
+          placeholder="Write any notes for the teacher..."
         />
       </label>
 
       <label className="mt-4 block font-bold">
-        ملف التسليم
+        Submission File
         <input
           className="input mt-2"
           type="file"
@@ -95,11 +95,11 @@ export function StudentAssignmentSubmitForm({
       </label>
 
       {file ? (
-        <p className="muted mt-3 text-sm">الملف المختار: {file.name}</p>
+        <p className="muted mt-3 text-sm">Selected file: {file.name}</p>
       ) : null}
 
       <button className="btn mt-4 disabled:opacity-60" disabled={isLoading}>
-        {isLoading ? "جاري التسليم..." : existingSubmissionUrl ? "تحديث التسليم" : "تسليم الواجب"}
+        {isLoading ? "Submitting..." : existingSubmissionUrl ? "Update submission" : "Submit assignment"}
       </button>
     </form>
   )

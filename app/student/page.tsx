@@ -132,26 +132,26 @@ function getProgressPercent(unlocked: number, total: number) {
 }
 
 function getRequestTitle(status: string) {
-  if (status === "pending") return "طلبك قيد المراجعة"
-  if (status === "accepted") return "تم قبول طلبك"
-  if (status === "rejected") return "لم يتم قبول طلبك"
-  return "تحديث على طلب الانضمام"
+  if (status === "pending") return "Your request is pending review"
+  if (status === "accepted") return "Your request was accepted"
+  if (status === "rejected") return "Your request was not accepted"
+  return "Course request update"
 }
 
 function getRequestMessage(notification: CourseRequestNotification) {
   if (notification.status === "pending") {
-    return `طلبك للانضمام إلى كورس ${notification.course_title} قيد المراجعة لدى المدرس.`
+    return `Your request to join ${notification.course_title} is pending teacher review.`
   }
 
   if (notification.status === "accepted") {
-    return `تم قبولك في كورس ${notification.course_title}. تواصل مع المدرس للحصول على كود الوصول للحصص.`
+    return `You were accepted into ${notification.course_title}. Contact the teacher to get your lesson access code.`
   }
 
   if (notification.status === "rejected") {
-    return `لم يتم قبولك في كورس ${notification.course_title}. يمكنك طلب الانضمام لكورس آخر أو التواصل مع الإدارة.`
+    return `You were not accepted into ${notification.course_title}. You can request another course or contact administration.`
   }
 
-  return `يوجد تحديث على طلبك في كورس ${notification.course_title}.`
+  return `There is an update on your request for ${notification.course_title}.`
 }
 
 function ProgressRing({ value }: { value: number }) {
@@ -195,7 +195,7 @@ export default async function StudentDashboard() {
   ])
 
   const latestLesson = lessons[0]
-  const studentName = summary?.full_name || user.full_name || "الطالب"
+  const studentName = summary?.full_name || user.full_name || "Student"
   const activeLessons = Number(summary?.active_lessons || 0)
   const activeCourses = Number(summary?.active_courses || 0)
   const unreadLikeNotifications = notifications.filter(
@@ -203,10 +203,10 @@ export default async function StudentDashboard() {
   ).length
 
   const stats = [
-    [String(activeCourses), "كورسات مفعّلة"],
-    [String(activeLessons), "حصص متاحة"],
-    [String(progress.length), "مواد قيد الدراسة"],
-    [String(unreadLikeNotifications), "إشعارات طلبات"],
+    [String(activeCourses), "Active Courses"],
+    [String(activeLessons), "Available Lessons"],
+    [String(progress.length), "Courses in Progress"],
+    [String(unreadLikeNotifications), "Request Notifications"],
   ]
 
   return (
@@ -216,20 +216,20 @@ export default async function StudentDashboard() {
       <div className="wrap">
         <section className="dashboard-welcome">
           <div className="card welcome-box">
-            <h1 className="welcome-title">أهلًا، {studentName} 👋</h1>
+            <h1 className="welcome-title">Welcome, {studentName} 👋</h1>
             <p className="muted mt-4 text-lg">
               {latestLesson
-                ? `آخر حصة اتفعلت لك: ${latestLesson.lesson_title}.`
-                : "اطلب الانضمام لكورس مناسب، أو فعّل كود وصول عشان تبدأ مذاكرتك."}
+                ? `Your latest activated lesson: ${latestLesson.lesson_title}.`
+                : "Request to join a suitable course or activate an access code to start studying."}
             </p>
 
             <div className="mt-7 flex flex-wrap gap-3">
               <Link href="/student/activate" className="btn">
-                تفعيل كود جديد
+                Activate New Code
               </Link>
 
               <Link href="/subjects" className="btn btn-outline">
-                تصفح المواد
+                Browse Courses
               </Link>
             </div>
           </div>
@@ -248,12 +248,12 @@ export default async function StudentDashboard() {
           <section className="card mt-7 p-6 md:p-8">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <span className="eyebrow">الإشعارات</span>
-                <h2 className="text-3xl font-black">تحديثات طلبات الانضمام</h2>
+                <span className="eyebrow">Notifications</span>
+                <h2 className="text-3xl font-black">Course Request Updates</h2>
               </div>
 
               <Link href="/subjects" className="btn btn-outline">
-                تصفح الكورسات
+                Browse Courses
               </Link>
             </div>
 
@@ -272,19 +272,19 @@ export default async function StudentDashboard() {
                         {getRequestMessage(notification)}
                       </p>
                       <p className="muted mt-2 text-sm">
-                        تاريخ الطلب: {notification.requested_at}
+                        Requested at: {notification.requested_at}
                         {notification.reviewed_at
-                          ? ` — تاريخ المراجعة: ${notification.reviewed_at}`
+                          ? ` — Reviewed at: ${notification.reviewed_at}`
                           : ""}
                       </p>
                     </div>
 
                     <span className="badge">
                       {notification.status === "pending"
-                        ? "قيد المراجعة"
+                        ? "Pending"
                         : notification.status === "accepted"
-                          ? "مقبول"
-                          : "مرفوض"}
+                          ? "Accepted"
+                          : "Rejected"}
                     </span>
                   </div>
                 </div>
@@ -296,26 +296,26 @@ export default async function StudentDashboard() {
         <section className="card continue-card mt-7">
           <div>
             <span className="lesson-pill">
-              {latestLesson ? latestLesson.course_title : "ابدأ الآن"}
+              {latestLesson ? latestLesson.course_title : "Start Now"}
             </span>
             <h2 className="mt-5 font-[var(--display)] text-5xl font-bold leading-none">
-              {latestLesson ? latestLesson.lesson_title : "فعّل أول حصة"}
+              {latestLesson ? latestLesson.lesson_title : "Activate your first lesson"}
             </h2>
             <p className="muted mt-4">
               {latestLesson
-                ? `${latestLesson.chapter_title} — تم التفعيل في ${latestLesson.created_at || "غير محدد"}`
-                : "اطلب الانضمام لكورس مناسب، وبعد قبول المدرس استخدم كود الوصول الذي يرسله لك."}
+                ? `${latestLesson.chapter_title} — Activated on ${latestLesson.created_at || "Not specified"}`
+                : "Request to join a suitable course. After teacher approval, use the access code sent to you."}
             </p>
           </div>
 
           <div>
             {latestLesson ? (
               <Link href={`/student/lessons/${latestLesson.lesson_id}`} className="btn">
-                فتح الحصة
+                Open Lesson
               </Link>
             ) : (
               <Link href="/subjects" className="btn">
-                تصفح الكورسات
+                Browse Courses
               </Link>
             )}
           </div>
@@ -325,8 +325,8 @@ export default async function StudentDashboard() {
       <section className="section">
         <div className="wrap">
           <div className="section-head">
-            <span className="eyebrow">تقدّمك</span>
-            <h2 className="h2">مستواك في كل كورس</h2>
+            <span className="eyebrow">Your Progress</span>
+            <h2 className="h2">Your level in each course</h2>
           </div>
 
           <div className="grid-auto">
@@ -343,7 +343,7 @@ export default async function StudentDashboard() {
                     <div>
                       <h3>{course.course_title}</h3>
                       <p className="muted">
-                        {course.unlocked_lessons} من {course.total_lessons} حصة مفعّلة
+                        {course.unlocked_lessons} of {course.total_lessons} activated lessons
                       </p>
                     </div>
                   </div>
@@ -356,7 +356,7 @@ export default async function StudentDashboard() {
                   </div>
 
                   <Link href={`/courses/${course.course_slug}`} className="btn btn-soft mt-6">
-                    فتح الكورس
+                    Open Course
                   </Link>
                 </div>
               )
@@ -364,12 +364,12 @@ export default async function StudentDashboard() {
 
             {progress.length === 0 ? (
               <div className="card progress-card">
-                <h3>لا توجد كورسات مفعّلة بعد</h3>
+                <h3>No active courses yet</h3>
                 <p className="muted mt-2">
-                  اطلب الانضمام لكورس مناسب، وبعد قبول المدرس فعّل كود الوصول لبدء ظهور تقدمك هنا.
+                  Request to join a suitable course. After teacher approval, activate your access code to start seeing progress here.
                 </p>
                 <Link href="/subjects" className="btn mt-6">
-                  تصفح الكورسات
+                  Browse Courses
                 </Link>
               </div>
             ) : null}
@@ -380,8 +380,8 @@ export default async function StudentDashboard() {
       <section className="section tint-section">
         <div className="wrap">
           <div className="section-head">
-            <span className="eyebrow">حصصك</span>
-            <h2 className="h2">آخر الحصص المفعّلة</h2>
+            <span className="eyebrow">Your Lessons</span>
+            <h2 className="h2">Latest activated lessons</h2>
           </div>
 
           <div className="grid gap-4">
@@ -397,22 +397,22 @@ export default async function StudentDashboard() {
                     {lesson.course_title} — {lesson.chapter_title}
                   </p>
                   <p className="muted text-sm">
-                    تم التفعيل: {lesson.created_at || "غير محدد"}
-                    {lesson.access_until ? ` · متاح حتى: ${lesson.access_until}` : ""}
+                    Activated: {lesson.created_at || "Not specified"}
+                    {lesson.access_until ? ` · Available until: ${lesson.access_until}` : ""}
                   </p>
                 </div>
 
                 <Link href={`/student/lessons/${lesson.lesson_id}`} className="btn btn-soft">
-                  فتح الحصة
+                  Open Lesson
                 </Link>
               </div>
             ))}
 
             {lessons.length === 0 ? (
               <div className="card course-management-card">
-                <h3 className="text-2xl font-black">لا توجد حصص مفعّلة بعد</h3>
+                <h3 className="text-2xl font-black">No activated lessons yet</h3>
                 <p className="muted mt-2">
-                  بمجرد تفعيل كود، ستظهر الحصة هنا.
+                  Once you activate a code, the lesson will appear here.
                 </p>
               </div>
             ) : null}

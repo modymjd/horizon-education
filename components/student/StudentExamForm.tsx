@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -42,14 +42,14 @@ export function StudentExamForm({
     setSuccess("")
 
     if (alreadyAttempted) {
-      setError("تم دخول هذا الامتحان من قبل")
+      setError("You have already taken this exam")
       return
     }
 
     const missingQuestion = questions.find((question) => !answers[question.id])
 
     if (missingQuestion) {
-      setError("يجب الإجابة على كل الأسئلة قبل التسليم")
+      setError("You must answer all questions before submitting")
       return
     }
 
@@ -73,14 +73,14 @@ export function StudentExamForm({
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر تسليم الامتحان")
+        setError(data.message || "Unable to submit exam")
         return
       }
 
-      setSuccess(data.message || "تم تسليم الامتحان بنجاح")
+      setSuccess(data.message || "Exam submitted successfully")
       router.refresh()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading(false)
     }
@@ -89,7 +89,7 @@ export function StudentExamForm({
   if (alreadyAttempted) {
     return (
       <div className="rounded-2xl border border-[var(--line)] bg-[var(--cream-2)] p-4">
-        <p className="font-bold">تم دخول هذا الامتحان من قبل ولا يمكن إعادته.</p>
+        <p className="font-bold">You have already taken this exam and cannot retake it.</p>
       </div>
     )
   }
@@ -108,7 +108,7 @@ export function StudentExamForm({
             {index + 1}. {question.question_text}
           </h4>
 
-          <p className="muted mt-1 text-sm">{question.points} درجة</p>
+          <p className="muted mt-1 text-sm">{question.points} points</p>
 
           <div className="mt-3 grid gap-2">
             {choices
@@ -138,7 +138,7 @@ export function StudentExamForm({
       ))}
 
       <button className="btn btn-block disabled:opacity-60" disabled={isLoading}>
-        {isLoading ? "جاري تسليم الامتحان..." : "تسليم الامتحان"}
+        {isLoading ? "Submitting exam..." : "Submit exam"}
       </button>
     </form>
   )

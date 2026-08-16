@@ -117,14 +117,14 @@ async function getCourses(studentId?: number) {
 }
 
 function getInitials(title: string) {
-  return title.trim().slice(0, 1) || "ك"
+  return title.trim().slice(0, 1) || "C"
 }
 
 function getRequestLabel(status: string | null) {
-  if (status === "pending") return "قيد المراجعة"
-  if (status === "accepted") return "مقبول"
-  if (status === "rejected") return "مرفوض"
-  return "متاح للطلب"
+  if (status === "pending") return "Pending Review"
+  if (status === "accepted") return "Accepted"
+  if (status === "rejected") return "Rejected"
+  return "Available"
 }
 
 export default async function SubjectsPage() {
@@ -140,10 +140,10 @@ export default async function SubjectsPage() {
       <section className="section">
         <div className="wrap">
           <div className="section-head">
-            <span className="eyebrow">الكورسات المتاحة</span>
-            <h1 className="h1">اختار الكورس اللي تدرسه</h1>
+            <span className="eyebrow">Available Courses</span>
+            <h1 className="h1">Choose the course you want to study</h1>
             <p className="muted mt-6 text-lg">
-              تصفح الكورسات المنشورة، شوف المدرسين والحصص، واطلب الانضمام للكورس المناسب.
+              Browse published courses, view teachers and lessons, and request to join the course that fits you.
             </p>
           </div>
 
@@ -153,21 +153,21 @@ export default async function SubjectsPage() {
                 <div className="icon-circle">{getInitials(course.title)}</div>
                 <h3 className="mt-5 text-2xl font-black">{course.title}</h3>
                 <p className="muted mt-2">
-                  {course.short_description || "لا يوجد وصف مختصر لهذا الكورس بعد."}
+                  {course.short_description || "No short description is available for this course yet."}
                 </p>
 
                 <p className="muted mt-3 text-sm">
-                  المدرس: {course.teacher_name || "غير محدد"}
+                  Teacher: {course.teacher_name || "Not specified"}
                 </p>
 
                 <p className="muted mt-1 text-sm">
-                  {course.education_type_name || "كل الأنواع"} —{" "}
-                  {course.stage_name || "كل المراحل"} —{" "}
-                  {course.grade_name || "كل الصفوف"}
+                  {course.education_type_name || "All types"} —{" "}
+                  {course.stage_name || "All stages"} —{" "}
+                  {course.grade_name || "All grades"}
                 </p>
 
                 <span className="badge mt-5">
-                  {course.lessons_count} حصة
+                  {course.lessons_count} lessons
                 </span>
 
                 <span className="badge mt-3">
@@ -176,7 +176,7 @@ export default async function SubjectsPage() {
 
                 <div className="mt-5 grid gap-3">
                   <Link href={`/courses/${course.slug}`} className="btn btn-soft">
-                    معاينة الكورس
+                    Preview Course
                   </Link>
 
                   {isStudent ? (
@@ -186,7 +186,7 @@ export default async function SubjectsPage() {
                     />
                   ) : (
                     <Link href="/register" className="btn">
-                      سجل كطالب للانضمام
+                      Register as a student to join
                     </Link>
                   )}
                 </div>
@@ -195,19 +195,19 @@ export default async function SubjectsPage() {
 
             {courses.length === 0 ? (
               <div className="card subject-card">
-                <div className="icon-circle">ك</div>
-                <h3 className="mt-5 text-2xl font-black">لا توجد كورسات متاحة</h3>
+                <div className="icon-circle">C</div>
+                <h3 className="mt-5 text-2xl font-black">No courses available</h3>
                 <p className="muted mt-2">
-                  عندما يتم نشر كورسات مناسبة ستظهر هنا.
+                  Published courses will appear here once available.
                 </p>
 
                 {isStudent ? (
                   <Link href="/student" className="btn mt-5">
-                    رجوع للوحة الطالب
+                    Back to Student Dashboard
                   </Link>
                 ) : (
                   <Link href="/register" className="btn mt-5">
-                    إنشاء حساب طالب
+                    Create Student Account
                   </Link>
                 )}
               </div>
@@ -220,4 +220,3 @@ export default async function SubjectsPage() {
     </main>
   )
 }
-

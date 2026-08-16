@@ -101,7 +101,8 @@ export default function RegisterPage() {
         const grades = data.grades || []
 
         const defaultEducationType =
-          educationTypes.find((item) => item.slug === "languages") || educationTypes[0]
+          educationTypes.find((item) => item.slug === "languages") ||
+          educationTypes[0]
         const defaultStages = defaultEducationType
           ? stages.filter(
               (stage) =>
@@ -109,15 +110,11 @@ export default function RegisterPage() {
                 stage.education_type_id === defaultEducationType.id
             )
           : stages
-        const defaultStage =
-          defaultStages.find((stage) => stage.name.includes("ثانوي")) ||
-          defaultStages[0]
+        const defaultStage = defaultStages[0]
         const defaultGrades = defaultStage
           ? grades.filter((grade) => grade.stage_id === defaultStage.id)
           : grades
-        const defaultGrade =
-          defaultGrades.find((grade) => grade.name.includes("الثالث")) ||
-          defaultGrades[0]
+        const defaultGrade = defaultGrades[0]
 
         setOptions({
           educationTypes,
@@ -134,7 +131,7 @@ export default function RegisterPage() {
       })
       .catch(() => {
         if (mounted) {
-          setError("تعذر تحميل الخيارات الدراسية")
+          setError("Unable to load education options")
         }
       })
       .finally(() => {
@@ -207,18 +204,18 @@ export default function RegisterPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر إنشاء الحساب")
+        setError(data.message || "Unable to create account")
         return
       }
 
-      setSuccess(data.message || "تم إنشاء الحساب بنجاح")
+      setSuccess(data.message || "Account created successfully")
       setStudentCode(data.student_code || "")
 
       setTimeout(() => {
         router.push("/login")
       }, 1500)
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server")
     } finally {
       setIsLoading(false)
     }
@@ -231,10 +228,10 @@ export default function RegisterPage() {
       <section className="auth-section">
         <div className="wrap">
           <div className="card p-6 md:p-10">
-            <span className="eyebrow">حساب طالب جديد</span>
-            <h1 className="h2">إنشاء حساب طالب</h1>
+            <span className="eyebrow">New Student Account</span>
+            <h1 className="h2">Create a Student Account</h1>
             <p className="muted mt-4">
-              أدخل بيانات الطالب وولي الأمر بدقة. سيستخدم المدرس هذه البيانات للتواصل التعليمي بعد طلب الانضمام للكورس.
+              Enter the student and guardian details accurately. Teachers will use this information for educational communication after course join requests.
             </p>
 
             {error ? <div className="alert-error mt-6">{error}</div> : null}
@@ -242,14 +239,14 @@ export default function RegisterPage() {
             {success ? (
               <div className="alert-success mt-6">
                 <p>{success}</p>
-                {studentCode ? <p className="mt-2 font-bold">كود الطالب: {studentCode}</p> : null}
+                {studentCode ? <p className="mt-2 font-bold">Student code: {studentCode}</p> : null}
               </div>
             ) : null}
 
             <form onSubmit={handleSubmit} className="mt-8">
               <div className="form-grid">
                 <label className="font-bold">
-                  الاسم الكامل
+                  Full Name
                   <input
                     className="input mt-2"
                     value={form.full_name}
@@ -259,7 +256,7 @@ export default function RegisterPage() {
                 </label>
 
                 <label className="font-bold">
-                  البريد الإلكتروني
+                  Email Address
                   <input
                     className="input mt-2"
                     type="email"
@@ -270,7 +267,7 @@ export default function RegisterPage() {
                 </label>
 
                 <label className="font-bold">
-                  كلمة المرور
+                  Password
                   <input
                     className="input mt-2"
                     type="password"
@@ -282,7 +279,7 @@ export default function RegisterPage() {
                 </label>
 
                 <label className="font-bold">
-                  رقم الهاتف
+                  Phone Number
                   <input
                     className="input mt-2"
                     value={form.phone}
@@ -292,7 +289,7 @@ export default function RegisterPage() {
                 </label>
 
                 <label className="font-bold">
-                  رقم واتساب الطالب
+                  Student WhatsApp Number
                   <input
                     className="input mt-2"
                     value={form.whatsapp_phone}
@@ -302,7 +299,7 @@ export default function RegisterPage() {
                 </label>
 
                 <label className="font-bold">
-                  الرقم القومي
+                  National ID
                   <input
                     className="input mt-2"
                     value={form.national_id}
@@ -311,7 +308,7 @@ export default function RegisterPage() {
                 </label>
 
                 <label className="font-bold">
-                  اسم ولي الأمر
+                  Guardian Name
                   <input
                     className="input mt-2"
                     value={form.guardian_name}
@@ -321,7 +318,7 @@ export default function RegisterPage() {
                 </label>
 
                 <label className="font-bold">
-                  رقم ولي الأمر
+                  Guardian Phone
                   <input
                     className="input mt-2"
                     value={form.guardian_phone}
@@ -331,7 +328,7 @@ export default function RegisterPage() {
                 </label>
 
                 <label className="font-bold">
-                  واتساب ولي الأمر
+                  Guardian WhatsApp
                   <input
                     className="input mt-2"
                     value={form.guardian_whatsapp_phone}
@@ -340,7 +337,7 @@ export default function RegisterPage() {
                 </label>
 
                 <label className="font-bold">
-                  المحافظة
+                  Governorate
                   <input
                     className="input mt-2"
                     value={form.governorate}
@@ -350,7 +347,7 @@ export default function RegisterPage() {
                 </label>
 
                 <label className="font-bold md:col-span-2">
-                  العنوان
+                  Address
                   <input
                     className="input mt-2"
                     value={form.address}
@@ -360,7 +357,7 @@ export default function RegisterPage() {
                 </label>
 
                 <label className="font-bold">
-                  نوع التعليم
+                  Education Type
                   <select
                     className="input mt-2"
                     value={form.education_type_id}
@@ -368,7 +365,7 @@ export default function RegisterPage() {
                     disabled={isLoadingOptions}
                     required
                   >
-                    <option value="">اختر نوع التعليم</option>
+                    <option value="">Select education type</option>
                     {options.educationTypes.map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.name}
@@ -378,7 +375,7 @@ export default function RegisterPage() {
                 </label>
 
                 <label className="font-bold">
-                  المرحلة
+                  Stage
                   <select
                     className="input mt-2"
                     value={form.stage_id}
@@ -386,7 +383,7 @@ export default function RegisterPage() {
                     disabled={isLoadingOptions}
                     required
                   >
-                    <option value="">اختر المرحلة</option>
+                    <option value="">Select stage</option>
                     {filteredStages.map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.name}
@@ -396,7 +393,7 @@ export default function RegisterPage() {
                 </label>
 
                 <label className="font-bold">
-                  الصف الدراسي
+                  Grade
                   <select
                     className="input mt-2"
                     value={form.grade_id}
@@ -404,7 +401,7 @@ export default function RegisterPage() {
                     disabled={isLoadingOptions}
                     required
                   >
-                    <option value="">اختر الصف</option>
+                    <option value="">Select grade</option>
                     {filteredGrades.map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.name}
@@ -423,17 +420,17 @@ export default function RegisterPage() {
                   required
                 />
                 <span>
-                  أوافق على تواصل المنصة والمدرس معي أو مع ولي الأمر عبر الهاتف أو واتساب لأغراض تعليمية وإدارية.
+                  I agree that the platform and teachers may contact me or my guardian by phone or WhatsApp for educational and administrative purposes.
                 </span>
               </label>
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <button className="btn disabled:opacity-60" disabled={isLoading || isLoadingOptions}>
-                  {isLoading ? "جاري إنشاء الحساب..." : "إنشاء الحساب"}
+                  {isLoading ? "Creating account..." : "Create account"}
                 </button>
 
                 <Link href="/login" className="btn btn-outline">
-                  لدي حساب بالفعل
+                  I already have an account
                 </Link>
               </div>
             </form>
