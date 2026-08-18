@@ -20,7 +20,7 @@ export async function POST(req: Request) {
 
     if (!user.teacher_id) {
       return NextResponse.json(
-        { message: "لم يتم العثور على حساب المدرس" },
+        { message: "Teacher account was not found." },
         { status: 403 }
       )
     }
@@ -37,28 +37,28 @@ export async function POST(req: Request) {
 
     if (!courseId || Number.isNaN(courseId)) {
       return NextResponse.json(
-        { message: "رقم الكورس غير صحيح" },
+        { message: "Invalid course ID." },
         { status: 400 }
       )
     }
 
     if (!chapterId || Number.isNaN(chapterId)) {
       return NextResponse.json(
-        { message: "رقم الشابتر غير صحيح" },
+        { message: "Invalid chapter ID." },
         { status: 400 }
       )
     }
 
     if (!title) {
       return NextResponse.json(
-        { message: "عنوان الحصة مطلوب" },
+        { message: "Lesson title is required." },
         { status: 400 }
       )
     }
 
     if (price < 0) {
       return NextResponse.json(
-        { message: "السعر لا يمكن أن يكون أقل من صفر" },
+        { message: "Price cannot be less than zero." },
         { status: 400 }
       )
     }
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
 
     if (!courseRows[0]) {
       return NextResponse.json(
-        { message: "الكورس غير موجود أو غير تابع لهذا المدرس" },
+        { message: "Course not found or does not belong to this teacher." },
         { status: 403 }
       )
     }
@@ -96,7 +96,7 @@ export async function POST(req: Request) {
 
     if (!chapterRows[0]) {
       return NextResponse.json(
-        { message: "الشابتر غير موجود داخل هذا الكورس" },
+        { message: "Chapter not found in this course." },
         { status: 404 }
       )
     }
@@ -133,14 +133,14 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "تم إضافة الحصة بنجاح",
+      message: "Lesson added successfully.",
       lesson_id: lessonId,
     })
   } catch (error) {
     console.error("CREATE_TEACHER_LESSON_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء إضافة الحصة" },
+      { message: "Unable to add the lesson." },
       { status: 500 }
     )
   }

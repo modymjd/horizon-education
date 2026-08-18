@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
     if (!user.teacher_id) {
       return NextResponse.json(
-        { message: "لم يتم العثور على حساب المدرس" },
+        { message: "Teacher account was not found." },
         { status: 403 }
       )
     }
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
     if (!lessonRows.length) {
       return NextResponse.json(
-        { message: "الحصة غير موجودة أو غير تابعة لهذا المدرس" },
+        { message: "Lesson not found or does not belong to this teacher." },
         { status: 403 }
       )
     }
@@ -115,7 +115,7 @@ export async function POST(req: Request) {
     console.error("CREATE_ACCESS_CODES_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء إنشاء أكواد الوصول" },
+      { message: "Unable to create access codes." },
       { status: 500 }
     )
   }

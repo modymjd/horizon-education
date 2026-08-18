@@ -35,7 +35,7 @@ export async function POST(req: Request) {
 
     if (!user.teacher_id) {
       return NextResponse.json(
-        { message: "لم يتم العثور على حساب المدرس" },
+        { message: "Teacher account was not found." },
         { status: 403 }
       )
     }
@@ -50,14 +50,14 @@ export async function POST(req: Request) {
 
     if (!lessonId || Number.isNaN(lessonId)) {
       return NextResponse.json(
-        { message: "رقم الحصة غير صحيح" },
+        { message: "Invalid lesson ID." },
         { status: 400 }
       )
     }
 
     if (!title.trim()) {
       return NextResponse.json(
-        { message: "عنوان الواجب مطلوب" },
+        { message: "Assignment title is required." },
         { status: 400 }
       )
     }
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
 
     if (!lesson) {
       return NextResponse.json(
-        { message: "الحصة غير موجودة أو غير تابعة لهذا المدرس" },
+        { message: "Lesson not found or does not belong to this teacher." },
         { status: 403 }
       )
     }
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
 
       if (file.size > maxSizeBytes) {
         return NextResponse.json(
-          { message: `حجم المرفق يجب ألا يتجاوز ${maxSizeMb}MB` },
+          { message: `Attachment size must not exceed ${maxSizeMb}MB.` },
           { status: 400 }
         )
       }
@@ -140,13 +140,13 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "تم إضافة الواجب بنجاح",
+      message: "Assignment added successfully.",
     })
   } catch (error) {
     console.error("CREATE_ASSIGNMENT_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء إضافة الواجب" },
+      { message: "Unable to add the assignment." },
       { status: 500 }
     )
   }
