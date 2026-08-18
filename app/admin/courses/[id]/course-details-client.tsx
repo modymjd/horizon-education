@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import Link from "next/link"
 import { useState } from "react"
@@ -47,16 +47,16 @@ const emptyForm: FormState = {
 }
 
 const courseStatusLabel = {
-  draft: "مسودة",
-  published: "منشور",
-  paused: "متوقف",
-  ended: "منتهي",
+  draft: "Draft",
+  published: "Published",
+  paused: "Paused",
+  ended: "Ended",
 }
 
 const chapterStatusLabel = {
-  draft: "مسودة",
-  published: "منشور",
-  hidden: "مخفي",
+  draft: "Draft",
+  published: "Published",
+  hidden: "Hidden",
 }
 
 export default function CourseDetailsClient({
@@ -78,9 +78,9 @@ export default function CourseDetailsClient({
       <main className="grid min-h-screen place-items-center p-5">
         <div className="card max-w-md p-8 text-center">
           <span className="badge">404</span>
-          <h1 className="mt-4 text-3xl font-black">الكورس غير موجود</h1>
+          <h1 className="mt-4 text-3xl font-black">Course not found</h1>
           <Link href="/admin/courses" className="btn btn-primary mt-6 inline-block">
-            العودة للكورسات
+            Back to Courses
           </Link>
         </div>
       </main>
@@ -124,16 +124,16 @@ export default function CourseDetailsClient({
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "حدث خطأ أثناء إنشاء الشابتر")
+        setError(data.message || "Unable to create the chapter.")
         return
       }
 
-      setMessage(data.message || "تم إنشاء الشابتر بنجاح")
+      setMessage(data.message || "Chapter created successfully.")
       setForm(emptyForm)
       setShowForm(false)
       await reloadChapters()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server.")
     } finally {
       setIsLoading(false)
     }
@@ -146,23 +146,23 @@ export default function CourseDetailsClient({
           Horizon
         </Link>
 
-        <p className="mt-1 text-sm opacity-70">لوحة الأدمن</p>
+        <p className="mt-1 text-sm opacity-70">Admin Dashboard</p>
 
         <nav className="mt-8 grid gap-2">
           <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin">
-            الرئيسية
+            Home
           </Link>
           <Link
             className="rounded-xl px-3 py-3 hover:bg-white/10"
             href="/admin/teachers"
           >
-            المدرسون
+            Teachers
           </Link>
           <Link
             className="rounded-xl bg-white/10 px-3 py-3"
             href="/admin/courses"
           >
-            الكورسات
+            Courses
           </Link>
         </nav>
       </aside>
@@ -170,42 +170,43 @@ export default function CourseDetailsClient({
       <section className="flex-1 p-5 md:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <span className="badge">لوحة الأدمن / الكورسات / تفاصيل الكورس</span>
+            <span className="badge">Admin Dashboard / Courses / Course Details</span>
             <h1 className="mt-3 text-4xl font-black">{course.title}</h1>
             <p className="mt-2 opacity-70">
-              {course.short_description || "إدارة بيانات الكورس والشابترات التابعة له."}
+              {course.short_description ||
+                "Manage course details and the chapters linked to this course."}
             </p>
           </div>
 
           <Link href="/admin/courses" className="btn btn-soft">
-            العودة للكورسات
+            Back to Courses
           </Link>
         </div>
 
         <div className="mt-8 grid-auto">
           <div className="card p-5">
-            <p className="text-sm opacity-60">المدرس</p>
+            <p className="text-sm opacity-60">Teacher</p>
             <b className="mt-2 block text-xl">{course.teacher_name}</b>
           </div>
 
           <div className="card p-5">
-            <p className="text-sm opacity-60">نوع التعليم</p>
+            <p className="text-sm opacity-60">Education Type</p>
             <b className="mt-2 block text-xl">
-              {course.education_type_name || "غير محدد"}
+              {course.education_type_name || "Not specified"}
             </b>
           </div>
 
           <div className="card p-5">
-            <p className="text-sm opacity-60">حالة الكورس</p>
+            <p className="text-sm opacity-60">Course Status</p>
             <b className="mt-2 block text-xl">
               {courseStatusLabel[course.status]}
             </b>
           </div>
 
           <div className="card p-5">
-            <p className="text-sm opacity-60">مدة إتاحة الحصة</p>
+            <p className="text-sm opacity-60">Access Duration</p>
             <b className="mt-2 block text-xl">
-              {course.access_duration_days || 30} يوم
+              {course.access_duration_days || 30} days
             </b>
           </div>
         </div>
@@ -223,24 +224,24 @@ export default function CourseDetailsClient({
         ) : null}
 
         <div className="mt-8 flex items-center justify-between gap-3">
-          <h2 className="text-3xl font-black">الشابترات</h2>
+          <h2 className="text-3xl font-black">Chapters</h2>
 
           <button
             className="btn btn-primary"
             type="button"
             onClick={() => setShowForm((value) => !value)}
           >
-            {showForm ? "إغلاق النموذج" : "إضافة شابتر"}
+            {showForm ? "Close Form" : "Add Chapter"}
           </button>
         </div>
 
         {showForm ? (
           <form onSubmit={handleSubmit} className="card mt-6 p-6">
-            <h3 className="text-2xl font-black">إضافة شابتر جديد</h3>
+            <h3 className="text-2xl font-black">Add New Chapter</h3>
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <label>
-                اسم الشابتر
+                Chapter Name
                 <input
                   className="input mt-2"
                   value={form.title}
@@ -248,11 +249,12 @@ export default function CourseDetailsClient({
                     setForm({ ...form, title: e.target.value })
                   }
                   required
+                  dir="ltr"
                 />
               </label>
 
               <label>
-                الترتيب
+                Order
                 <input
                   className="input mt-2"
                   type="number"
@@ -261,11 +263,12 @@ export default function CourseDetailsClient({
                   onChange={(e) =>
                     setForm({ ...form, sortOrder: e.target.value })
                   }
+                  dir="ltr"
                 />
               </label>
 
               <label>
-                حالة الشابتر
+                Chapter Status
                 <select
                   className="input mt-2"
                   value={form.status}
@@ -275,15 +278,16 @@ export default function CourseDetailsClient({
                       status: e.target.value as FormState["status"],
                     })
                   }
+                  dir="ltr"
                 >
-                  <option value="draft">مسودة</option>
-                  <option value="published">منشور</option>
-                  <option value="hidden">مخفي</option>
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="hidden">Hidden</option>
                 </select>
               </label>
 
               <label>
-                تاريخ النشر الاختياري
+                Optional Publish Date
                 <input
                   className="input mt-2"
                   type="datetime-local"
@@ -291,28 +295,31 @@ export default function CourseDetailsClient({
                   onChange={(e) =>
                     setForm({ ...form, publishedAt: e.target.value })
                   }
+                  dir="ltr"
                 />
               </label>
 
               <label className="md:col-span-2">
-                رابط صورة الشابتر
+                Chapter Cover Image URL
                 <input
                   className="input mt-2"
                   value={form.coverImageUrl}
                   onChange={(e) =>
                     setForm({ ...form, coverImageUrl: e.target.value })
                   }
+                  dir="ltr"
                 />
               </label>
 
               <label className="md:col-span-2">
-                وصف الشابتر
+                Chapter Description
                 <textarea
                   className="input mt-2 min-h-28"
                   value={form.description}
                   onChange={(e) =>
                     setForm({ ...form, description: e.target.value })
                   }
+                  dir="ltr"
                 />
               </label>
             </div>
@@ -322,26 +329,26 @@ export default function CourseDetailsClient({
               disabled={isLoading}
               type="submit"
             >
-              {isLoading ? "جاري الحفظ..." : "حفظ الشابتر"}
+              {isLoading ? "Saving..." : "Save Chapter"}
             </button>
           </form>
         ) : null}
 
         <div className="card mt-6 overflow-hidden p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="text-2xl font-black">قائمة الشابترات</h3>
-            <span className="badge">{chapters.length} شابتر</span>
+            <h3 className="text-2xl font-black">Chapter List</h3>
+            <span className="badge">{chapters.length} chapters</span>
           </div>
 
           <div className="mt-5 overflow-auto">
             <table className="table">
               <thead>
                 <tr>
-                  <th>الشابتر</th>
-                  <th>الترتيب</th>
-                  <th>الحالة</th>
-                  <th>الحصص</th>
-                  <th>تاريخ النشر</th>
+                  <th>Chapter</th>
+                  <th>Order</th>
+                  <th>Status</th>
+                  <th>Lessons</th>
+                  <th>Publish Date</th>
                 </tr>
               </thead>
 
@@ -349,11 +356,13 @@ export default function CourseDetailsClient({
                 {chapters.map((chapter) => (
                   <tr key={chapter.id}>
                     <td>
-                      <b><Link href={`/admin/chapters/${chapter.id}`} className="font-black underline">
-  #{chapter.id} - {chapter.title}
-</Link></b>
+                      <b>
+                        <Link href={`/admin/chapters/${chapter.id}`} className="font-black underline">
+                          #{chapter.id} - {chapter.title}
+                        </Link>
+                      </b>
                       <p className="mt-1 text-xs opacity-60">
-                        {chapter.description || "بدون وصف"}
+                        {chapter.description || "No description"}
                       </p>
                     </td>
                     <td>{chapter.sort_order}</td>
@@ -365,8 +374,8 @@ export default function CourseDetailsClient({
                     <td>{chapter.lessons_count}</td>
                     <td>
                       {chapter.published_at
-                        ? new Date(chapter.published_at).toLocaleString("ar-EG")
-                        : "غير محدد"}
+                        ? new Date(chapter.published_at).toLocaleString("en-US")
+                        : "Not specified"}
                     </td>
                   </tr>
                 ))}
@@ -374,7 +383,7 @@ export default function CourseDetailsClient({
                 {chapters.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="text-center opacity-60">
-                      لا توجد شابترات بعد.
+                      No chapters yet.
                     </td>
                   </tr>
                 ) : null}

@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import Link from "next/link"
 import { useState } from "react"
@@ -58,10 +58,10 @@ const emptyForm: FormState = {
 }
 
 const statusLabel = {
-  draft: "مسودة",
-  published: "منشور",
-  paused: "متوقف",
-  ended: "منتهي",
+  draft: "Draft",
+  published: "Published",
+  paused: "Paused",
+  ended: "Ended",
 }
 
 export default function CoursesClient({
@@ -119,16 +119,16 @@ export default function CoursesClient({
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "حدث خطأ أثناء إنشاء الكورس")
+        setError(data.message || "Unable to create the course.")
         return
       }
 
-      setMessage(data.message || "تم إنشاء الكورس بنجاح")
+      setMessage(data.message || "Course created successfully.")
       setForm(emptyForm)
       setShowForm(false)
       await reloadCourses()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server.")
     } finally {
       setIsLoading(false)
     }
@@ -141,32 +141,32 @@ export default function CoursesClient({
           Horizon
         </Link>
 
-        <p className="mt-1 text-sm opacity-70">لوحة الأدمن</p>
+        <p className="mt-1 text-sm opacity-70">Admin Dashboard</p>
 
         <nav className="mt-8 grid gap-2">
           <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin">
-            الرئيسية
+            Home
           </Link>
           <Link
             className="rounded-xl px-3 py-3 hover:bg-white/10"
             href="/admin/teachers"
           >
-            المدرسون
+            Teachers
           </Link>
           <Link
             className="rounded-xl bg-white/10 px-3 py-3"
             href="/admin/courses"
           >
-            الكورسات
+            Courses
           </Link>
-          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin">
-            الطلاب
+          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin/students">
+            Students
           </Link>
-          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin">
-            المدفوعات
+          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin/payments">
+            Payments
           </Link>
-          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin">
-            التقارير
+          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin/reports">
+            Reports
           </Link>
         </nav>
       </aside>
@@ -174,10 +174,10 @@ export default function CoursesClient({
       <section className="flex-1 p-5 md:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <span className="badge">لوحة الأدمن / الكورسات</span>
-            <h1 className="mt-3 text-4xl font-black">إدارة الكورسات</h1>
+            <span className="badge">Admin Dashboard / Courses</span>
+            <h1 className="mt-3 text-4xl font-black">Course Management</h1>
             <p className="mt-2 opacity-70">
-              إنشاء الكورسات وربط كل كورس بمدرس واحد ونوع تعليم محدد.
+              Create courses and assign each course to one teacher and an optional education type.
             </p>
           </div>
 
@@ -186,7 +186,7 @@ export default function CoursesClient({
             type="button"
             onClick={() => setShowForm((value) => !value)}
           >
-            {showForm ? "إغلاق النموذج" : "إضافة كورس"}
+            {showForm ? "Close Form" : "Add Course"}
           </button>
         </div>
 
@@ -204,11 +204,11 @@ export default function CoursesClient({
 
         {showForm ? (
           <form onSubmit={handleSubmit} className="card mt-8 p-6">
-            <h2 className="text-2xl font-black">إضافة كورس جديد</h2>
+            <h2 className="text-2xl font-black">Add New Course</h2>
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <label>
-                اسم الكورس
+                Course Name
                 <input
                   className="input mt-2"
                   value={form.title}
@@ -216,11 +216,12 @@ export default function CoursesClient({
                     setForm({ ...form, title: e.target.value })
                   }
                   required
+                  dir="ltr"
                 />
               </label>
 
               <label>
-                المدرس المسؤول
+                Assigned Teacher
                 <select
                   className="input mt-2"
                   value={form.teacherId}
@@ -228,8 +229,9 @@ export default function CoursesClient({
                     setForm({ ...form, teacherId: e.target.value })
                   }
                   required
+                  dir="ltr"
                 >
-                  <option value="">اختر المدرس</option>
+                  <option value="">Select teacher</option>
                   {teachers.map((teacher) => (
                     <option key={teacher.id} value={teacher.id}>
                       {teacher.full_name}
@@ -239,15 +241,16 @@ export default function CoursesClient({
               </label>
 
               <label>
-                نوع التعليم
+                Education Type
                 <select
                   className="input mt-2"
                   value={form.educationTypeId}
                   onChange={(e) =>
                     setForm({ ...form, educationTypeId: e.target.value })
                   }
+                  dir="ltr"
                 >
-                  <option value="">بدون تحديد</option>
+                  <option value="">Not specified</option>
                   {educationTypes.map((type) => (
                     <option key={type.id} value={type.id}>
                       {type.name}
@@ -257,7 +260,7 @@ export default function CoursesClient({
               </label>
 
               <label>
-                حالة النشر
+                Publish Status
                 <select
                   className="input mt-2"
                   value={form.status}
@@ -267,16 +270,17 @@ export default function CoursesClient({
                       status: e.target.value as FormState["status"],
                     })
                   }
+                  dir="ltr"
                 >
-                  <option value="draft">مسودة</option>
-                  <option value="published">منشور</option>
-                  <option value="paused">متوقف</option>
-                  <option value="ended">منتهي</option>
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="paused">Paused</option>
+                  <option value="ended">Ended</option>
                 </select>
               </label>
 
               <label>
-                تاريخ البداية
+                Start Date
                 <input
                   className="input mt-2"
                   type="date"
@@ -284,11 +288,12 @@ export default function CoursesClient({
                   onChange={(e) =>
                     setForm({ ...form, startsAt: e.target.value })
                   }
+                  dir="ltr"
                 />
               </label>
 
               <label>
-                تاريخ النهاية
+                End Date
                 <input
                   className="input mt-2"
                   type="date"
@@ -296,11 +301,12 @@ export default function CoursesClient({
                   onChange={(e) =>
                     setForm({ ...form, endsAt: e.target.value })
                   }
+                  dir="ltr"
                 />
               </label>
 
               <label>
-                مدة الإتاحة بالأيام
+                Access Duration in Days
                 <input
                   className="input mt-2"
                   type="number"
@@ -312,22 +318,24 @@ export default function CoursesClient({
                       accessDurationDays: e.target.value,
                     })
                   }
+                  dir="ltr"
                 />
               </label>
 
               <label>
-                رابط صورة الغلاف
+                Cover Image URL
                 <input
                   className="input mt-2"
                   value={form.coverImageUrl}
                   onChange={(e) =>
                     setForm({ ...form, coverImageUrl: e.target.value })
                   }
+                  dir="ltr"
                 />
               </label>
 
               <label className="md:col-span-2">
-                وصف مختصر
+                Short Description
                 <input
                   className="input mt-2"
                   value={form.shortDescription}
@@ -337,17 +345,19 @@ export default function CoursesClient({
                       shortDescription: e.target.value,
                     })
                   }
+                  dir="ltr"
                 />
               </label>
 
               <label className="md:col-span-2">
-                وصف تفصيلي
+                Full Description
                 <textarea
                   className="input mt-2 min-h-32"
                   value={form.description}
                   onChange={(e) =>
                     setForm({ ...form, description: e.target.value })
                   }
+                  dir="ltr"
                 />
               </label>
             </div>
@@ -357,28 +367,28 @@ export default function CoursesClient({
               disabled={isLoading}
               type="submit"
             >
-              {isLoading ? "جاري الحفظ..." : "حفظ الكورس"}
+              {isLoading ? "Saving..." : "Save Course"}
             </button>
           </form>
         ) : null}
 
         <div className="card mt-8 overflow-hidden p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-2xl font-black">قائمة الكورسات</h2>
-            <span className="badge">{courses.length} كورس</span>
+            <h2 className="text-2xl font-black">Course List</h2>
+            <span className="badge">{courses.length} courses</span>
           </div>
 
           <div className="mt-5 overflow-auto">
             <table className="table">
               <thead>
                 <tr>
-                  <th>الكورس</th>
-                  <th>المدرس</th>
-                  <th>نوع التعليم</th>
-                  <th>الحالة</th>
-                  <th>الشابترات</th>
-                  <th>الحصص</th>
-                  <th>مدة الإتاحة</th>
+                  <th>Course</th>
+                  <th>Teacher</th>
+                  <th>Education Type</th>
+                  <th>Status</th>
+                  <th>Chapters</th>
+                  <th>Lessons</th>
+                  <th>Access Duration</th>
                 </tr>
               </thead>
 
@@ -386,13 +396,17 @@ export default function CoursesClient({
                 {courses.map((course) => (
                   <tr key={course.id}>
                     <td>
-                      <b><Link href={`/admin/courses/${course.id}`} className="font-black underline">{course.title}</Link></b>
+                      <b>
+                        <Link href={`/admin/courses/${course.id}`} className="font-black underline">
+                          {course.title}
+                        </Link>
+                      </b>
                       <p className="mt-1 text-xs opacity-60">
-                        {course.short_description || "بدون وصف مختصر"}
+                        {course.short_description || "No short description"}
                       </p>
                     </td>
                     <td>{course.teacher_name}</td>
-                    <td>{course.education_type_name || "غير محدد"}</td>
+                    <td>{course.education_type_name || "Not specified"}</td>
                     <td>
                       <span className="badge">
                         {statusLabel[course.status]}
@@ -400,14 +414,14 @@ export default function CoursesClient({
                     </td>
                     <td>{course.chapters_count}</td>
                     <td>{course.lessons_count}</td>
-                    <td>{course.access_duration_days || 30} يوم</td>
+                    <td>{course.access_duration_days || 30} days</td>
                   </tr>
                 ))}
 
                 {courses.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="text-center opacity-60">
-                      لا توجد كورسات بعد.
+                      No courses yet.
                     </td>
                   </tr>
                 ) : null}
