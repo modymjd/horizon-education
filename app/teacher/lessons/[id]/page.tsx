@@ -139,19 +139,19 @@ async function getLessonSubmissions(id: string, teacherId: number) {
 }
 
 function money(value: number | string | null | undefined) {
-  return `${Number(value || 0).toLocaleString("ar-EG")} ج.م`
+  return `${Number(value || 0).toLocaleString("en-US")} EGP`
 }
 
 function getPlacementLabel(placement: string) {
-  if (placement === "before_content") return "قبل الحصة"
-  return "بعد الحصة"
+  if (placement === "before_content") return "Before lesson"
+  return "After lesson"
 }
 
 function getSubmissionStatusLabel(status: string) {
-  if (status === "submitted") return "تم التسليم"
-  if (status === "reviewed") return "تمت المراجعة"
-  if (status === "accepted") return "مقبول"
-  if (status === "rejected") return "مرفوض"
+  if (status === "submitted") return "Submitted"
+  if (status === "reviewed") return "Reviewed"
+  if (status === "accepted") return "Accepted"
+  if (status === "rejected") return "Rejected"
   return status
 }
 
@@ -188,23 +188,24 @@ export default async function TeacherLessonPage({
 
       <section className="teacher-page-hero">
         <div className="wrap">
-          <span className="eyebrow">لوحة المدرس</span>
+          <span className="eyebrow">Teacher dashboard</span>
           <h1 className="h1">{lesson.title}</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            {lesson.description || "إدارة محتوى الحصة، رابط الفيديو، ومتابعة وصول الطلاب."}
+            {lesson.description ||
+              "Manage lesson content, video link, and student access."}
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
             <Link href={`/teacher/courses/${lesson.course_id}/lessons`} className="btn">
-              رجوع لحصص الكورس
+              Back to course lessons
             </Link>
 
             <Link href="/teacher/courses" className="btn btn-outline">
-              رجوع للكورسات
+              Back to courses
             </Link>
 
             <Link href={`/courses/${lesson.course_slug}`} className="btn btn-outline">
-              معاينة الكورس
+              Preview course
             </Link>
           </div>
         </div>
@@ -213,18 +214,18 @@ export default async function TeacherLessonPage({
       <section className="section pt-6">
         <div className="wrap grid gap-7 lg:grid-cols-[0.9fr_1.1fr]">
           <aside className="card price-card">
-            <span className="eyebrow">بيانات الحصة</span>
-            <h2 className="text-3xl font-black">ملخص سريع</h2>
+            <span className="eyebrow">Lesson details</span>
+            <h2 className="text-3xl font-black">Quick summary</h2>
 
             <div className="mt-5 grid gap-3 text-sm font-bold">
-              <p>✓ الكورس: {lesson.course_title}</p>
-              <p>✓ الباب: {lesson.chapter_title}</p>
-              <p>✓ السعر: {money(lesson.price)}</p>
-              <p>✓ الحالة: {lesson.status}</p>
-              <p>✓ طلاب لديهم وصول: {lesson.students_count}</p>
-              <p>✓ فيديو: {lesson.video_url ? "مضاف" : "غير مضاف"}</p>
-              <p>✓ عدد الامتحانات: {exams.length}</p>
-              <p>✓ تسليمات الواجبات: {submissions.length}</p>
+              <p>✓ Course: {lesson.course_title}</p>
+              <p>✓ Chapter: {lesson.chapter_title}</p>
+              <p>✓ Price: {money(lesson.price)}</p>
+              <p>✓ Status: {lesson.status}</p>
+              <p>✓ Students with access: {lesson.students_count}</p>
+              <p>✓ Video: {lesson.video_url ? "Added" : "Not added"}</p>
+              <p>✓ Exams: {exams.length}</p>
+              <p>✓ Assignment submissions: {submissions.length}</p>
             </div>
           </aside>
 
@@ -244,10 +245,10 @@ export default async function TeacherLessonPage({
       <section className="section tint-section">
         <div className="wrap">
           <div className="card p-8 md:p-12">
-            <span className="eyebrow">امتحانات الحصة</span>
-            <h2 className="h2">إدارة الامتحانات والأسئلة</h2>
+            <span className="eyebrow">Lesson exams</span>
+            <h2 className="h2">Manage exams and questions</h2>
             <p className="muted mt-5 max-w-3xl">
-              بعد إضافة امتحان، افتح إدارة الأسئلة لإضافة أسئلة الاختيار من متعدد.
+              After adding an exam, open question management to add multiple-choice questions.
             </p>
 
             <div className="mt-8 grid gap-5">
@@ -264,12 +265,12 @@ export default async function TeacherLessonPage({
                         <p className="muted mt-2">{exam.description}</p>
                       ) : null}
                       <p className="muted mt-2 text-sm">
-                        درجة النجاح: {exam.pass_score}% — عدد الأسئلة: {exam.questions_count}
+                        Pass score: {exam.pass_score}% — Questions: {exam.questions_count}
                       </p>
                     </div>
 
                     <Link href={`/teacher/exams/${exam.id}`} className="btn btn-outline">
-                      إدارة الأسئلة
+                      Manage questions
                     </Link>
                   </div>
                 </div>
@@ -277,7 +278,7 @@ export default async function TeacherLessonPage({
 
               {exams.length === 0 ? (
                 <p className="muted">
-                  لا توجد امتحانات لهذه الحصة بعد. أضف امتحانًا من النموذج بالأعلى.
+                  No exams have been added to this lesson yet. Add an exam using the form above.
                 </p>
               ) : null}
             </div>
@@ -288,10 +289,10 @@ export default async function TeacherLessonPage({
       <section className="section">
         <div className="wrap">
           <div className="card p-8 md:p-12">
-            <span className="eyebrow">تسليمات الواجبات</span>
-            <h2 className="h2">تسليمات الطلاب</h2>
+            <span className="eyebrow">Assignment submissions</span>
+            <h2 className="h2">Student submissions</h2>
             <p className="muted mt-5 max-w-3xl">
-              راجع الملفات التي رفعها الطلاب كإجابات على واجبات هذه الحصة.
+              Review the files students uploaded as answers to this lesson's assignments.
             </p>
 
             <div className="mt-8 grid gap-4">
@@ -304,10 +305,12 @@ export default async function TeacherLessonPage({
                     <div>
                       <span className="badge">{getSubmissionStatusLabel(submission.status)}</span>
                       <h3 className="mt-3 text-xl font-black">{submission.assignment_title}</h3>
-                      <p className="muted mt-2">الطالب: {submission.student_name}</p>
-                      <p className="muted mt-1 text-sm">وقت التسليم: {submission.submitted_at}</p>
+                      <p className="muted mt-2">Student: {submission.student_name}</p>
+                      <p className="muted mt-1 text-sm">
+                        Submitted at: {submission.submitted_at}
+                      </p>
                       {submission.notes ? (
-                        <p className="muted mt-2">ملاحظات الطالب: {submission.notes}</p>
+                        <p className="muted mt-2">Student notes: {submission.notes}</p>
                       ) : null}
                     </div>
 
@@ -316,14 +319,14 @@ export default async function TeacherLessonPage({
                       className="btn btn-soft"
                       target="_blank"
                     >
-                      تحميل التسليم
+                      Download submission
                     </a>
                   </div>
                 </div>
               ))}
 
               {submissions.length === 0 ? (
-                <p className="muted">لا توجد تسليمات واجبات لهذه الحصة بعد.</p>
+                <p className="muted">No assignment submissions for this lesson yet.</p>
               ) : null}
             </div>
           </div>
@@ -333,14 +336,14 @@ export default async function TeacherLessonPage({
       <section className="section">
         <div className="wrap">
           <div className="card p-8 md:p-12">
-            <span className="eyebrow">معاينة الطالب</span>
-            <h2 className="h2">تأكد من شكل الحصة للطالب</h2>
+            <span className="eyebrow">Student preview</span>
+            <h2 className="h2">Check the student lesson view</h2>
             <p className="muted mt-5 max-w-3xl">
-              بعد حفظ رابط الفيديو وإضافة الواجبات والامتحانات، افتح صفحة الحصة كطالب للتأكد من ظهورها بشكل صحيح.
+              After saving the video link and adding assignments or exams, open the student lesson page to confirm everything appears correctly.
             </p>
             <div className="mt-8">
               <Link href={`/student/lessons/${lesson.id}`} className="btn">
-                فتح صفحة الحصة
+                Open lesson page
               </Link>
             </div>
           </div>

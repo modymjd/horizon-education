@@ -114,8 +114,8 @@ async function getExamChoices(examId: number) {
 }
 
 function getPlacementLabel(placement: string) {
-  if (placement === "before_content") return "قبل الحصة"
-  return "بعد الحصة"
+  if (placement === "before_content") return "Before lesson"
+  return "After lesson"
 }
 
 export default async function TeacherExamPage({ params }: Params) {
@@ -152,19 +152,19 @@ export default async function TeacherExamPage({ params }: Params) {
 
       <section className="teacher-page-hero">
         <div className="wrap">
-          <span className="eyebrow">لوحة المدرس</span>
-          <h1 className="h1">إدارة أسئلة الامتحان</h1>
+          <span className="eyebrow">Teacher dashboard</span>
+          <h1 className="h1">Manage exam questions</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            أضف أسئلة واختيارات لامتحان {exam.title}.
+            Add questions and choices for {exam.title}.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
             <Link href={`/teacher/lessons/${exam.lesson_id}`} className="btn">
-              رجوع للحصة
+              Back to lesson
             </Link>
 
             <Link href={`/student/exams/${exam.id}`} className="btn btn-outline">
-              معاينة الامتحان
+              Preview exam
             </Link>
           </div>
         </div>
@@ -173,16 +173,16 @@ export default async function TeacherExamPage({ params }: Params) {
       <section className="section pt-6">
         <div className="wrap grid gap-7 lg:grid-cols-[0.9fr_1.1fr]">
           <aside className="card price-card">
-            <span className="eyebrow">بيانات الامتحان</span>
+            <span className="eyebrow">Exam details</span>
             <h2 className="text-3xl font-black">{exam.title}</h2>
 
             <div className="mt-5 grid gap-3 text-sm font-bold">
-              <p>✓ الكورس: {exam.course_title}</p>
-              <p>✓ الباب: {exam.chapter_title}</p>
-              <p>✓ الحصة: {exam.lesson_title}</p>
-              <p>✓ مكان الظهور: {getPlacementLabel(exam.placement)}</p>
-              <p>✓ درجة النجاح: {exam.pass_score}%</p>
-              <p>✓ عدد الأسئلة: {questions.length}</p>
+              <p>✓ Course: {exam.course_title}</p>
+              <p>✓ Chapter: {exam.chapter_title}</p>
+              <p>✓ Lesson: {exam.lesson_title}</p>
+              <p>✓ Placement: {getPlacementLabel(exam.placement)}</p>
+              <p>✓ Pass score: {exam.pass_score}%</p>
+              <p>✓ Questions: {questions.length}</p>
             </div>
           </aside>
 
@@ -193,8 +193,8 @@ export default async function TeacherExamPage({ params }: Params) {
       <section className="section tint-section">
         <div className="wrap">
           <div className="card p-8 md:p-12">
-            <span className="eyebrow">الأسئلة الحالية</span>
-            <h2 className="h2">أسئلة الامتحان</h2>
+            <span className="eyebrow">Current questions</span>
+            <h2 className="h2">Exam questions</h2>
 
             <div className="mt-8 grid gap-5">
               {questions.map((question, index) => {
@@ -209,10 +209,10 @@ export default async function TeacherExamPage({ params }: Params) {
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <h3 className="text-xl font-black">
-                        سؤال {index + 1}: {question.question_text}
+                        Question {index + 1}: {question.question_text}
                       </h3>
 
-                      <span className="badge">{question.points} درجة</span>
+                      <span className="badge">{question.points} points</span>
                     </div>
 
                     <div className="mt-4 grid gap-2">
@@ -231,7 +231,7 @@ export default async function TeacherExamPage({ params }: Params) {
               })}
 
               {questions.length === 0 ? (
-                <p className="muted">لا توجد أسئلة في هذا الامتحان بعد.</p>
+                <p className="muted">No questions have been added to this exam yet.</p>
               ) : null}
             </div>
           </div>
