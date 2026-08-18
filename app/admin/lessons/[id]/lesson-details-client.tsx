@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import Link from "next/link"
 import { useState } from "react"
@@ -87,22 +87,22 @@ const emptyAttachmentForm: AttachmentFormState = {
 }
 
 const lessonStatusLabel = {
-  draft: "مسودة",
-  published: "منشور",
-  hidden: "مخفي",
+  draft: "Draft",
+  published: "Published",
+  hidden: "Hidden",
 }
 
 const fileTypeLabel = {
   pdf: "PDF",
   word: "Word",
-  image: "صورة",
-  video: "فيديو",
-  other: "أخرى",
+  image: "Image",
+  video: "Video",
+  other: "Other",
 }
 
 function formatDate(value: string | null) {
-  if (!value) return "غير محدد"
-  return new Date(value).toLocaleString("ar-EG")
+  if (!value) return "Not specified"
+  return new Date(value).toLocaleString("en-US")
 }
 
 function formatDuration(seconds: number) {
@@ -110,8 +110,8 @@ function formatDuration(seconds: number) {
   const minutes = Math.floor(total / 60)
   const remain = total % 60
 
-  if (minutes === 0) return `${remain} ثانية`
-  return `${minutes} د ${remain} ث`
+  if (minutes === 0) return `${remain} sec`
+  return `${minutes} min ${remain} sec`
 }
 
 export default function LessonDetailsClient({
@@ -146,15 +146,15 @@ export default function LessonDetailsClient({
       <main className="grid min-h-screen place-items-center p-5">
         <div className="card max-w-md p-8 text-center">
           <span className="badge">404</span>
-          <h1 className="mt-4 text-3xl font-black">الحصة غير موجودة</h1>
+          <h1 className="mt-4 text-3xl font-black">Lesson not found</h1>
           <p className="mt-3 opacity-70">
-            لم نتمكن من العثور على بيانات هذه الحصة.
+            We could not find the details for this lesson.
           </p>
           <Link
             href="/admin/courses"
             className="btn btn-primary mt-6 inline-block"
           >
-            العودة للكورسات
+            Back to Courses
           </Link>
         </div>
       </main>
@@ -204,7 +204,7 @@ export default function LessonDetailsClient({
         const uploadData = await uploadRes.json()
 
         if (!uploadRes.ok) {
-          setError(uploadData.message || "حدث خطأ أثناء رفع الفيديو")
+          setError(uploadData.message || "Unable to upload the video.")
           return
         }
 
@@ -213,7 +213,7 @@ export default function LessonDetailsClient({
       }
 
       if (!uploadedStoragePath && !uploadedVideoUrl) {
-        setError("يجب رفع فيديو أو إدخال رابط فيديو")
+        setError("Please upload a video file or enter a video URL.")
         return
       }
 
@@ -236,16 +236,16 @@ export default function LessonDetailsClient({
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "حدث خطأ أثناء إضافة الفيديو")
+        setError(data.message || "Unable to add the video.")
         return
       }
 
-      setMessage(data.message || "تم إضافة الفيديو بنجاح")
+      setMessage(data.message || "Video added successfully.")
       setVideoForm(emptyVideoForm)
       setShowVideoForm(false)
       await reloadVideos()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server.")
     } finally {
       setVideoLoading(false)
     }
@@ -278,16 +278,16 @@ export default function LessonDetailsClient({
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "حدث خطأ أثناء إضافة المرفق")
+        setError(data.message || "Unable to add the attachment.")
         return
       }
 
-      setMessage(data.message || "تم إضافة المرفق بنجاح")
+      setMessage(data.message || "Attachment added successfully.")
       setAttachmentForm(emptyAttachmentForm)
       setShowAttachmentForm(false)
       await reloadAttachments()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server.")
     } finally {
       setAttachmentLoading(false)
     }
@@ -300,28 +300,28 @@ export default function LessonDetailsClient({
           Horizon
         </Link>
 
-        <p className="mt-1 text-sm opacity-70">لوحة الأدمن</p>
+        <p className="mt-1 text-sm opacity-70">Admin Dashboard</p>
 
         <nav className="mt-8 grid gap-2">
           <Link
             className="rounded-xl px-3 py-3 hover:bg-white/10"
             href="/admin"
           >
-            الرئيسية
+            Home
           </Link>
 
           <Link
             className="rounded-xl px-3 py-3 hover:bg-white/10"
             href="/admin/teachers"
           >
-            المدرسون
+            Teachers
           </Link>
 
           <Link
             className="rounded-xl bg-white/10 px-3 py-3"
             href="/admin/courses"
           >
-            الكورسات
+            Courses
           </Link>
         </nav>
       </aside>
@@ -329,11 +329,11 @@ export default function LessonDetailsClient({
       <section className="flex-1 p-5 md:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <span className="badge">لوحة الأدمن / الحصص / تفاصيل الحصة</span>
+            <span className="badge">Admin Dashboard / Lessons / Lesson Details</span>
             <h1 className="mt-3 text-4xl font-black">{lesson.title}</h1>
             <p className="mt-2 opacity-70">
-              الكورس: {lesson.course_title} — الشابتر: {lesson.chapter_title} —
-              المدرس: {lesson.teacher_name}
+              Course: {lesson.course_title} — Chapter: {lesson.chapter_title} —
+              Teacher: {lesson.teacher_name}
             </p>
           </div>
 
@@ -341,32 +341,32 @@ export default function LessonDetailsClient({
             href={`/admin/chapters/${lesson.chapter_id}`}
             className="btn btn-soft"
           >
-            العودة للشابتر
+            Back to Chapter
           </Link>
         </div>
 
         <div className="mt-8 grid-auto">
           <div className="card p-5">
-            <p className="text-sm opacity-60">السعر</p>
-            <b className="mt-2 block text-xl">{lesson.price} ج</b>
+            <p className="text-sm opacity-60">Price</p>
+            <b className="mt-2 block text-xl">{lesson.price} EGP</b>
           </div>
 
           <div className="card p-5">
-            <p className="text-sm opacity-60">الحالة</p>
+            <p className="text-sm opacity-60">Status</p>
             <b className="mt-2 block text-xl">
               {lessonStatusLabel[lesson.status]}
             </b>
           </div>
 
           <div className="card p-5">
-            <p className="text-sm opacity-60">بداية الإتاحة</p>
+            <p className="text-sm opacity-60">Available From</p>
             <b className="mt-2 block text-xl">
               {formatDate(lesson.available_from)}
             </b>
           </div>
 
           <div className="card p-5">
-            <p className="text-sm opacity-60">نهاية الإتاحة</p>
+            <p className="text-sm opacity-60">Available Until</p>
             <b className="mt-2 block text-xl">
               {formatDate(lesson.available_until)}
             </b>
@@ -375,7 +375,7 @@ export default function LessonDetailsClient({
 
         {lesson.description ? (
           <div className="card mt-6 p-5">
-            <h2 className="text-2xl font-black">وصف الحصة</h2>
+            <h2 className="text-2xl font-black">Lesson Description</h2>
             <p className="mt-3 leading-8 opacity-80">{lesson.description}</p>
           </div>
         ) : null}
@@ -394,24 +394,24 @@ export default function LessonDetailsClient({
 
         <section className="mt-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-3xl font-black">فيديوهات الحصة</h2>
+            <h2 className="text-3xl font-black">Lesson Videos</h2>
 
             <button
               className="btn btn-primary"
               type="button"
               onClick={() => setShowVideoForm((value) => !value)}
             >
-              {showVideoForm ? "إغلاق النموذج" : "إضافة فيديو"}
+              {showVideoForm ? "Close Form" : "Add Video"}
             </button>
           </div>
 
           {showVideoForm ? (
             <form onSubmit={handleVideoSubmit} className="card mt-6 p-6">
-              <h3 className="text-2xl font-black">إضافة فيديو جديد</h3>
+              <h3 className="text-2xl font-black">Add New Video</h3>
 
               <div className="mt-6 grid gap-4 md:grid-cols-2">
                 <label className="md:col-span-2">
-                  رفع ملف الفيديو
+                  Upload Video File
                   <input
                     className="input mt-2"
                     type="file"
@@ -424,13 +424,12 @@ export default function LessonDetailsClient({
                     }
                   />
                   <p className="mt-1 text-xs opacity-60">
-                    يمكنك رفع فيديو MP4 أو أي صيغة فيديو مدعومة. الحد الحالي
-                    500MB.
+                    You can upload MP4 or any supported video format. Current limit: 500MB.
                   </p>
                 </label>
 
                 <label>
-                  اسم الفيديو
+                  Video Name
                   <input
                     className="input mt-2"
                     value={videoForm.title}
@@ -441,11 +440,12 @@ export default function LessonDetailsClient({
                       })
                     }
                     required
+                    dir="ltr"
                   />
                 </label>
 
                 <label>
-                  مدة الفيديو بالثواني
+                  Video Duration in Seconds
                   <input
                     className="input mt-2"
                     type="number"
@@ -457,11 +457,12 @@ export default function LessonDetailsClient({
                         durationSeconds: e.target.value,
                       })
                     }
+                    dir="ltr"
                   />
                 </label>
 
                 <label>
-                  الترتيب
+                  Order
                   <input
                     className="input mt-2"
                     type="number"
@@ -473,11 +474,12 @@ export default function LessonDetailsClient({
                         sortOrder: e.target.value,
                       })
                     }
+                    dir="ltr"
                   />
                 </label>
 
                 <label>
-                  رابط الفيديو الاختياري
+                  Optional Video URL
                   <input
                     className="input mt-2"
                     value={videoForm.videoUrl}
@@ -487,12 +489,13 @@ export default function LessonDetailsClient({
                         videoUrl: e.target.value,
                       })
                     }
-                    placeholder="اختياري: https://..."
+                    placeholder="Optional: https://..."
+                    dir="ltr"
                   />
                 </label>
 
                 <label>
-                  مسار التخزين الاختياري
+                  Optional Storage Path
                   <input
                     className="input mt-2"
                     value={videoForm.storagePath}
@@ -502,12 +505,13 @@ export default function LessonDetailsClient({
                         storagePath: e.target.value,
                       })
                     }
-                    placeholder="يتم ملؤه تلقائيًا بعد الرفع"
+                    placeholder="Filled automatically after upload"
+                    dir="ltr"
                   />
                 </label>
 
                 <label>
-                  بداية الإتاحة
+                  Available From
                   <input
                     className="input mt-2"
                     type="datetime-local"
@@ -518,11 +522,12 @@ export default function LessonDetailsClient({
                         availableFrom: e.target.value,
                       })
                     }
+                    dir="ltr"
                   />
                 </label>
 
                 <label>
-                  نهاية الإتاحة
+                  Available Until
                   <input
                     className="input mt-2"
                     type="datetime-local"
@@ -533,6 +538,7 @@ export default function LessonDetailsClient({
                         availableUntil: e.target.value,
                       })
                     }
+                    dir="ltr"
                   />
                 </label>
               </div>
@@ -542,26 +548,26 @@ export default function LessonDetailsClient({
                 disabled={videoLoading}
                 type="submit"
               >
-                {videoLoading ? "جاري رفع وحفظ الفيديو..." : "حفظ الفيديو"}
+                {videoLoading ? "Uploading and saving video..." : "Save Video"}
               </button>
             </form>
           ) : null}
 
           <div className="card mt-6 overflow-hidden p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-2xl font-black">قائمة الفيديوهات</h3>
-              <span className="badge">{videos.length} فيديو</span>
+              <h3 className="text-2xl font-black">Video List</h3>
+              <span className="badge">{videos.length} videos</span>
             </div>
 
             <div className="mt-5 overflow-auto">
               <table className="table">
                 <thead>
                   <tr>
-                    <th>الفيديو</th>
-                    <th>المدة</th>
-                    <th>الترتيب</th>
-                    <th>بداية الإتاحة</th>
-                    <th>نهاية الإتاحة</th>
+                    <th>Video</th>
+                    <th>Duration</th>
+                    <th>Order</th>
+                    <th>Available From</th>
+                    <th>Available Until</th>
                   </tr>
                 </thead>
 
@@ -571,7 +577,7 @@ export default function LessonDetailsClient({
                       <td>
                         <b>{video.title}</b>
                         <p className="mt-1 text-xs opacity-60">
-                          {video.video_url || video.storage_path || "بدون رابط"}
+                          {video.video_url || video.storage_path || "No link"}
                         </p>
                       </td>
                       <td>{formatDuration(video.duration_seconds)}</td>
@@ -584,7 +590,7 @@ export default function LessonDetailsClient({
                   {videos.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="text-center opacity-60">
-                        لا توجد فيديوهات بعد.
+                        No videos yet.
                       </td>
                     </tr>
                   ) : null}
@@ -596,24 +602,24 @@ export default function LessonDetailsClient({
 
         <section className="mt-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-3xl font-black">مرفقات الحصة</h2>
+            <h2 className="text-3xl font-black">Lesson Attachments</h2>
 
             <button
               className="btn btn-primary"
               type="button"
               onClick={() => setShowAttachmentForm((value) => !value)}
             >
-              {showAttachmentForm ? "إغلاق النموذج" : "إضافة مرفق"}
+              {showAttachmentForm ? "Close Form" : "Add Attachment"}
             </button>
           </div>
 
           {showAttachmentForm ? (
             <form onSubmit={handleAttachmentSubmit} className="card mt-6 p-6">
-              <h3 className="text-2xl font-black">إضافة مرفق جديد</h3>
+              <h3 className="text-2xl font-black">Add New Attachment</h3>
 
               <div className="mt-6 grid gap-4 md:grid-cols-2">
                 <label>
-                  اسم الملف
+                  File Name
                   <input
                     className="input mt-2"
                     value={attachmentForm.title}
@@ -624,11 +630,12 @@ export default function LessonDetailsClient({
                       })
                     }
                     required
+                    dir="ltr"
                   />
                 </label>
 
                 <label>
-                  رابط الملف
+                  File URL
                   <input
                     className="input mt-2"
                     value={attachmentForm.fileUrl}
@@ -640,11 +647,12 @@ export default function LessonDetailsClient({
                     }
                     placeholder="https://..."
                     required
+                    dir="ltr"
                   />
                 </label>
 
                 <label>
-                  نوع الملف
+                  File Type
                   <select
                     className="input mt-2"
                     value={attachmentForm.fileType}
@@ -655,17 +663,18 @@ export default function LessonDetailsClient({
                           .value as AttachmentFormState["fileType"],
                       })
                     }
+                    dir="ltr"
                   >
                     <option value="pdf">PDF</option>
                     <option value="word">Word</option>
-                    <option value="image">صورة</option>
-                    <option value="video">فيديو</option>
-                    <option value="other">أخرى</option>
+                    <option value="image">Image</option>
+                    <option value="video">Video</option>
+                    <option value="other">Other</option>
                   </select>
                 </label>
 
                 <label>
-                  حجم الملف KB
+                  File Size KB
                   <input
                     className="input mt-2"
                     type="number"
@@ -677,11 +686,12 @@ export default function LessonDetailsClient({
                         fileSizeKb: e.target.value,
                       })
                     }
+                    dir="ltr"
                   />
                 </label>
 
                 <label>
-                  تاريخ انتهاء الإتاحة
+                  Available Until
                   <input
                     className="input mt-2"
                     type="datetime-local"
@@ -692,6 +702,7 @@ export default function LessonDetailsClient({
                         availableUntil: e.target.value,
                       })
                     }
+                    dir="ltr"
                   />
                 </label>
 
@@ -706,11 +717,11 @@ export default function LessonDetailsClient({
                       })
                     }
                   />
-                  السماح بالتنزيل
+                  Allow Download
                 </label>
 
                 <label className="md:col-span-2">
-                  وصف مختصر
+                  Short Description
                   <textarea
                     className="input mt-2 min-h-24"
                     value={attachmentForm.description}
@@ -720,6 +731,7 @@ export default function LessonDetailsClient({
                         description: e.target.value,
                       })
                     }
+                    dir="ltr"
                   />
                 </label>
               </div>
@@ -729,26 +741,26 @@ export default function LessonDetailsClient({
                 disabled={attachmentLoading}
                 type="submit"
               >
-                {attachmentLoading ? "جاري الحفظ..." : "حفظ المرفق"}
+                {attachmentLoading ? "Saving..." : "Save Attachment"}
               </button>
             </form>
           ) : null}
 
           <div className="card mt-6 overflow-hidden p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-2xl font-black">قائمة المرفقات</h3>
-              <span className="badge">{attachments.length} مرفق</span>
+              <h3 className="text-2xl font-black">Attachment List</h3>
+              <span className="badge">{attachments.length} attachments</span>
             </div>
 
             <div className="mt-5 overflow-auto">
               <table className="table">
                 <thead>
                   <tr>
-                    <th>الملف</th>
-                    <th>النوع</th>
-                    <th>الحجم</th>
-                    <th>التنزيل</th>
-                    <th>انتهاء الإتاحة</th>
+                    <th>File</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Download</th>
+                    <th>Available Until</th>
                   </tr>
                 </thead>
 
@@ -765,10 +777,10 @@ export default function LessonDetailsClient({
                       <td>
                         {attachment.file_size_kb
                           ? `${attachment.file_size_kb} KB`
-                          : "غير محدد"}
+                          : "Not specified"}
                       </td>
                       <td>
-                        {attachment.allow_download ? "مسموح" : "عرض فقط"}
+                        {attachment.allow_download ? "Allowed" : "View only"}
                       </td>
                       <td>{formatDate(attachment.available_until)}</td>
                     </tr>
@@ -777,7 +789,7 @@ export default function LessonDetailsClient({
                   {attachments.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="text-center opacity-60">
-                        لا توجد مرفقات بعد.
+                        No attachments yet.
                       </td>
                     </tr>
                   ) : null}
