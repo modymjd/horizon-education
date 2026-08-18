@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
     if (!user.student_id) {
       return NextResponse.json(
-        { message: "لم يتم العثور على حساب الطالب" },
+        { message: "Student account was not found." },
         { status: 403 }
       )
     }
@@ -65,7 +65,7 @@ export async function POST(req: Request) {
 
     if (!student || student.status !== "active") {
       return NextResponse.json(
-        { message: "حساب الطالب غير نشط أو غير موجود" },
+        { message: "Student account is inactive or does not exist." },
         { status: 403 }
       )
     }
@@ -90,21 +90,21 @@ export async function POST(req: Request) {
 
     if (!accessCode) {
       return NextResponse.json(
-        { message: "الكود غير صحيح" },
+        { message: "Invalid access code." },
         { status: 400 }
       )
     }
 
     if (accessCode.status !== "new") {
       return NextResponse.json(
-        { message: "الكود مستخدم أو غير متاح" },
+        { message: "This access code has already been used or is unavailable." },
         { status: 400 }
       )
     }
 
     if (accessCode.expires_at && new Date(accessCode.expires_at) < new Date()) {
       return NextResponse.json(
-        { message: "انتهت صلاحية الكود" },
+        { message: "This access code has expired." },
         { status: 400 }
       )
     }
@@ -114,7 +114,7 @@ export async function POST(req: Request) {
       accessCode.assigned_student_id !== student.id
     ) {
       return NextResponse.json(
-        { message: "هذا الكود مخصص لطالب آخر" },
+        { message: "This access code is assigned to another student." },
         { status: 403 }
       )
     }
@@ -149,7 +149,7 @@ export async function POST(req: Request) {
 
       return NextResponse.json({
         success: true,
-        message: "تم تفعيل الحصة بنجاح",
+        message: "Lesson activated successfully.",
         lesson_id: accessCode.lesson_id,
       })
     } catch (error) {
@@ -162,7 +162,7 @@ export async function POST(req: Request) {
     console.error("ACTIVATE_CODE_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء تفعيل الكود" },
+      { message: "Unable to activate the access code." },
       { status: 500 }
     )
   }

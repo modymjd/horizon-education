@@ -26,7 +26,7 @@ export async function POST(req: Request) {
 
     if (!user.student_id) {
       return NextResponse.json(
-        { message: "لم يتم العثور على حساب الطالب" },
+        { message: "Student account was not found." },
         { status: 403 }
       )
     }
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
     if (!courseRows[0]) {
       return NextResponse.json(
-        { message: "الكورس غير متاح لبياناتك الدراسية الحالية" },
+        { message: "This course is not available for your current education profile." },
         { status: 403 }
       )
     }
@@ -89,14 +89,14 @@ export async function POST(req: Request) {
         return NextResponse.json({
           success: true,
           status: "pending",
-          message: "تم إعادة إرسال طلب الانضمام",
+          message: "Join request was sent again.",
         })
       }
 
       return NextResponse.json({
         success: true,
         status: existing.status,
-        message: "طلب الانضمام موجود بالفعل",
+        message: "Join request already exists.",
       })
     }
 
@@ -113,13 +113,13 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       status: "pending",
-      message: "تم إرسال طلب الانضمام بنجاح",
+      message: "Join request sent successfully.",
     })
   } catch (error) {
     console.error("CREATE_COURSE_REQUEST_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء إرسال طلب الانضمام" },
+      { message: "Unable to send the join request." },
       { status: 500 }
     )
   }

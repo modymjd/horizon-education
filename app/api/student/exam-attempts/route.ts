@@ -37,7 +37,7 @@ export async function POST(req: Request) {
 
     if (!user.student_id) {
       return NextResponse.json(
-        { message: "لم يتم العثور على حساب الطالب" },
+        { message: "Student account was not found." },
         { status: 403 }
       )
     }
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
 
     if (!examId || Number.isNaN(examId)) {
       return NextResponse.json(
-        { message: "رقم الامتحان غير صحيح" },
+        { message: "Invalid exam ID." },
         { status: 400 }
       )
     }
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
 
     if (existingAttempts.length > 0) {
       return NextResponse.json(
-        { message: "لا يمكنك دخول هذا الامتحان أكثر من مرة" },
+        { message: "You cannot attempt this exam more than once." },
         { status: 400 }
       )
     }
@@ -89,7 +89,7 @@ export async function POST(req: Request) {
 
     if (!exam) {
       return NextResponse.json(
-        { message: "الامتحان غير موجود" },
+        { message: "Exam not found." },
         { status: 404 }
       )
     }
@@ -106,7 +106,7 @@ export async function POST(req: Request) {
 
     if (questions.length === 0) {
       return NextResponse.json(
-        { message: "لا توجد أسئلة في هذا الامتحان" },
+        { message: "This exam has no questions." },
         { status: 400 }
       )
     }
@@ -172,7 +172,8 @@ export async function POST(req: Request) {
         `
         INSERT INTO lesson_exam_attempts
           (exam_id, student_id, score, passed)
-        VALUES (?, ?, ?, ?)
+        VALUES
+          (?, ?, ?, ?)
         `,
         [examId, user.student_id, score, passed]
       )
@@ -190,7 +191,8 @@ export async function POST(req: Request) {
               is_correct,
               points_awarded
             )
-          VALUES (?, ?, ?, ?, ?)
+          VALUES
+            (?, ?, ?, ?, ?)
           `,
           [
             attemptId,
@@ -209,7 +211,7 @@ export async function POST(req: Request) {
           success: true,
           score: 0,
           passed: false,
-          message: "تم إغلاق الامتحان بسبب الخروج من الصفحة",
+          message: "The exam was closed because you left the page.",
         })
       }
 
@@ -218,8 +220,8 @@ export async function POST(req: Request) {
         score,
         passed: Boolean(passed),
         message: passed
-          ? `نجحت في الامتحان بدرجة ${score}%`
-          : `لم تجتز الامتحان. درجتك ${score}%`,
+          ? `You passed the exam with a score of ${score}%.`
+          : `You did not pass the exam. Your score is ${score}%.`,
       })
     } catch (error) {
       await conn.rollback()
@@ -231,7 +233,7 @@ export async function POST(req: Request) {
     console.error("SUBMIT_EXAM_ATTEMPT_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء تسليم الامتحان" },
+      { message: "Unable to submit the exam." },
       { status: 500 }
     )
   }

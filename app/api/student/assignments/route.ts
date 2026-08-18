@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
     if (!user.student_id) {
       return NextResponse.json(
-        { message: "لم يتم العثور على حساب الطالب" },
+        { message: "Student account was not found." },
         { status: 403 }
       )
     }
@@ -32,14 +32,14 @@ export async function POST(req: Request) {
 
     if (!assignmentId || Number.isNaN(assignmentId)) {
       return NextResponse.json(
-        { message: "رقم الواجب غير صحيح" },
+        { message: "Invalid assignment ID." },
         { status: 400 }
       )
     }
 
     if (!file) {
       return NextResponse.json(
-        { message: "اختار ملف التسليم أولًا" },
+        { message: "Please select a submission file first." },
         { status: 400 }
       )
     }
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
 
     if (!accessRows[0]) {
       return NextResponse.json(
-        { message: "لا تملك صلاحية تسليم هذا الواجب" },
+        { message: "You do not have permission to submit this assignment." },
         { status: 403 }
       )
     }
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
 
     if (file.size > maxSizeBytes) {
       return NextResponse.json(
-        { message: `حجم الملف يجب ألا يتجاوز ${maxSizeMb}MB` },
+        { message: `File size must not exceed ${maxSizeMb}MB.` },
         { status: 400 }
       )
     }
@@ -89,7 +89,10 @@ export async function POST(req: Request) {
 
     if (!allowedExtensions.includes(extension)) {
       return NextResponse.json(
-        { message: "نوع الملف غير مدعوم. استخدم PDF أو Word أو Excel أو صورة." },
+        {
+          message:
+            "Unsupported file type. Please use PDF, Word, Excel, or an image file.",
+        },
         { status: 400 }
       )
     }
@@ -112,7 +115,6 @@ export async function POST(req: Request) {
     await writeFile(filePath, buffer)
 
     const publicUrl = `/uploads/assignment-submissions/${fileName}`
-
     const conn = await pool.getConnection()
 
     try {
@@ -157,14 +159,14 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "تم تسليم الواجب بنجاح",
+      message: "Assignment submitted successfully.",
       submission_url: publicUrl,
     })
   } catch (error) {
     console.error("SUBMIT_ASSIGNMENT_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء تسليم الواجب" },
+      { message: "Unable to submit the assignment." },
       { status: 500 }
     )
   }
