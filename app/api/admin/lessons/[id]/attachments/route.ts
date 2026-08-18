@@ -20,6 +20,13 @@ export async function GET(_req: Request, context: Params) {
     const { id } = await context.params
     const lessonId = Number(id)
 
+    if (!lessonId || Number.isNaN(lessonId)) {
+      return NextResponse.json(
+        { message: "Invalid lesson ID." },
+        { status: 400 }
+      )
+    }
+
     const attachments = await query<any>(
       `
       SELECT
@@ -46,7 +53,7 @@ export async function GET(_req: Request, context: Params) {
     console.error("GET_LESSON_ATTACHMENTS_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء تحميل المرفقات" },
+      { message: "Unable to load attachments." },
       { status: 500 }
     )
   }
@@ -61,8 +68,15 @@ export async function POST(req: Request, context: Params) {
 
   const { id } = await context.params
   const lessonId = Number(id)
-  const body = lessonAttachmentSchema.parse(await req.json())
 
+  if (!lessonId || Number.isNaN(lessonId)) {
+    return NextResponse.json(
+      { message: "Invalid lesson ID." },
+      { status: 400 }
+    )
+  }
+
+  const body = lessonAttachmentSchema.parse(await req.json())
   const conn = await pool.getConnection()
 
   try {
@@ -77,7 +91,7 @@ export async function POST(req: Request, context: Params) {
       await conn.rollback()
 
       return NextResponse.json(
-        { message: "الحصة غير موجودة" },
+        { message: "Lesson not found." },
         { status: 404 }
       )
     }
@@ -115,7 +129,13 @@ export async function POST(req: Request, context: Params) {
       INSERT INTO audit_logs
         (user_id, action, entity_type, entity_id, new_values)
       VALUES
-        (?, 'create_lesson_attachment', 'attachment', LAST_INSERT_ID(), JSON_OBJECT('title', ?, 'lesson_id', ?))
+        (
+          ?,
+          'create_lesson_attachment',
+          'attachment',
+          LAST_INSERT_ID(),
+          JSON_OBJECT('title', ?, 'lesson_id', ?)
+        )
       `,
       [user.id, body.title, lessonId]
     )
@@ -123,7 +143,7 @@ export async function POST(req: Request, context: Params) {
     await conn.commit()
 
     return NextResponse.json({
-      message: "تم إضافة المرفق بنجاح",
+      message: "Attachment added successfully.",
     })
   } catch (error) {
     await conn.rollback()
@@ -131,7 +151,7 @@ export async function POST(req: Request, context: Params) {
     console.error("CREATE_LESSON_ATTACHMENT_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء إضافة المرفق" },
+      { message: "Unable to add the attachment." },
       { status: 500 }
     )
   } finally {

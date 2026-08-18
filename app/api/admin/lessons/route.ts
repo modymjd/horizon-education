@@ -20,6 +20,13 @@ export async function GET(_req: Request, context: Params) {
     const { id } = await context.params
     const chapterId = Number(id)
 
+    if (!chapterId || Number.isNaN(chapterId)) {
+      return NextResponse.json(
+        { message: "Invalid chapter ID." },
+        { status: 400 }
+      )
+    }
+
     const chapterRows = await query<any>(
       `
       SELECT
@@ -47,7 +54,7 @@ export async function GET(_req: Request, context: Params) {
 
     if (!chapter) {
       return NextResponse.json(
-        { message: "الشابتر غير موجود" },
+        { message: "Chapter not found." },
         { status: 404 }
       )
     }
@@ -81,7 +88,7 @@ export async function GET(_req: Request, context: Params) {
     console.error("GET_CHAPTER_LESSONS_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء تحميل الحصص" },
+      { message: "Unable to load lessons." },
       { status: 500 }
     )
   }
@@ -96,8 +103,15 @@ export async function POST(req: Request, context: Params) {
 
   const { id } = await context.params
   const chapterId = Number(id)
-  const body = lessonSchema.parse(await req.json())
 
+  if (!chapterId || Number.isNaN(chapterId)) {
+    return NextResponse.json(
+      { message: "Invalid chapter ID." },
+      { status: 400 }
+    )
+  }
+
+  const body = lessonSchema.parse(await req.json())
   const conn = await pool.getConnection()
 
   try {
@@ -112,7 +126,7 @@ export async function POST(req: Request, context: Params) {
       await conn.rollback()
 
       return NextResponse.json(
-        { message: "الشابتر غير موجود" },
+        { message: "Chapter not found." },
         { status: 404 }
       )
     }
@@ -152,7 +166,13 @@ export async function POST(req: Request, context: Params) {
       INSERT INTO audit_logs
         (user_id, action, entity_type, entity_id, new_values)
       VALUES
-        (?, 'create_lesson', 'lesson', LAST_INSERT_ID(), JSON_OBJECT('title', ?, 'chapter_id', ?, 'price', ?))
+        (
+          ?,
+          'create_lesson',
+          'lesson',
+          LAST_INSERT_ID(),
+          JSON_OBJECT('title', ?, 'chapter_id', ?, 'price', ?)
+        )
       `,
       [user.id, body.title, chapterId, body.price]
     )
@@ -160,7 +180,7 @@ export async function POST(req: Request, context: Params) {
     await conn.commit()
 
     return NextResponse.json({
-      message: "تم إنشاء الحصة بنجاح",
+      message: "Lesson created successfully.",
     })
   } catch (error) {
     await conn.rollback()
@@ -168,7 +188,7 @@ export async function POST(req: Request, context: Params) {
     console.error("CREATE_LESSON_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء إنشاء الحصة" },
+      { message: "Unable to create the lesson." },
       { status: 500 }
     )
   } finally {

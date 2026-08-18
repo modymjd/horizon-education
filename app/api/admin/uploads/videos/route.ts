@@ -16,14 +16,14 @@ export async function POST(req: Request) {
 
     if (!file) {
       return NextResponse.json(
-        { message: "لم يتم اختيار ملف" },
+        { message: "No file was selected." },
         { status: 400 }
       )
     }
 
     if (!file.type.startsWith("video/")) {
       return NextResponse.json(
-        { message: "الملف يجب أن يكون فيديو" },
+        { message: "The selected file must be a video." },
         { status: 400 }
       )
     }
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
 
     if (file.size > maxSizeBytes) {
       return NextResponse.json(
-        { message: `حجم الفيديو يجب ألا يتجاوز ${maxSizeMb}MB` },
+        { message: `Video size must not exceed ${maxSizeMb}MB.` },
         { status: 400 }
       )
     }
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     const publicUrl = `/uploads/videos/${fileName}`
 
     return NextResponse.json({
-      message: "تم رفع الفيديو بنجاح",
+      message: "Video uploaded successfully.",
       fileName,
       fileUrl: publicUrl,
       storagePath: publicUrl,
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     console.error("UPLOAD_VIDEO_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء رفع الفيديو" },
+      { message: "Unable to upload the video." },
       { status: 500 }
     )
   }
