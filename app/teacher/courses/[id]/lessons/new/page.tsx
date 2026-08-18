@@ -90,15 +90,15 @@ export default async function NewTeacherLessonPage({ params }: Params) {
 
       <section className="teacher-page-hero">
         <div className="wrap">
-          <span className="eyebrow">لوحة المدرس</span>
-          <h1 className="h1">إضافة حصة جديدة</h1>
+          <span className="eyebrow">Teacher dashboard</span>
+          <h1 className="h1">Add a new lesson</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            أضف حصة جديدة داخل كورس {course.title}.
+            Add a new lesson to {course.title}.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
             <Link href="/teacher/courses" className="btn">
-              رجوع للكورسات
+              Back to courses
             </Link>
           </div>
         </div>
@@ -107,18 +107,21 @@ export default async function NewTeacherLessonPage({ params }: Params) {
       <section className="section pt-6">
         <div className="wrap grid gap-7 lg:grid-cols-[0.9fr_1.1fr]">
           <aside className="card price-card">
-            <span className="eyebrow">بيانات الكورس</span>
+            <span className="eyebrow">Course details</span>
             <h2 className="text-3xl font-black">{course.title}</h2>
 
             <div className="mt-5 grid gap-3 text-sm font-bold">
-              <p>✓ الكورس تابع لحسابك كمدرس</p>
-              <p>✓ عدد الشابترات المتاحة: {chapters.length}</p>
-              <p>✓ بعد إضافة الحصة ستتمكن من رفع فيديو وإضافة واجب وامتحان</p>
+              <p>✓ This course belongs to your teacher account</p>
+              <p>✓ Available chapters: {chapters.length}</p>
+              <p>
+                ✓ After adding the lesson, you can upload videos, add assignments,
+                and create exams
+              </p>
             </div>
 
             {chapters.length === 0 ? (
               <div className="alert-error mt-5">
-                لا توجد شابترات داخل هذا الكورس. اطلب من الأدمن إضافة شابتر أولًا.
+                This course has no chapters yet. Ask the admin to add a chapter first.
               </div>
             ) : null}
           </aside>

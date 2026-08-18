@@ -100,15 +100,15 @@ async function getCourseLessons(courseId: number) {
 }
 
 function getStatusLabel(status: string | null) {
-  if (status === "published") return "منشور"
-  if (status === "draft") return "مسودة"
-  if (status === "hidden") return "مخفي"
-  if (status === "archived") return "مؤرشف"
-  return status || "بدون حالة"
+  if (status === "published") return "Published"
+  if (status === "draft") return "Draft"
+  if (status === "hidden") return "Hidden"
+  if (status === "archived") return "Archived"
+  return status || "No status"
 }
 
 function money(value: number | string | null | undefined) {
-  return `${Number(value || 0).toLocaleString("ar-EG")} ج.م`
+  return `${Number(value || 0).toLocaleString("en-US")} EGP`
 }
 
 function groupByChapter(lessons: LessonRow[]) {
@@ -178,23 +178,23 @@ export default async function TeacherCourseLessonsPage({ params }: Params) {
 
       <section className="teacher-page-hero">
         <div className="wrap">
-          <span className="eyebrow">لوحة المدرس</span>
-          <h1 className="h1">حصص الكورس</h1>
+          <span className="eyebrow">Teacher dashboard</span>
+          <h1 className="h1">Course lessons</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            إدارة كل حصص كورس {course.title}: الفيديوهات، الواجبات، والامتحانات.
+            Manage all lessons for {course.title}: videos, assignments, and exams.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
             <Link href="/teacher/courses" className="btn">
-              رجوع للكورسات
+              Back to courses
             </Link>
 
             <Link href={`/teacher/courses/${course.id}/lessons/new`} className="btn btn-outline">
-              إضافة حصة جديدة
+              Add new lesson
             </Link>
 
             <Link href={`/courses/${course.slug}`} className="btn btn-outline">
-              معاينة الكورس
+              Preview course
             </Link>
           </div>
         </div>
@@ -205,22 +205,22 @@ export default async function TeacherCourseLessonsPage({ params }: Params) {
           <div className="teacher-stat-grid mb-6">
             <div className="card teacher-stat-card">
               <b>{realLessons.length}</b>
-              <span className="muted font-bold">حصة</span>
+              <span className="muted font-bold">Lessons</span>
             </div>
 
             <div className="card teacher-stat-card">
               <b>{realLessons.reduce((sum, lesson) => sum + Number(lesson.videos_count || 0), 0)}</b>
-              <span className="muted font-bold">فيديو</span>
+              <span className="muted font-bold">Videos</span>
             </div>
 
             <div className="card teacher-stat-card">
               <b>{realLessons.reduce((sum, lesson) => sum + Number(lesson.assignments_count || 0), 0)}</b>
-              <span className="muted font-bold">واجب</span>
+              <span className="muted font-bold">Assignments</span>
             </div>
 
             <div className="card teacher-stat-card">
               <b>{realLessons.reduce((sum, lesson) => sum + Number(lesson.exams_count || 0), 0)}</b>
-              <span className="muted font-bold">امتحان</span>
+              <span className="muted font-bold">Exams</span>
             </div>
           </div>
 
@@ -229,15 +229,15 @@ export default async function TeacherCourseLessonsPage({ params }: Params) {
               <div className="card course-management-card" key={group.chapter_id}>
                 <div className="course-management-head">
                   <div>
-                    <span className="badge">الشابتر {index + 1}</span>
+                    <span className="badge">Chapter {index + 1}</span>
                     <h2 className="mt-4 text-3xl font-black">{group.chapter_title}</h2>
                     <p className="muted mt-2">
-                      عدد الحصص داخل الشابتر: {group.lessons.length}
+                      Lessons in this chapter: {group.lessons.length}
                     </p>
                   </div>
 
                   <Link href={`/teacher/courses/${course.id}/lessons/new`} className="btn btn-outline">
-                    إضافة حصة لهذا الكورس
+                    Add lesson to this course
                   </Link>
                 </div>
 
@@ -256,21 +256,21 @@ export default async function TeacherCourseLessonsPage({ params }: Params) {
                           <div className="mt-4">
                             <h3 className="text-2xl font-black">{lesson.title}</h3>
                             <p className="muted mt-1">
-                              {lesson.description || "لا يوجد وصف لهذه الحصة بعد."}
+                              {lesson.description || "No description has been added for this lesson yet."}
                             </p>
                             <p className="muted mt-2 text-sm">
-                              السعر: {money(lesson.price)} — ترتيب الحصة: {lesson.lesson_sort_order}
+                              Price: {money(lesson.price)} — Lesson order: {lesson.lesson_sort_order}
                             </p>
                           </div>
                         </div>
 
                         <div className="course-actions">
                           <Link href={`/teacher/lessons/${lesson.id}`} className="btn btn-outline">
-                            إدارة الحصة
+                            Manage lesson
                           </Link>
 
                           <Link href={`/student/lessons/${lesson.id}`} className="btn btn-soft">
-                            معاينة الطالب
+                            Student preview
                           </Link>
                         </div>
                       </div>
@@ -278,22 +278,22 @@ export default async function TeacherCourseLessonsPage({ params }: Params) {
                       <div className="course-metrics">
                         <div className="metric-mini">
                           <b>{lesson.videos_count}</b>
-                          <span className="muted">فيديو</span>
+                          <span className="muted">Videos</span>
                         </div>
 
                         <div className="metric-mini">
                           <b>{lesson.assignments_count}</b>
-                          <span className="muted">واجب</span>
+                          <span className="muted">Assignments</span>
                         </div>
 
                         <div className="metric-mini">
                           <b>{lesson.exams_count}</b>
-                          <span className="muted">امتحان</span>
+                          <span className="muted">Exams</span>
                         </div>
 
                         <div className="metric-mini">
                           <b>{lesson.students_count}</b>
-                          <span className="muted">طالب</span>
+                          <span className="muted">Students</span>
                         </div>
                       </div>
                     </div>
@@ -301,9 +301,9 @@ export default async function TeacherCourseLessonsPage({ params }: Params) {
 
                   {group.lessons.length === 0 ? (
                     <div className="rounded-2xl border border-[var(--line)] bg-[var(--cream-2)] p-5">
-                      <h3 className="text-2xl font-black">لا توجد حصص في هذا الشابتر</h3>
+                      <h3 className="text-2xl font-black">No lessons in this chapter yet</h3>
                       <p className="muted mt-2">
-                        يمكنك إضافة حصة جديدة واختيار هذا الشابتر من صفحة إضافة الحصة.
+                        You can add a new lesson and select this chapter from the add lesson page.
                       </p>
                     </div>
                   ) : null}
@@ -313,9 +313,9 @@ export default async function TeacherCourseLessonsPage({ params }: Params) {
 
             {lessonGroups.length === 0 ? (
               <div className="card course-management-card">
-                <h2 className="text-2xl font-black">لا توجد شابترات أو حصص بعد</h2>
+                <h2 className="text-2xl font-black">No chapters or lessons yet</h2>
                 <p className="muted mt-2">
-                  اطلب من الأدمن إضافة شابتر داخل الكورس أولًا.
+                  Ask the admin to add a chapter to this course first.
                 </p>
               </div>
             ) : null}
