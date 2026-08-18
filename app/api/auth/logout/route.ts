@@ -2,7 +2,7 @@
 
 export async function POST() {
   const response = NextResponse.json({
-    message: "تم تسجيل الخروج بنجاح",
+    message: "Signed out successfully.",
   })
 
   const isProduction = process.env.NODE_ENV === "production"

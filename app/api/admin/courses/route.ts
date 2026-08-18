@@ -128,7 +128,7 @@ export async function GET() {
     console.error("GET_COURSES_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء تحميل الكورسات" },
+      { message: "Unable to load courses." },
       { status: 500 }
     )
   }
@@ -195,7 +195,7 @@ export async function POST(req: Request) {
       INSERT INTO chapters
         (course_id, title, description, sort_order, status, published_at)
       VALUES
-        (?, 'الفصل الأول', 'فصل افتراضي لبدء إضافة الحصص', 1, 'published', NOW())
+        (?, 'Chapter 1', 'Default chapter for adding lessons', 1, 'published', NOW())
       `,
       [courseId]
     )
@@ -233,7 +233,7 @@ export async function POST(req: Request) {
     await conn.commit()
 
     return NextResponse.json({
-      message: "تم إنشاء الكورس بنجاح",
+      message: "Course created successfully.",
       course_id: courseId,
       slug,
     })
@@ -243,7 +243,7 @@ export async function POST(req: Request) {
     console.error("CREATE_COURSE_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء إنشاء الكورس" },
+      { message: "Unable to create the course." },
       { status: 500 }
     )
   } finally {

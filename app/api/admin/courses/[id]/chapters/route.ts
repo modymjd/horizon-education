@@ -20,6 +20,13 @@ export async function GET(_req: Request, context: Params) {
     const { id } = await context.params
     const courseId = Number(id)
 
+    if (!courseId || Number.isNaN(courseId)) {
+      return NextResponse.json(
+        { message: "Invalid course ID." },
+        { status: 400 }
+      )
+    }
+
     const courseRows = await query<any>(
       `
       SELECT
@@ -48,7 +55,7 @@ export async function GET(_req: Request, context: Params) {
 
     if (!course) {
       return NextResponse.json(
-        { message: "الكورس غير موجود" },
+        { message: "Course not found." },
         { status: 404 }
       )
     }
@@ -91,7 +98,7 @@ export async function GET(_req: Request, context: Params) {
     console.error("GET_COURSE_CHAPTERS_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء تحميل الشابترات" },
+      { message: "Unable to load chapters." },
       { status: 500 }
     )
   }
@@ -106,8 +113,15 @@ export async function POST(req: Request, context: Params) {
 
   const { id } = await context.params
   const courseId = Number(id)
-  const body = chapterSchema.parse(await req.json())
 
+  if (!courseId || Number.isNaN(courseId)) {
+    return NextResponse.json(
+      { message: "Invalid course ID." },
+      { status: 400 }
+    )
+  }
+
+  const body = chapterSchema.parse(await req.json())
   const conn = await pool.getConnection()
 
   try {
@@ -122,7 +136,7 @@ export async function POST(req: Request, context: Params) {
       await conn.rollback()
 
       return NextResponse.json(
-        { message: "الكورس غير موجود" },
+        { message: "Course not found." },
         { status: 404 }
       )
     }
@@ -149,7 +163,9 @@ export async function POST(req: Request, context: Params) {
         body.coverImageUrl || null,
         body.sortOrder || 0,
         body.status,
-        body.status === "published" ? new Date().toISOString().slice(0, 19).replace("T", " ") : null,
+        body.status === "published"
+          ? new Date().toISOString().slice(0, 19).replace("T", " ")
+          : null,
       ]
     )
 
@@ -158,7 +174,13 @@ export async function POST(req: Request, context: Params) {
       INSERT INTO audit_logs
         (user_id, action, entity_type, entity_id, new_values)
       VALUES
-        (?, 'create_chapter', 'chapter', LAST_INSERT_ID(), JSON_OBJECT('title', ?, 'course_id', ?))
+        (
+          ?,
+          'create_chapter',
+          'chapter',
+          LAST_INSERT_ID(),
+          JSON_OBJECT('title', ?, 'course_id', ?)
+        )
       `,
       [user.id, body.title, courseId]
     )
@@ -166,7 +188,7 @@ export async function POST(req: Request, context: Params) {
     await conn.commit()
 
     return NextResponse.json({
-      message: "تم إنشاء الشابتر بنجاح",
+      message: "Chapter created successfully.",
     })
   } catch (error) {
     await conn.rollback()
@@ -174,11 +196,10 @@ export async function POST(req: Request, context: Params) {
     console.error("CREATE_CHAPTER_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء إنشاء الشابتر" },
+      { message: "Unable to create the chapter." },
       { status: 500 }
     )
   } finally {
     conn.release()
   }
 }
-

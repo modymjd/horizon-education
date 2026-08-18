@@ -21,7 +21,7 @@ export async function PATCH(req: Request, context: Params) {
 
   if (!courseId || Number.isNaN(courseId)) {
     return NextResponse.json(
-      { message: "رقم الكورس غير صحيح" },
+      { message: "Invalid course ID." },
       { status: 400 }
     )
   }
@@ -72,7 +72,7 @@ export async function PATCH(req: Request, context: Params) {
       await conn.rollback()
 
       return NextResponse.json(
-        { message: "الكورس غير موجود" },
+        { message: "Course not found." },
         { status: 404 }
       )
     }
@@ -112,7 +112,7 @@ export async function PATCH(req: Request, context: Params) {
     await conn.commit()
 
     return NextResponse.json({
-      message: "تم تعديل الكورس بنجاح",
+      message: "Course updated successfully.",
     })
   } catch (error) {
     await conn.rollback()
@@ -120,7 +120,7 @@ export async function PATCH(req: Request, context: Params) {
     console.error("UPDATE_COURSE_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء تعديل الكورس" },
+      { message: "Unable to update the course." },
       { status: 500 }
     )
   } finally {
@@ -140,7 +140,7 @@ export async function DELETE(_req: Request, context: Params) {
 
   if (!courseId || Number.isNaN(courseId)) {
     return NextResponse.json(
-      { message: "رقم الكورس غير صحيح" },
+      { message: "Invalid course ID." },
       { status: 400 }
     )
   }
@@ -164,7 +164,7 @@ export async function DELETE(_req: Request, context: Params) {
       await conn.rollback()
 
       return NextResponse.json(
-        { message: "الكورس غير موجود" },
+        { message: "Course not found." },
         { status: 404 }
       )
     }
@@ -182,7 +182,7 @@ export async function DELETE(_req: Request, context: Params) {
     await conn.commit()
 
     return NextResponse.json({
-      message: "تم حذف الكورس بنجاح",
+      message: "Course deleted successfully.",
     })
   } catch (error) {
     await conn.rollback()
@@ -190,7 +190,7 @@ export async function DELETE(_req: Request, context: Params) {
     console.error("DELETE_COURSE_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء حذف الكورس" },
+      { message: "Unable to delete the course." },
       { status: 500 }
     )
   } finally {

@@ -34,14 +34,14 @@ export async function POST(req: Request) {
 
     if (!user) {
       return NextResponse.json(
-        { message: "بيانات الدخول غير صحيحة" },
+        { message: "Invalid email or password." },
         { status: 401 }
       )
     }
 
     if (user.status !== "active") {
       return NextResponse.json(
-        { message: "هذا الحساب غير نشط حاليًا" },
+        { message: "This account is not active right now." },
         { status: 403 }
       )
     }
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
     if (!isValidPassword) {
       return NextResponse.json(
-        { message: "بيانات الدخول غير صحيحة" },
+        { message: "Invalid email or password." },
         { status: 401 }
       )
     }
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
     )
 
     const response = NextResponse.json({
-      message: "تم تسجيل الدخول بنجاح",
+      message: "Signed in successfully.",
       redirectTo: roleHome[user.role],
       role: user.role,
     })
@@ -105,7 +105,7 @@ export async function POST(req: Request) {
     console.error("LOGIN_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء تسجيل الدخول" },
+      { message: "Unable to sign in. Please try again." },
       { status: 500 }
     )
   }
