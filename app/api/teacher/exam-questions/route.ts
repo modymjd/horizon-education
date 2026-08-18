@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
     if (!user.teacher_id) {
       return NextResponse.json(
-        { message: "لم يتم العثور على حساب المدرس" },
+        { message: "Teacher account was not found." },
         { status: 403 }
       )
     }
@@ -55,21 +55,21 @@ export async function POST(req: Request) {
 
     if (!examId || Number.isNaN(examId)) {
       return NextResponse.json(
-        { message: "رقم الامتحان غير صحيح" },
+        { message: "Invalid exam ID." },
         { status: 400 }
       )
     }
 
     if (!questionText.trim()) {
       return NextResponse.json(
-        { message: "نص السؤال مطلوب" },
+        { message: "Question text is required." },
         { status: 400 }
       )
     }
 
     if (points <= 0) {
       return NextResponse.json(
-        { message: "درجة السؤال يجب أن تكون أكبر من صفر" },
+        { message: "Question points must be greater than zero." },
         { status: 400 }
       )
     }
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
 
     if (validChoices.length < 2) {
       return NextResponse.json(
-        { message: "يجب إضافة اختيارين على الأقل" },
+        { message: "Please add at least two choices." },
         { status: 400 }
       )
     }
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
 
     if (correctChoices.length !== 1) {
       return NextResponse.json(
-        { message: "يجب تحديد إجابة صحيحة واحدة فقط" },
+        { message: "Please select exactly one correct answer." },
         { status: 400 }
       )
     }
@@ -96,7 +96,7 @@ export async function POST(req: Request) {
 
     if (!exam) {
       return NextResponse.json(
-        { message: "الامتحان غير موجود أو غير تابع لهذا المدرس" },
+        { message: "Exam not found or does not belong to this teacher." },
         { status: 403 }
       )
     }
@@ -147,13 +147,13 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "تم إضافة السؤال بنجاح",
+      message: "Question added successfully.",
     })
   } catch (error) {
     console.error("CREATE_EXAM_QUESTION_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء إضافة السؤال" },
+      { message: "Unable to add the question." },
       { status: 500 }
     )
   }

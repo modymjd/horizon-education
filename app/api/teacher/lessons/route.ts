@@ -35,7 +35,7 @@ export async function POST(req: Request) {
 
     if (!user.teacher_id) {
       return NextResponse.json(
-        { message: "لم يتم العثور على حساب المدرس" },
+        { message: "Teacher account was not found." },
         { status: 403 }
       )
     }
@@ -47,25 +47,25 @@ export async function POST(req: Request) {
     const file = formData.get("video")
 
     const lessonId = Number(lessonIdRaw)
-    const title = String(titleRaw || "فيديو جديد")
+    const title = String(titleRaw || "New video")
 
     if (!lessonId || Number.isNaN(lessonId)) {
       return NextResponse.json(
-        { message: "رقم الحصة غير صحيح" },
+        { message: "Invalid lesson ID." },
         { status: 400 }
       )
     }
 
     if (!(file instanceof File)) {
       return NextResponse.json(
-        { message: "لم يتم اختيار فيديو" },
+        { message: "No video was selected." },
         { status: 400 }
       )
     }
 
     if (!file.type.startsWith("video/")) {
       return NextResponse.json(
-        { message: "الملف المختار ليس فيديو" },
+        { message: "The selected file is not a video." },
         { status: 400 }
       )
     }
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
 
     if (file.size > maxSizeBytes) {
       return NextResponse.json(
-        { message: `حجم الفيديو يجب ألا يتجاوز ${maxSizeMb}MB` },
+        { message: `Video size must not exceed ${maxSizeMb}MB.` },
         { status: 400 }
       )
     }
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
 
     if (!lesson) {
       return NextResponse.json(
-        { message: "الحصة غير موجودة أو غير تابعة لهذا المدرس" },
+        { message: "Lesson not found or does not belong to this teacher." },
         { status: 403 }
       )
     }
@@ -139,14 +139,14 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "تم رفع الفيديو بنجاح",
+      message: "Video uploaded successfully.",
       video_url: publicUrl,
     })
   } catch (error) {
     console.error("UPLOAD_LESSON_VIDEO_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء رفع الفيديو" },
+      { message: "Unable to upload the video." },
       { status: 500 }
     )
   }

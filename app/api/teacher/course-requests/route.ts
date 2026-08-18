@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
   if (!user.teacher_id) {
     return NextResponse.json(
-      { message: "لم يتم العثور على حساب المدرس" },
+      { message: "Teacher account was not found." },
       { status: 403 }
     )
   }
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
       await conn.rollback()
 
       return NextResponse.json(
-        { message: "الطلب غير موجود أو غير تابع لهذا المدرس" },
+        { message: "Request not found or does not belong to this teacher." },
         { status: 404 }
       )
     }
@@ -75,7 +75,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: body.status === "accepted" ? "تم قبول الطلب" : "تم رفض الطلب",
+      message:
+        body.status === "accepted"
+          ? "Request accepted successfully."
+          : "Request rejected successfully.",
       status: body.status,
     })
   } catch (error) {
@@ -84,7 +87,7 @@ export async function POST(req: Request) {
     console.error("REVIEW_COURSE_REQUEST_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء تحديث الطلب" },
+      { message: "Unable to update the request." },
       { status: 500 }
     )
   } finally {

@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
     if (!user.teacher_id) {
       return NextResponse.json(
-        { message: "لم يتم العثور على حساب المدرس" },
+        { message: "Teacher account was not found." },
         { status: 403 }
       )
     }
@@ -59,21 +59,21 @@ export async function POST(req: Request) {
 
     if (!lessonId || Number.isNaN(lessonId)) {
       return NextResponse.json(
-        { message: "رقم الحصة غير صحيح" },
+        { message: "Invalid lesson ID." },
         { status: 400 }
       )
     }
 
     if (!title.trim()) {
       return NextResponse.json(
-        { message: "عنوان الامتحان مطلوب" },
+        { message: "Exam title is required." },
         { status: 400 }
       )
     }
 
     if (passScore < 0 || passScore > 100) {
       return NextResponse.json(
-        { message: "درجة النجاح يجب أن تكون بين 0 و 100" },
+        { message: "Pass score must be between 0 and 100." },
         { status: 400 }
       )
     }
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
 
     if (!lesson) {
       return NextResponse.json(
-        { message: "الحصة غير موجودة أو غير تابعة لهذا المدرس" },
+        { message: "Lesson not found or does not belong to this teacher." },
         { status: 403 }
       )
     }
@@ -134,13 +134,13 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "تم إضافة الامتحان بنجاح",
+      message: "Exam added successfully.",
     })
   } catch (error) {
     console.error("CREATE_EXAM_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء إضافة الامتحان" },
+      { message: "Unable to add the exam." },
       { status: 500 }
     )
   }
