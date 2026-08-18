@@ -25,7 +25,7 @@ export async function PATCH(req: Request, context: Params) {
 
   if (!userId || Number.isNaN(userId)) {
     return NextResponse.json(
-      { message: "رقم الطالب غير صحيح" },
+      { message: "Invalid student ID." },
       { status: 400 }
     )
   }
@@ -53,7 +53,7 @@ export async function PATCH(req: Request, context: Params) {
       await conn.rollback()
 
       return NextResponse.json(
-        { message: "الطالب غير موجود" },
+        { message: "Student not found." },
         { status: 404 }
       )
     }
@@ -76,7 +76,10 @@ export async function PATCH(req: Request, context: Params) {
     await conn.commit()
 
     return NextResponse.json({
-      message: body.action === "activate" ? "تم تفعيل الطالب" : "تم تعطيل الطالب",
+      message:
+        body.action === "activate"
+          ? "Student activated successfully."
+          : "Student suspended successfully.",
       status: nextStatus,
     })
   } catch (error) {
@@ -85,7 +88,7 @@ export async function PATCH(req: Request, context: Params) {
     console.error("UPDATE_STUDENT_STATUS_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء تحديث حالة الطالب" },
+      { message: "Unable to update the student status." },
       { status: 500 }
     )
   } finally {
@@ -105,7 +108,7 @@ export async function DELETE(_req: Request, context: Params) {
 
   if (!userId || Number.isNaN(userId)) {
     return NextResponse.json(
-      { message: "رقم الطالب غير صحيح" },
+      { message: "Invalid student ID." },
       { status: 400 }
     )
   }
@@ -133,7 +136,7 @@ export async function DELETE(_req: Request, context: Params) {
       await conn.rollback()
 
       return NextResponse.json(
-        { message: "الطالب غير موجود" },
+        { message: "Student not found." },
         { status: 404 }
       )
     }
@@ -151,7 +154,7 @@ export async function DELETE(_req: Request, context: Params) {
     await conn.commit()
 
     return NextResponse.json({
-      message: "تم حذف الطالب بنجاح",
+      message: "Student deleted successfully.",
     })
   } catch (error) {
     await conn.rollback()
@@ -159,7 +162,7 @@ export async function DELETE(_req: Request, context: Params) {
     console.error("DELETE_STUDENT_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء حذف الطالب" },
+      { message: "Unable to delete the student." },
       { status: 500 }
     )
   } finally {

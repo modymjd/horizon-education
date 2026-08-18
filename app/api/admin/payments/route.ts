@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
     if (!lesson) {
       return NextResponse.json(
-        { message: "الحصة غير موجودة" },
+        { message: "Lesson not found." },
         { status: 404 }
       )
     }
@@ -133,6 +133,7 @@ export async function POST(req: Request) {
 
       return NextResponse.json({
         success: true,
+        message: "Payment recorded successfully.",
         payment_id: paymentId,
         invoice_number: invoiceNumber,
         platform_amount: platformAmount,
@@ -148,7 +149,7 @@ export async function POST(req: Request) {
     console.error("CREATE_PAYMENT_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء تسجيل الدفعة" },
+      { message: "Unable to record the payment." },
       { status: 500 }
     )
   }

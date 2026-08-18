@@ -46,7 +46,7 @@ export async function GET() {
     console.error("GET_TEACHERS_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء تحميل المدرسين" },
+      { message: "Unable to load teachers." },
       { status: 500 }
     )
   }
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
       await conn.rollback()
 
       return NextResponse.json(
-        { message: "Teacher role is missing" },
+        { message: "Teacher role is missing. Please contact support." },
         { status: 500 }
       )
     }
@@ -128,14 +128,14 @@ export async function POST(req: Request) {
     await conn.commit()
 
     return NextResponse.json({
-      message: "تم إنشاء المدرس بنجاح",
+      message: "Teacher created successfully.",
     })
   } catch (error: any) {
     await conn.rollback()
 
     if (error.code === "ER_DUP_ENTRY") {
       return NextResponse.json(
-        { message: "البريد الإلكتروني أو الهاتف مستخدم بالفعل" },
+        { message: "Email or phone number is already registered." },
         { status: 409 }
       )
     }
@@ -143,7 +143,7 @@ export async function POST(req: Request) {
     console.error("CREATE_TEACHER_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء إنشاء المدرس" },
+      { message: "Unable to create the teacher." },
       { status: 500 }
     )
   } finally {
