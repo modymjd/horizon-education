@@ -2,8 +2,9 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Horizon Education | حورايزون تعليم",
-  description: "منصة تعليمية عربية لإدارة الكورسات والحصص والمدرسين والطلاب",
+  title: "Horizon Education",
+  description:
+    "An online education platform for managing courses, lessons, teachers, students, access codes, assignments, exams, and certificates.",
 }
 
 export default function RootLayout({
@@ -12,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="en" dir="ltr">
       <body>{children}</body>
     </html>
   )

@@ -30,6 +30,98 @@ type EducationOptionsResponse = {
   grades: GradeOption[]
 }
 
+type FieldErrors = Partial<Record<keyof typeof initialForm | "form", string>>
+
+const initialForm = {
+  full_name: "",
+  email: "",
+  password: "",
+  phone: "",
+  whatsapp_phone: "",
+  guardian_name: "",
+  guardian_phone: "",
+  guardian_whatsapp_phone: "",
+  national_id: "",
+  address: "",
+  governorate: "",
+  education_type_id: "",
+  stage_id: "",
+  grade_id: "",
+  consent_contact: false,
+}
+
+function normalizeDigits(value: string) {
+  return value.replace(/[^\d+]/g, "")
+}
+
+function isValidPhone(value: string) {
+  const normalized = normalizeDigits(value)
+  return normalized.length >= 8
+}
+
+function getClientValidationErrors(form: typeof initialForm) {
+  const errors: FieldErrors = {}
+
+  if (form.full_name.trim().length < 3) {
+    errors.full_name = "Full name must be at least 3 characters."
+  }
+
+  if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) {
+    errors.email = "Please enter a valid email address."
+  }
+
+  if (form.password.length < 8) {
+    errors.password = "Password must be at least 8 characters."
+  }
+
+  if (!isValidPhone(form.phone)) {
+    errors.phone = "Phone number must be at least 8 digits."
+  }
+
+  if (!isValidPhone(form.whatsapp_phone)) {
+    errors.whatsapp_phone = "Student WhatsApp number must be at least 8 digits."
+  }
+
+  if (form.guardian_name.trim().length < 3) {
+    errors.guardian_name = "Guardian name must be at least 3 characters."
+  }
+
+  if (!isValidPhone(form.guardian_phone)) {
+    errors.guardian_phone = "Guardian phone must be at least 8 digits."
+  }
+
+  if (form.guardian_whatsapp_phone && !isValidPhone(form.guardian_whatsapp_phone)) {
+    errors.guardian_whatsapp_phone = "Guardian WhatsApp number must be at least 8 digits."
+  }
+
+  if (form.address.trim().length < 3) {
+    errors.address = "Address must be at least 3 characters."
+  }
+
+  if (form.governorate.trim().length < 2) {
+    errors.governorate = "Governorate must be at least 2 characters."
+  }
+
+  if (!form.education_type_id) {
+    errors.education_type_id = "Please select an education type."
+  }
+
+  if (!form.stage_id) {
+    errors.stage_id = "Please select a stage."
+  }
+
+  if (!form.grade_id) {
+    errors.grade_id = "Please select a grade."
+  }
+
+  if (!form.consent_contact) {
+    errors.consent_contact =
+      "You must agree to educational and administrative contact."
+  }
+
+  return errors
+}
+
 export default function RegisterPage() {
   const router = useRouter()
 
@@ -39,24 +131,8 @@ export default function RegisterPage() {
     grades: [],
   })
 
-  const [form, setForm] = useState({
-    full_name: "",
-    email: "",
-    password: "",
-    phone: "",
-    whatsapp_phone: "",
-    guardian_name: "",
-    guardian_phone: "",
-    guardian_whatsapp_phone: "",
-    national_id: "",
-    address: "",
-    governorate: "",
-    education_type_id: "",
-    stage_id: "",
-    grade_id: "",
-    consent_contact: false,
-  })
-
+  const [form, setForm] = useState(initialForm)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [isLoadingOptions, setIsLoadingOptions] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -131,7 +207,7 @@ export default function RegisterPage() {
       })
       .catch(() => {
         if (mounted) {
-          setError("Unable to load education options")
+          setError("Unable to load education options.")
         }
       })
       .finally(() => {
@@ -150,6 +226,11 @@ export default function RegisterPage() {
       ...current,
       [name]: value,
     }))
+
+    setFieldErrors((current) => ({
+      ...current,
+      [name]: undefined,
+    }))
   }
 
   function handleEducationTypeChange(value: string) {
@@ -167,6 +248,13 @@ export default function RegisterPage() {
       stage_id: nextStage ? String(nextStage.id) : "",
       grade_id: nextGrades[0] ? String(nextGrades[0].id) : "",
     }))
+
+    setFieldErrors((current) => ({
+      ...current,
+      education_type_id: undefined,
+      stage_id: undefined,
+      grade_id: undefined,
+    }))
   }
 
   function handleStageChange(value: string) {
@@ -177,6 +265,12 @@ export default function RegisterPage() {
       stage_id: value,
       grade_id: nextGrades[0] ? String(nextGrades[0].id) : "",
     }))
+
+    setFieldErrors((current) => ({
+      ...current,
+      stage_id: undefined,
+      grade_id: undefined,
+    }))
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -185,6 +279,16 @@ export default function RegisterPage() {
     setError("")
     setSuccess("")
     setStudentCode("")
+
+    const clientErrors = getClientValidationErrors(form)
+
+    if (Object.keys(clientErrors).length > 0) {
+      setFieldErrors(clientErrors)
+      setError("Please fix the highlighted fields and try again.")
+      return
+    }
+
+    setFieldErrors({})
     setIsLoading(true)
 
     try {
@@ -195,6 +299,18 @@ export default function RegisterPage() {
         },
         body: JSON.stringify({
           ...form,
+          full_name: form.full_name.trim(),
+          email: form.email.trim(),
+          phone: normalizeDigits(form.phone),
+          whatsapp_phone: normalizeDigits(form.whatsapp_phone),
+          guardian_name: form.guardian_name.trim(),
+          guardian_phone: normalizeDigits(form.guardian_phone),
+          guardian_whatsapp_phone: form.guardian_whatsapp_phone
+            ? normalizeDigits(form.guardian_whatsapp_phone)
+            : "",
+          national_id: form.national_id.trim(),
+          address: form.address.trim(),
+          governorate: form.governorate.trim(),
           education_type_id: Number(form.education_type_id),
           stage_id: Number(form.stage_id),
           grade_id: Number(form.grade_id),
@@ -204,21 +320,34 @@ export default function RegisterPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "Unable to create account")
+        setError(data.message || "Unable to create account.")
+
+        if (data.errors) {
+          setFieldErrors(data.errors)
+        }
+
         return
       }
 
-      setSuccess(data.message || "Account created successfully")
+      setSuccess(data.message || "Account created successfully.")
       setStudentCode(data.student_code || "")
 
       setTimeout(() => {
         router.push("/login")
       }, 1500)
     } catch {
-      setError("Unable to connect to the server")
+      setError("Unable to connect to the server.")
     } finally {
       setIsLoading(false)
     }
+  }
+
+  function FieldError({ name }: { name: keyof typeof initialForm }) {
+    const message = fieldErrors[name]
+
+    if (!message) return null
+
+    return <p className="mt-2 text-sm font-bold text-red-600">{message}</p>
   }
 
   return (
@@ -243,7 +372,7 @@ export default function RegisterPage() {
               </div>
             ) : null}
 
-            <form onSubmit={handleSubmit} className="mt-8">
+            <form onSubmit={handleSubmit} className="mt-8" noValidate>
               <div className="form-grid">
                 <label className="font-bold">
                   Full Name
@@ -252,7 +381,9 @@ export default function RegisterPage() {
                     value={form.full_name}
                     onChange={(e) => updateField("full_name", e.target.value)}
                     required
+                    dir="ltr"
                   />
+                  <FieldError name="full_name" />
                 </label>
 
                 <label className="font-bold">
@@ -263,7 +394,9 @@ export default function RegisterPage() {
                     value={form.email}
                     onChange={(e) => updateField("email", e.target.value)}
                     required
+                    dir="ltr"
                   />
+                  <FieldError name="email" />
                 </label>
 
                 <label className="font-bold">
@@ -275,27 +408,35 @@ export default function RegisterPage() {
                     value={form.password}
                     onChange={(e) => updateField("password", e.target.value)}
                     required
+                    dir="ltr"
                   />
+                  <FieldError name="password" />
                 </label>
 
                 <label className="font-bold">
                   Phone Number
                   <input
                     className="input mt-2"
+                    inputMode="tel"
                     value={form.phone}
                     onChange={(e) => updateField("phone", e.target.value)}
                     required
+                    dir="ltr"
                   />
+                  <FieldError name="phone" />
                 </label>
 
                 <label className="font-bold">
                   Student WhatsApp Number
                   <input
                     className="input mt-2"
+                    inputMode="tel"
                     value={form.whatsapp_phone}
                     onChange={(e) => updateField("whatsapp_phone", e.target.value)}
                     required
+                    dir="ltr"
                   />
+                  <FieldError name="whatsapp_phone" />
                 </label>
 
                 <label className="font-bold">
@@ -304,7 +445,9 @@ export default function RegisterPage() {
                     className="input mt-2"
                     value={form.national_id}
                     onChange={(e) => updateField("national_id", e.target.value)}
+                    dir="ltr"
                   />
+                  <FieldError name="national_id" />
                 </label>
 
                 <label className="font-bold">
@@ -314,26 +457,34 @@ export default function RegisterPage() {
                     value={form.guardian_name}
                     onChange={(e) => updateField("guardian_name", e.target.value)}
                     required
+                    dir="ltr"
                   />
+                  <FieldError name="guardian_name" />
                 </label>
 
                 <label className="font-bold">
                   Guardian Phone
                   <input
                     className="input mt-2"
+                    inputMode="tel"
                     value={form.guardian_phone}
                     onChange={(e) => updateField("guardian_phone", e.target.value)}
                     required
+                    dir="ltr"
                   />
+                  <FieldError name="guardian_phone" />
                 </label>
 
                 <label className="font-bold">
                   Guardian WhatsApp
                   <input
                     className="input mt-2"
+                    inputMode="tel"
                     value={form.guardian_whatsapp_phone}
                     onChange={(e) => updateField("guardian_whatsapp_phone", e.target.value)}
+                    dir="ltr"
                   />
+                  <FieldError name="guardian_whatsapp_phone" />
                 </label>
 
                 <label className="font-bold">
@@ -343,7 +494,9 @@ export default function RegisterPage() {
                     value={form.governorate}
                     onChange={(e) => updateField("governorate", e.target.value)}
                     required
+                    dir="ltr"
                   />
+                  <FieldError name="governorate" />
                 </label>
 
                 <label className="font-bold md:col-span-2">
@@ -353,7 +506,9 @@ export default function RegisterPage() {
                     value={form.address}
                     onChange={(e) => updateField("address", e.target.value)}
                     required
+                    dir="ltr"
                   />
+                  <FieldError name="address" />
                 </label>
 
                 <label className="font-bold">
@@ -364,6 +519,7 @@ export default function RegisterPage() {
                     onChange={(e) => handleEducationTypeChange(e.target.value)}
                     disabled={isLoadingOptions}
                     required
+                    dir="ltr"
                   >
                     <option value="">Select education type</option>
                     {options.educationTypes.map((item) => (
@@ -372,6 +528,7 @@ export default function RegisterPage() {
                       </option>
                     ))}
                   </select>
+                  <FieldError name="education_type_id" />
                 </label>
 
                 <label className="font-bold">
@@ -382,6 +539,7 @@ export default function RegisterPage() {
                     onChange={(e) => handleStageChange(e.target.value)}
                     disabled={isLoadingOptions}
                     required
+                    dir="ltr"
                   >
                     <option value="">Select stage</option>
                     {filteredStages.map((item) => (
@@ -390,6 +548,7 @@ export default function RegisterPage() {
                       </option>
                     ))}
                   </select>
+                  <FieldError name="stage_id" />
                 </label>
 
                 <label className="font-bold">
@@ -400,6 +559,7 @@ export default function RegisterPage() {
                     onChange={(e) => updateField("grade_id", e.target.value)}
                     disabled={isLoadingOptions}
                     required
+                    dir="ltr"
                   >
                     <option value="">Select grade</option>
                     {filteredGrades.map((item) => (
@@ -408,6 +568,7 @@ export default function RegisterPage() {
                       </option>
                     ))}
                   </select>
+                  <FieldError name="grade_id" />
                 </label>
               </div>
 
@@ -423,6 +584,7 @@ export default function RegisterPage() {
                   I agree that the platform and teachers may contact me or my guardian by phone or WhatsApp for educational and administrative purposes.
                 </span>
               </label>
+              <FieldError name="consent_contact" />
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <button className="btn disabled:opacity-60" disabled={isLoading || isLoadingOptions}>

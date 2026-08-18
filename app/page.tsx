@@ -3,15 +3,24 @@ import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 
 const subjects = [
-  ["الرياضيات", "من الجبر للتفاضل والتكامل — بأسلوب خطوة بخطوة", "ر"],
-  ["الفيزياء", "افهم القوانين بالتجارب والتطبيق العملي", "ف"],
-  ["الكيمياء", "من الذرة للمعادلات بطريقة سهلة ومنظمة", "ك"],
+  ["Mathematics", "From algebra to calculus with a clear step-by-step approach.", "M"],
+  ["Physics", "Understand laws through experiments and practical applications.", "P"],
+  ["Chemistry", "From atoms to equations in a simple and organized way.", "C"],
 ]
 
 const features = [
-  ["شرح بالصورة الأول", "كل فكرة بتتشاف قبل ما تتحفظ، عشان تفهم إمتى تستخدمها."],
-  ["تصحيح فوري للأسئلة", "حل تدريبات وتابع مستواك أول بأول."],
-  ["متابعة تقدّمك", "لوحة واضحة لكل طالب تبين الحصص والشهادات والمواد."],
+  [
+    "Visual-first explanations",
+    "Every idea is shown before it is memorized, so students understand when and how to use it.",
+  ],
+  [
+    "Instant question practice",
+    "Solve exercises and track progress step by step.",
+  ],
+  [
+    "Clear progress tracking",
+    "A simple dashboard for students to follow lessons, certificates, subjects, and performance.",
+  ],
 ]
 
 export default function Home() {
@@ -23,28 +32,29 @@ export default function Home() {
         <div className="wrap hero-grid">
           <div>
             <span className="eyebrow">HORIZON EDUCATION</span>
-            <h1 className="h1">كل مادة هي خط تتعلم تشوف اللي وراه</h1>
+            <h1 className="h1">Learn every subject with clarity and confidence</h1>
             <p className="muted mt-6 max-w-2xl text-lg">
-              منصة تعليمية عربية بتجمع المدرّسين، المواد، الحصص، أكواد الوصول،
-              والشهادات في تجربة واحدة بسيطة للطالب والمدرس والإدارة.
+              Horizon Education brings teachers, subjects, lessons, access codes,
+              assignments, exams, and certificates into one simple experience for
+              students, teachers, and administrators.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/subjects" className="btn">
-                تصفّح المواد
+                Browse subjects
               </Link>
               <Link href="/login" className="btn btn-outline">
-                تسجيل الدخول
+                Sign in
               </Link>
             </div>
           </div>
 
           <div className="hero-card">
             <div className="hero-floating">
-              <span className="badge">متابعة مباشرة</span>
-              <h3 className="mt-4 text-2xl font-black">مستواك في كل مادة</h3>
+              <span className="badge">Live progress</span>
+              <h3 className="mt-4 text-2xl font-black">Your level in every subject</h3>
               <p className="mt-2 opacity-80">
-                حصص، واجبات، اختبارات، وشهادات في مكان واحد.
+                Lessons, assignments, exams, and certificates in one place.
               </p>
             </div>
             <div className="hero-arch" />
@@ -55,8 +65,8 @@ export default function Home() {
       <section className="section">
         <div className="wrap">
           <div className="section-head">
-            <span className="eyebrow">طريقة مختلفة في التعلم</span>
-            <h2 className="h2">مش بتحفظ الدرس، بتفهم إمتى تستخدمه</h2>
+            <span className="eyebrow">A different way to learn</span>
+            <h2 className="h2">Do not just memorize lessons. Understand how to use them.</h2>
           </div>
 
           <div className="grid-auto">
@@ -73,8 +83,8 @@ export default function Home() {
       <section className="section">
         <div className="wrap">
           <div className="section-head">
-            <span className="eyebrow">المواد</span>
-            <h2 className="h2">مادة واحدة أو كل المواد — القرار ليك</h2>
+            <span className="eyebrow">Subjects</span>
+            <h2 className="h2">Choose one subject or build your full learning path</h2>
           </div>
 
           <div className="grid-auto">
@@ -92,14 +102,14 @@ export default function Home() {
       <section className="section">
         <div className="wrap">
           <div className="card p-8 md:p-12">
-            <span className="eyebrow">جرب الأول</span>
-            <h2 className="h2">أول حصة في أي مادة تجربة، وبعدين تقرر</h2>
+            <span className="eyebrow">Start first</span>
+            <h2 className="h2">Try the first lesson, then decide your next step</h2>
             <p className="muted mt-5 max-w-3xl">
-              ادخل شوف طريقة الشرح، اختبر نفسك، وبعدها كمل في المادة المناسبة ليك.
+              Explore the teaching style, test yourself, and continue with the subject that fits your goals.
             </p>
             <div className="mt-8">
               <Link href="/login" className="btn">
-                ابدأ تجربة التعلم
+                Start learning
               </Link>
             </div>
           </div>

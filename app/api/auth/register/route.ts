@@ -4,20 +4,20 @@ import { pool } from "@/lib/db"
 import { hashPassword } from "@/lib/auth"
 
 const registerSchema = z.object({
-  full_name: z.string().min(3),
-  email: z.string().email(),
-  password: z.string().min(8),
-  phone: z.string().min(8),
-  whatsapp_phone: z.string().min(8),
-  guardian_name: z.string().min(3),
-  guardian_phone: z.string().min(8),
-  guardian_whatsapp_phone: z.string().optional(),
-  national_id: z.string().optional(),
-  address: z.string().min(3),
-  governorate: z.string().min(2),
-  education_type_id: z.number().int().positive(),
-  stage_id: z.number().int().positive(),
-  grade_id: z.number().int().positive(),
+  full_name: z.string().trim().min(3, "Full name must be at least 3 characters."),
+  email: z.string().trim().email("Please enter a valid email address."),
+  password: z.string().min(8, "Password must be at least 8 characters."),
+  phone: z.string().trim().min(8, "Phone number must be at least 8 digits."),
+  whatsapp_phone: z.string().trim().min(8, "Student WhatsApp number must be at least 8 digits."),
+  guardian_name: z.string().trim().min(3, "Guardian name must be at least 3 characters."),
+  guardian_phone: z.string().trim().min(8, "Guardian phone must be at least 8 digits."),
+  guardian_whatsapp_phone: z.string().trim().optional(),
+  national_id: z.string().trim().optional(),
+  address: z.string().trim().min(3, "Address must be at least 3 characters."),
+  governorate: z.string().trim().min(2, "Governorate must be at least 2 characters."),
+  education_type_id: z.number().int().positive("Please select an education type."),
+  stage_id: z.number().int().positive("Please select a stage."),
+  grade_id: z.number().int().positive("Please select a grade."),
   consent_contact: z.boolean(),
 })
 
@@ -26,15 +26,46 @@ function makeStudentCode() {
   return `STU-${Date.now()}-${random}`
 }
 
+function formatZodErrors(error: z.ZodError) {
+  const errors: Record<string, string> = {}
+
+  for (const issue of error.issues) {
+    const field = String(issue.path[0] || "form")
+    if (!errors[field]) {
+      errors[field] = issue.message
+    }
+  }
+
+  return errors
+}
+
 export async function POST(req: Request) {
   const conn = await pool.getConnection()
 
   try {
-    const body = registerSchema.parse(await req.json())
+    const parsed = registerSchema.safeParse(await req.json())
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          message: "Please review the highlighted fields.",
+          errors: formatZodErrors(parsed.error),
+        },
+        { status: 400 }
+      )
+    }
+
+    const body = parsed.data
 
     if (!body.consent_contact) {
       return NextResponse.json(
-        { message: "يجب الموافقة على تواصل المنصة والمدرس لأغراض تعليمية" },
+        {
+          message: "Please agree to educational and administrative contact.",
+          errors: {
+            consent_contact:
+              "You must agree that the platform and teachers may contact you or your guardian for educational and administrative purposes.",
+          },
+        },
         { status: 400 }
       )
     }
@@ -51,7 +82,7 @@ export async function POST(req: Request) {
       await conn.rollback()
 
       return NextResponse.json(
-        { message: "Student role is missing" },
+        { message: "Student role is missing. Please contact support." },
         { status: 500 }
       )
     }
@@ -91,7 +122,6 @@ export async function POST(req: Request) {
     )
 
     const guardianId = guardianResult.insertId
-
     const studentCode = makeStudentCode()
 
     await conn.execute(
@@ -130,7 +160,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "تم إنشاء حساب الطالب بنجاح. يمكنك تسجيل الدخول الآن.",
+      message: "Student account created successfully. You can sign in now.",
       student_code: studentCode,
     })
   } catch (error: any) {
@@ -138,7 +168,9 @@ export async function POST(req: Request) {
 
     if (error?.code === "ER_DUP_ENTRY") {
       return NextResponse.json(
-        { message: "البريد الإلكتروني أو الهاتف أو الرقم القومي مستخدم بالفعل" },
+        {
+          message: "Email, phone number, or national ID is already registered.",
+        },
         { status: 409 }
       )
     }
@@ -146,7 +178,7 @@ export async function POST(req: Request) {
     console.error("REGISTER_STUDENT_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء إنشاء حساب الطالب" },
+      { message: "Unable to create the student account. Please try again." },
       { status: 500 }
     )
   } finally {
