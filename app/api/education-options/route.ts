@@ -56,7 +56,7 @@ export async function GET() {
     console.error("GET_EDUCATION_OPTIONS_ERROR", error)
 
     return NextResponse.json(
-      { message: "حدث خطأ أثناء تحميل الخيارات الدراسية" },
+      { message: "Unable to load education options." },
       { status: 500 }
     )
   }

@@ -49,19 +49,19 @@ export function TeacherExamQuestionForm({ examId }: Props) {
     setSuccess("")
 
     if (!questionText.trim()) {
-      setError("اكتب نص السؤال")
+      setError("Please enter the question text.")
       return
     }
 
     const validChoices = choices.filter((choice) => choice.text.trim())
 
     if (validChoices.length < 2) {
-      setError("أضف اختيارين على الأقل")
+      setError("Please add at least two choices.")
       return
     }
 
     if (validChoices.filter((choice) => choice.is_correct).length !== 1) {
-      setError("حدد إجابة صحيحة واحدة فقط")
+      setError("Please select exactly one correct answer.")
       return
     }
 
@@ -84,11 +84,11 @@ export function TeacherExamQuestionForm({ examId }: Props) {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || "تعذر إضافة السؤال")
+        setError(data.message || "Unable to add the question.")
         return
       }
 
-      setSuccess(data.message || "تم إضافة السؤال بنجاح")
+      setSuccess(data.message || "Question added successfully.")
       setQuestionText("")
       setPoints("1")
       setChoices([
@@ -99,7 +99,7 @@ export function TeacherExamQuestionForm({ examId }: Props) {
       ])
       router.refresh()
     } catch {
-      setError("تعذر الاتصال بالخادم")
+      setError("Unable to connect to the server.")
     } finally {
       setIsLoading(false)
     }
@@ -107,28 +107,29 @@ export function TeacherExamQuestionForm({ examId }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="card payment-form">
-      <span className="eyebrow">أسئلة الامتحان</span>
-      <h2 className="text-3xl font-black">إضافة سؤال</h2>
+      <span className="eyebrow">Exam Questions</span>
+      <h2 className="text-3xl font-black">Add Question</h2>
       <p className="muted mt-3">
-        أضف سؤال اختيار من متعدد، وحدد إجابة صحيحة واحدة فقط.
+        Add a multiple-choice question and select exactly one correct answer.
       </p>
 
       {error ? <div className="alert-error mt-5">{error}</div> : null}
       {success ? <div className="alert-success mt-5">{success}</div> : null}
 
       <label className="mt-6 block font-bold">
-        نص السؤال
+        Question Text
         <textarea
           className="input mt-2 min-h-28"
           value={questionText}
           onChange={(e) => setQuestionText(e.target.value)}
-          placeholder="اكتب نص السؤال..."
+          placeholder="Write the question text..."
           required
+          dir="ltr"
         />
       </label>
 
       <label className="mt-4 block font-bold">
-        درجة السؤال
+        Question Points
         <input
           className="input mt-2"
           type="number"
@@ -136,21 +137,23 @@ export function TeacherExamQuestionForm({ examId }: Props) {
           value={points}
           onChange={(e) => setPoints(e.target.value)}
           required
+          dir="ltr"
         />
       </label>
 
       <div className="mt-5 grid gap-3">
-        <p className="font-bold">الاختيارات</p>
+        <p className="font-bold">Choices</p>
 
         {choices.map((choice, index) => (
           <div className="rounded-2xl border border-[var(--line)] bg-[var(--cream-2)] p-4" key={index}>
             <label className="block font-bold">
-              الاختيار {index + 1}
+              Choice {index + 1}
               <input
                 className="input mt-2"
                 value={choice.text}
                 onChange={(e) => updateChoiceText(index, e.target.value)}
-                placeholder={`اكتب الاختيار ${index + 1}`}
+                placeholder={`Write choice ${index + 1}`}
+                dir="ltr"
               />
             </label>
 
@@ -161,14 +164,14 @@ export function TeacherExamQuestionForm({ examId }: Props) {
                 checked={choice.is_correct}
                 onChange={() => setCorrectChoice(index)}
               />
-              الإجابة الصحيحة
+              Correct Answer
             </label>
           </div>
         ))}
       </div>
 
       <button className="btn btn-block mt-6 disabled:opacity-60" disabled={isLoading}>
-        {isLoading ? "جاري الإضافة..." : "إضافة السؤال"}
+        {isLoading ? "Adding..." : "Add Question"}
       </button>
     </form>
   )
