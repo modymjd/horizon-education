@@ -1678,3 +1678,44 @@ img {
     grid-template-columns: 1fr;
   }
 }
+
+
+
+
+
+/* Footer credit (Tronix & Xoperations) */
+.footer-credit {
+  margin-top: 34px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.footer-credit-text {
+  color: rgba(67, 37, 30, 0.62);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.footer-credit-link {
+  display: inline-flex;
+  align-items: center;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  opacity: 0.9;
+}
+
+.footer-credit-link:hover {
+  transform: translateY(-2px);
+  opacity: 1;
+}
+
+.footer-credit-logo {
+  height: 44px;
+  width: auto;
+  display: block;
+}
+

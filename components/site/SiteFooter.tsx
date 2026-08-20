@@ -30,6 +30,33 @@ export function SiteFooter() {
           </div>
         </div>
       </div>
+
+      <div className="wrap footer-credit">
+        <span className="footer-credit-text">Development by</span>
+
+        <a
+          href="https://linktr.ee/tronixsolutions"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="footer-credit-link"
+          aria-label="Tronix"
+        >
+          <img src="/logos/tronix-logo.png" alt="Tronix" className="footer-credit-logo" />
+        </a>
+
+        <span className="footer-credit-text">&amp;</span>
+
+        <a
+          href="https://linktr.ee/xoperations.bio"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="footer-credit-link"
+          aria-label="Xoperations"
+        >
+          <img src="/logos/xoperations-logo.png" alt="Xoperations" className="footer-credit-logo" />
+        </a>
+      </div>
     </footer>
   )
 }
+
