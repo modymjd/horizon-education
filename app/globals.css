@@ -1719,3 +1719,11 @@ img {
   display: block;
 }
 
+
+/* Brand logo mark (replaces the H badge) */
+.mark-logo {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
