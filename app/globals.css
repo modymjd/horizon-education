@@ -24,7 +24,7 @@ html {
 
 body {
   margin: 0;
-  direction: rtl;
+  direction: ltr;
   background: var(--cream);
   color: var(--ember);
   font-family: var(--body);
@@ -1328,7 +1328,7 @@ img {
 }
 
 .amount {
-  direction: rtl;
+  direction: ltr;
   color: var(--maple);
   font-weight: 900;
   font-size: 18px;
@@ -1462,7 +1462,7 @@ img {
 }
 
 .amount {
-  direction: rtl;
+  direction: ltr;
   color: var(--maple);
   font-weight: 900;
   font-size: 18px;
@@ -1514,7 +1514,7 @@ img {
 }
 
 .admin-table th {
-  text-align: right;
+  text-align: left;
   color: rgba(67, 37, 30, 0.66);
   font-size: 13px;
   padding: 0 14px 4px;
@@ -1726,4 +1726,5 @@ img {
   width: auto;
   display: block;
 }
+
 
