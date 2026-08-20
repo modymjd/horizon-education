@@ -12,10 +12,15 @@ type ChoiceState = {
   is_correct: boolean
 }
 
+type QuestionType = "text" | "image"
+
 export function TeacherExamQuestionForm({ examId }: Props) {
   const router = useRouter()
 
+  const [questionType, setQuestionType] = useState<QuestionType>("text")
   const [questionText, setQuestionText] = useState("")
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [points, setPoints] = useState("1")
   const [choices, setChoices] = useState<ChoiceState[]>([
     { text: "", is_correct: true },
@@ -42,14 +47,41 @@ export function TeacherExamQuestionForm({ examId }: Props) {
     )
   }
 
+  function handleImageChange(file: File | null) {
+    setImageFile(file)
+
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview)
+    }
+
+    setImagePreview(file ? URL.createObjectURL(file) : null)
+  }
+
+  function resetForm() {
+    setQuestionText("")
+    handleImageChange(null)
+    setPoints("1")
+    setChoices([
+      { text: "", is_correct: true },
+      { text: "", is_correct: false },
+      { text: "", is_correct: false },
+      { text: "", is_correct: false },
+    ])
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
     setError("")
     setSuccess("")
 
-    if (!questionText.trim()) {
+    if (questionType === "text" && !questionText.trim()) {
       setError("Please enter the question text.")
+      return
+    }
+
+    if (questionType === "image" && !imageFile) {
+      setError("Please choose an image for the question.")
       return
     }
 
@@ -68,17 +100,21 @@ export function TeacherExamQuestionForm({ examId }: Props) {
     setIsLoading(true)
 
     try {
+      const formData = new FormData()
+      formData.append("exam_id", String(examId))
+      formData.append("question_type", questionType)
+      formData.append("points", points || "1")
+      formData.append("choices", JSON.stringify(validChoices))
+
+      if (questionType === "text") {
+        formData.append("question_text", questionText)
+      } else if (imageFile) {
+        formData.append("image", imageFile)
+      }
+
       const res = await fetch("/api/teacher/exam-questions", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          exam_id: examId,
-          question_text: questionText,
-          points: Number(points || 1),
-          choices: validChoices,
-        }),
+        body: formData,
       })
 
       const data = await res.json()
@@ -89,14 +125,7 @@ export function TeacherExamQuestionForm({ examId }: Props) {
       }
 
       setSuccess(data.message || "Question added successfully.")
-      setQuestionText("")
-      setPoints("1")
-      setChoices([
-        { text: "", is_correct: true },
-        { text: "", is_correct: false },
-        { text: "", is_correct: false },
-        { text: "", is_correct: false },
-      ])
+      resetForm()
       router.refresh()
     } catch {
       setError("Unable to connect to the server.")
@@ -116,17 +145,56 @@ export function TeacherExamQuestionForm({ examId }: Props) {
       {error ? <div className="alert-error mt-5">{error}</div> : null}
       {success ? <div className="alert-success mt-5">{success}</div> : null}
 
-      <label className="mt-6 block font-bold">
-        Question Text
-        <textarea
-          className="input mt-2 min-h-28"
-          value={questionText}
-          onChange={(e) => setQuestionText(e.target.value)}
-          placeholder="Write the question text..."
-          required
-          dir="ltr"
-        />
-      </label>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <button
+          type="button"
+          className={questionType === "text" ? "btn" : "btn btn-outline"}
+          onClick={() => setQuestionType("text")}
+        >
+          Text Question
+        </button>
+
+        <button
+          type="button"
+          className={questionType === "image" ? "btn" : "btn btn-outline"}
+          onClick={() => setQuestionType("image")}
+        >
+          Image Question
+        </button>
+      </div>
+
+      {questionType === "text" ? (
+        <label className="mt-6 block font-bold">
+          Question Text
+          <textarea
+            className="input mt-2 min-h-28"
+            value={questionText}
+            onChange={(e) => setQuestionText(e.target.value)}
+            placeholder="Write the question text..."
+            dir="ltr"
+          />
+        </label>
+      ) : (
+        <label className="mt-6 block font-bold">
+          Question Image
+          <input
+            className="input mt-2"
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleImageChange(e.target.files?.[0] || null)}
+          />
+        </label>
+      )}
+
+      {questionType === "image" && imagePreview ? (
+        <div className="mt-4">
+          <img
+            src={imagePreview}
+            alt="Question preview"
+            className="max-h-64 rounded-2xl border border-[var(--line)] object-contain"
+          />
+        </div>
+      ) : null}
 
       <label className="mt-4 block font-bold">
         Question Points

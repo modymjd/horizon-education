@@ -21,7 +21,8 @@ type ExamRow = {
 
 type QuestionRow = {
   id: number
-  question_text: string
+  question_text: string | null
+  question_image_url: string | null
   points: number
   sort_order: number
 }
@@ -85,6 +86,7 @@ async function getExamQuestions(examId: number) {
     SELECT
       id,
       question_text,
+      question_image_url,
       points,
       sort_order
     FROM lesson_exam_questions
@@ -209,11 +211,22 @@ export default async function TeacherExamPage({ params }: Params) {
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <h3 className="text-xl font-black">
-                        Question {index + 1}: {question.question_text}
+                        Question {index + 1}
+                        {question.question_text ? `: ${question.question_text}` : ""}
                       </h3>
 
                       <span className="badge">{question.points} points</span>
                     </div>
+
+                    {question.question_image_url ? (
+                      <div className="mt-4">
+                        <img
+                          src={question.question_image_url}
+                          alt={`Question ${index + 1}`}
+                          className="max-h-72 w-full rounded-2xl border border-[var(--line)] object-contain bg-white"
+                        />
+                      </div>
+                    ) : null}
 
                     <div className="mt-4 grid gap-2">
                       {questionChoices.map((choice) => (

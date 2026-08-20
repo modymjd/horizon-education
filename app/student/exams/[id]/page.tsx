@@ -21,7 +21,8 @@ type ExamRow = {
 type ExamQuestionRow = {
   id: number
   exam_id: number
-  question_text: string
+  question_text: string | null
+  question_image_url: string | null
   points: number
 }
 
@@ -68,6 +69,7 @@ async function getQuestions(id: string) {
       id,
       exam_id,
       question_text,
+      question_image_url,
       points
     FROM lesson_exam_questions
     WHERE exam_id = ?

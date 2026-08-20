@@ -1,4 +1,6 @@
 ﻿import { NextResponse } from "next/server"
+import { writeFile, mkdir } from "fs/promises"
+import path from "path"
 import { query } from "@/lib/db"
 import { requireTeacher } from "@/lib/session"
 
@@ -44,14 +46,23 @@ export async function POST(req: Request) {
       )
     }
 
-    const body = await req.json()
+    const formData = await req.formData()
 
-    const examId = Number(body.exam_id)
-    const questionText = String(body.question_text || "")
-    const points = Number(body.points || 1)
-    const choices = Array.isArray(body.choices)
-      ? (body.choices as ChoiceInput[])
-      : []
+    const examId = Number(formData.get("exam_id"))
+    const questionType = String(formData.get("question_type") || "text")
+    const questionTextRaw = formData.get("question_text")
+    const questionText = questionTextRaw ? String(questionTextRaw).trim() : ""
+    const points = Number(formData.get("points") || 1)
+    const image = formData.get("image")
+
+    const choicesRaw = formData.get("choices")
+    let choices: ChoiceInput[] = []
+
+    try {
+      choices = choicesRaw ? JSON.parse(String(choicesRaw)) : []
+    } catch {
+      choices = []
+    }
 
     if (!examId || Number.isNaN(examId)) {
       return NextResponse.json(
@@ -60,9 +71,23 @@ export async function POST(req: Request) {
       )
     }
 
-    if (!questionText.trim()) {
+    if (questionType !== "text" && questionType !== "image") {
+      return NextResponse.json(
+        { message: "Invalid question type." },
+        { status: 400 }
+      )
+    }
+
+    if (questionType === "text" && !questionText) {
       return NextResponse.json(
         { message: "Question text is required." },
+        { status: 400 }
+      )
+    }
+
+    if (questionType === "image" && !(image instanceof File)) {
+      return NextResponse.json(
+        { message: "Please choose a question image." },
         { status: 400 }
       )
     }
@@ -101,11 +126,52 @@ export async function POST(req: Request) {
       )
     }
 
+    let questionImageUrl: string | null = null
+
+    if (questionType === "image" && image instanceof File) {
+      if (!image.type.startsWith("image/")) {
+        return NextResponse.json(
+          { message: "The selected file is not an image." },
+          { status: 400 }
+        )
+      }
+
+      const maxSizeMb = 5
+      const maxSizeBytes = maxSizeMb * 1024 * 1024
+
+      if (image.size > maxSizeBytes) {
+        return NextResponse.json(
+          { message: `Image size must not exceed ${maxSizeMb}MB.` },
+          { status: 400 }
+        )
+      }
+
+      const bytes = await image.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+
+      const ext = path.extname(image.name) || ".png"
+      const safeName = `question-${examId}-${Date.now()}${ext}`
+
+      const uploadDir = path.join(
+        process.cwd(),
+        "public",
+        "uploads",
+        "exam-questions"
+      )
+      await mkdir(uploadDir, { recursive: true })
+
+      const filePath = path.join(uploadDir, safeName)
+      await writeFile(filePath, buffer)
+
+      questionImageUrl = `/uploads/exam-questions/${safeName}`
+    }
+
     const questionRows = await query(
       `
       INSERT INTO lesson_exam_questions
-        (exam_id, question_text, points, sort_order)
+        (exam_id, question_text, question_image_url, points, sort_order)
       VALUES (
+        ?,
         ?,
         ?,
         ?,
@@ -122,7 +188,13 @@ export async function POST(req: Request) {
         )
       )
       `,
-      [examId, questionText.trim(), points, examId]
+      [
+        examId,
+        questionType === "text" ? questionText : null,
+        questionImageUrl,
+        points,
+        examId,
+      ]
     )
 
     const questionId = (questionRows as any).insertId

@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation"
 
 type ExamQuestion = {
   id: number
-  question_text: string
+  question_text: string | null
+  question_image_url: string | null
   points: number
 }
 
@@ -163,8 +164,18 @@ export function StudentExamPageForm({
           key={question.id}
         >
           <h3 className="text-xl font-black">
-            {index + 1}. {question.question_text}
+            {index + 1}. {question.question_text || ""}
           </h3>
+
+          {question.question_image_url ? (
+            <div className="mt-3">
+              <img
+                src={question.question_image_url}
+                alt={`Question ${index + 1}`}
+                className="max-h-80 w-full rounded-2xl border border-[var(--line)] object-contain bg-white"
+              />
+            </div>
+          ) : null}
 
           <p className="muted mt-1 text-sm">{question.points} points</p>
 
