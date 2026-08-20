@@ -3,6 +3,7 @@ import { writeFile, mkdir } from "fs/promises"
 import path from "path"
 import { query } from "@/lib/db"
 import { requireTeacher } from "@/lib/session"
+import { IMAGE_RULES, validateFileAgainstRules } from "@/lib/file-security"
 
 type TeacherExamRow = {
   id: number
@@ -129,13 +130,6 @@ export async function POST(req: Request) {
     let questionImageUrl: string | null = null
 
     if (questionType === "image" && image instanceof File) {
-      if (!image.type.startsWith("image/")) {
-        return NextResponse.json(
-          { message: "The selected file is not an image." },
-          { status: 400 }
-        )
-      }
-
       const maxSizeMb = 5
       const maxSizeBytes = maxSizeMb * 1024 * 1024
 
@@ -149,8 +143,16 @@ export async function POST(req: Request) {
       const bytes = await image.arrayBuffer()
       const buffer = Buffer.from(bytes)
 
-      const ext = path.extname(image.name) || ".png"
-      const safeName = `question-${examId}-${Date.now()}${ext}`
+      const validation = validateFileAgainstRules(buffer, image.name, IMAGE_RULES)
+
+      if (!validation.ok) {
+        return NextResponse.json(
+          { message: validation.reason },
+          { status: 400 }
+        )
+      }
+
+      const safeName = `question-${examId}-${Date.now()}${validation.extension}`
 
       const uploadDir = path.join(
         process.cwd(),

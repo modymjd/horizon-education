@@ -4,6 +4,7 @@ import path from "path"
 import { nanoid } from "nanoid"
 import { query, pool } from "@/lib/db"
 import { requireStudent } from "@/lib/session"
+import { ASSIGNMENT_RULES, validateFileAgainstRules } from "@/lib/file-security"
 
 type AssignmentAccessRow = {
   id: number
@@ -74,25 +75,18 @@ export async function POST(req: Request) {
       )
     }
 
-    const allowedExtensions = [
-      ".pdf",
-      ".doc",
-      ".docx",
-      ".xls",
-      ".xlsx",
-      ".png",
-      ".jpg",
-      ".jpeg",
-    ]
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
 
-    const extension = path.extname(file.name).toLowerCase()
+    const validation = validateFileAgainstRules(
+      buffer,
+      file.name,
+      ASSIGNMENT_RULES
+    )
 
-    if (!allowedExtensions.includes(extension)) {
+    if (!validation.ok) {
       return NextResponse.json(
-        {
-          message:
-            "Unsupported file type. Please use PDF, Word, Excel, or an image file.",
-        },
+        { message: validation.reason },
         { status: 400 }
       )
     }
@@ -106,11 +100,8 @@ export async function POST(req: Request) {
 
     await mkdir(uploadDir, { recursive: true })
 
-    const fileName = `submission-${assignmentId}-${user.student_id}-${nanoid(8)}${extension}`
+    const fileName = `submission-${assignmentId}-${user.student_id}-${nanoid(8)}${validation.extension}`
     const filePath = path.join(uploadDir, fileName)
-
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
 
     await writeFile(filePath, buffer)
 

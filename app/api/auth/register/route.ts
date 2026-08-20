@@ -2,6 +2,7 @@
 import { z } from "zod"
 import { pool } from "@/lib/db"
 import { hashPassword } from "@/lib/auth"
+import { rateLimit, getClientIp } from "@/lib/rate-limit"
 
 const registerSchema = z.object({
   full_name: z.string().trim().min(3, "Full name must be at least 3 characters."),
@@ -40,6 +41,19 @@ function formatZodErrors(error: z.ZodError) {
 }
 
 export async function POST(req: Request) {
+  const ip = getClientIp(req)
+  const limit = rateLimit(`register:ip:${ip}`, 5, 60 * 60 * 1000)
+
+  if (!limit.allowed) {
+    return NextResponse.json(
+      {
+        message:
+          "Too many registration attempts from this network. Please try again later.",
+      },
+      { status: 429 }
+    )
+  }
+
   const conn = await pool.getConnection()
 
   try {

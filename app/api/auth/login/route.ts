@@ -2,6 +2,7 @@
 import { loginSchema } from "@/lib/validators"
 import { query, pool } from "@/lib/db"
 import { verifyPassword, signSession, roleHome, type Role } from "@/lib/auth"
+import { rateLimit, resetRateLimit, getClientIp } from "@/lib/rate-limit"
 
 type LoginUserRow = {
   id: number
@@ -12,7 +13,31 @@ type LoginUserRow = {
 
 export async function POST(req: Request) {
   try {
+    const ip = getClientIp(req)
+
+    const ipLimit = rateLimit(`login:ip:${ip}`, 20, 15 * 60 * 1000)
+
+    if (!ipLimit.allowed) {
+      return NextResponse.json(
+        { message: "Too many login attempts. Please try again in a few minutes." },
+        { status: 429 }
+      )
+    }
+
     const body = loginSchema.parse(await req.json())
+    const emailKey = `login:email:${body.email.trim().toLowerCase()}`
+
+    const emailLimit = rateLimit(emailKey, 6, 15 * 60 * 1000)
+
+    if (!emailLimit.allowed) {
+      return NextResponse.json(
+        {
+          message:
+            "Too many failed attempts for this account. Please try again in a few minutes.",
+        },
+        { status: 429 }
+      )
+    }
 
     const users = await query<LoginUserRow>(
       `
@@ -57,6 +82,8 @@ export async function POST(req: Request) {
         { status: 401 }
       )
     }
+
+    resetRateLimit(emailKey)
 
     const token = await signSession({
       userId: user.id,

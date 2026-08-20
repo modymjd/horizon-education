@@ -3,6 +3,7 @@ import { writeFile, mkdir } from "fs/promises"
 import path from "path"
 import { query } from "@/lib/db"
 import { requireTeacher } from "@/lib/session"
+import { VIDEO_RULES, validateFileAgainstRules } from "@/lib/file-security"
 
 type TeacherLessonRow = {
   id: number
@@ -63,13 +64,6 @@ export async function POST(req: Request) {
       )
     }
 
-    if (!file.type.startsWith("video/")) {
-      return NextResponse.json(
-        { message: "The selected file is not a video." },
-        { status: 400 }
-      )
-    }
-
     const maxSizeMb = 100
     const maxSizeBytes = maxSizeMb * 1024 * 1024
 
@@ -92,8 +86,16 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    const ext = path.extname(file.name) || ".mp4"
-    const safeName = `lesson-${lessonId}-${Date.now()}${ext}`
+    const validation = validateFileAgainstRules(buffer, file.name, VIDEO_RULES)
+
+    if (!validation.ok) {
+      return NextResponse.json(
+        { message: validation.reason },
+        { status: 400 }
+      )
+    }
+
+    const safeName = `lesson-${lessonId}-${Date.now()}${validation.extension}`
 
     const uploadDir = path.join(process.cwd(), "public", "uploads", "videos")
     await mkdir(uploadDir, { recursive: true })

@@ -3,6 +3,7 @@ import { writeFile, mkdir } from "fs/promises"
 import path from "path"
 import { query } from "@/lib/db"
 import { requireTeacher } from "@/lib/session"
+import { ASSIGNMENT_RULES, validateFileAgainstRules } from "@/lib/file-security"
 
 type TeacherLessonRow = {
   id: number
@@ -87,8 +88,20 @@ export async function POST(req: Request) {
       const bytes = await file.arrayBuffer()
       const buffer = Buffer.from(bytes)
 
-      const ext = path.extname(file.name) || ".pdf"
-      const safeName = `assignment-${lessonId}-${Date.now()}${ext}`
+      const validation = validateFileAgainstRules(
+        buffer,
+        file.name,
+        ASSIGNMENT_RULES
+      )
+
+      if (!validation.ok) {
+        return NextResponse.json(
+          { message: validation.reason },
+          { status: 400 }
+        )
+      }
+
+      const safeName = `assignment-${lessonId}-${Date.now()}${validation.extension}`
 
       const uploadDir = path.join(
         process.cwd(),

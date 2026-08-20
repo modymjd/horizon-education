@@ -2,6 +2,7 @@
 import { writeFile, mkdir } from "fs/promises"
 import path from "path"
 import { requireAdmin } from "@/lib/session"
+import { VIDEO_RULES, validateFileAgainstRules } from "@/lib/file-security"
 
 export async function POST(req: Request) {
   try {
@@ -21,13 +22,6 @@ export async function POST(req: Request) {
       )
     }
 
-    if (!file.type.startsWith("video/")) {
-      return NextResponse.json(
-        { message: "The selected file must be a video." },
-        { status: 400 }
-      )
-    }
-
     const maxSizeMb = 50
     const maxSizeBytes = maxSizeMb * 1024 * 1024
 
@@ -41,11 +35,19 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
+    const validation = validateFileAgainstRules(buffer, file.name, VIDEO_RULES)
+
+    if (!validation.ok) {
+      return NextResponse.json(
+        { message: validation.reason },
+        { status: 400 }
+      )
+    }
+
     const uploadDir = path.join(process.cwd(), "public", "uploads", "videos")
     await mkdir(uploadDir, { recursive: true })
 
-    const extension = path.extname(file.name) || ".mp4"
-    const fileName = `video-${Date.now()}${extension}`
+    const fileName = `video-${Date.now()}${validation.extension}`
     const filePath = path.join(uploadDir, fileName)
 
     await writeFile(filePath, buffer)
