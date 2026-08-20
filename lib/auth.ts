@@ -16,15 +16,17 @@ if (!jwtSecret || jwtSecret.length < 32) {
     throw new Error("JWT_SECRET must be set to a strong secret in production")
   }
 
-  console.warn("⚠️ Using development JWT_SECRET. Set a strong JWT_SECRET before production.")
+  console.warn("Using development JWT_SECRET. Set a strong JWT_SECRET before production.")
 }
 
 const secret = new TextEncoder().encode(
   jwtSecret || "horizon-development-secret-change-me-32"
 )
 
+const BCRYPT_COST = 12
+
 export function hashPassword(password: string) {
-  return bcrypt.hash(password, 10)
+  return bcrypt.hash(password, BCRYPT_COST)
 }
 
 export function verifyPassword(password: string, hash: string) {
