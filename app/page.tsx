@@ -50,6 +50,7 @@ export default function Home() {
           </div>
 
           <div className="hero-card">
+            <div className="hero-arch" />
             <div className="hero-floating">
               <span className="badge">Live progress</span>
               <h3 className="mt-4 text-2xl font-black">Your level in every subject</h3>
@@ -57,7 +58,6 @@ export default function Home() {
                 Lessons, assignments, exams, and certificates in one place.
               </p>
             </div>
-            <div className="hero-arch" />
           </div>
         </div>
       </section>
@@ -120,3 +120,4 @@ export default function Home() {
     </main>
   )
 }
+

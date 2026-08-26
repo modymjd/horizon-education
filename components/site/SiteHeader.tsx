@@ -1,6 +1,7 @@
 ﻿import Link from "next/link"
 import { BrandMark } from "./BrandMark"
 import { AuthHeaderActions } from "./AuthHeaderActions"
+import { MobileNavToggle } from "./MobileNavToggle"
 
 export function SiteHeader() {
   return (
@@ -15,9 +16,13 @@ export function SiteHeader() {
             <Link href="/certificates">Certificates</Link>
           </div>
 
-          <AuthHeaderActions />
+          <div className="nav-end">
+            <AuthHeaderActions />
+            <MobileNavToggle />
+          </div>
         </nav>
       </div>
     </header>
   )
 }
+

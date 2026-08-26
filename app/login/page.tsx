@@ -56,7 +56,7 @@ export default function LoginPage() {
         <div className="wrap auth-grid">
           <div className="auth-copy">
             <span className="eyebrow">Login</span>
-            <h1 className="h1">Log in to your Horizon account</h1>
+            <h1 className="h2">Log in to your Horizon account</h1>
             <p className="muted mt-5 text-lg">
               Use your email and password to access the right dashboard for your role.
             </p>
@@ -119,3 +119,4 @@ export default function LoginPage() {
     </main>
   )
 }
+
