@@ -8,7 +8,7 @@ export function SiteFooter() {
         <div>
           <BrandMark />
           <p className="muted mt-4">
-            An education platform that helps students understand lessons, track progress, and access course content easily.
+            Making learning easier, more enjoyable, and more rewarding for every student.
           </p>
         </div>
 

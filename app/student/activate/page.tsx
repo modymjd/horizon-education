@@ -87,14 +87,17 @@ export default function StudentActivatePage() {
           </div>
 
           <div className="course-preview">
-            <span className="lesson-pill">Secure lesson access</span>
-            <h2 className="mt-5 font-[var(--display)] text-6xl font-bold leading-none">
-              Each code unlocks a specific lesson
-            </h2>
-            <p className="mt-4 max-w-sm opacity-80">
-              After activation, the lesson will appear in your student dashboard and you can start studying.
-            </p>
-          </div>
+  <span className="lesson-pill">Secure lesson access</span>
+
+  <h2 className="mt-5 max-w-2xl font-[var(--display)] text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
+    Each code unlocks a specific lesson
+  </h2>
+
+  <p className="mt-5 max-w-lg text-base leading-relaxed opacity-100 md:text-lg">
+    After activation, the lesson will appear in your student dashboard and you
+    can start studying.
+  </p>
+</div>
         </div>
       </section>
 
