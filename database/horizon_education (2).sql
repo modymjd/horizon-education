@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 27, 2026 at 01:43 AM
+-- Generation Time: Aug 27, 2026 at 11:02 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -80,7 +80,8 @@ INSERT INTO `access_codes` (`id`, `lesson_id`, `code_hash`, `code_prefix`, `stat
 (35, 8, 'dd0985dce17adad9c872faaf971e1ecd04571389b4d3ccf4d079efc5c20f3203', 'HZ-RG', 'new', 1, '2026-09-03 21:00:00', NULL, NULL, NULL, NULL, 7, '-Hq981Ld-6ZvxO1fyDfZp', NULL, '2026-08-26 20:43:18'),
 (36, 8, 'a9f77f9e54dfbc8051d305f89d14056744cdec60c68eff643913c018a0807fd0', 'HZ-JO', 'new', 1, '2026-09-03 21:00:00', NULL, NULL, NULL, NULL, 7, '-Hq981Ld-6ZvxO1fyDfZp', NULL, '2026-08-26 20:43:18'),
 (37, 9, 'a559fc1acd617a46e8d5ce890f3b2b41022aa374939f4096ce90dc05a816c35b', 'HZ-S_', 'used', 1, '2026-09-03 21:00:00', NULL, 5, '2026-08-26 21:39:11', NULL, 7, '17d_SSLqYNJt7WUoq3j2N', NULL, '2026-08-26 21:38:50'),
-(38, 8, '861b5893866f163e1d46f2c1e9c571c6bfa3146ca4487ba007e371223ea8ec2c', 'HZ-FN', 'used', 1, '2026-09-02 21:00:00', NULL, 5, '2026-08-26 23:18:33', NULL, 7, 'xPn8RtT_k2_mQcWkv9SOv', NULL, '2026-08-26 23:18:12');
+(38, 8, '861b5893866f163e1d46f2c1e9c571c6bfa3146ca4487ba007e371223ea8ec2c', 'HZ-FN', 'used', 1, '2026-09-02 21:00:00', NULL, 5, '2026-08-26 23:18:33', NULL, 7, 'xPn8RtT_k2_mQcWkv9SOv', NULL, '2026-08-26 23:18:12'),
+(39, 10, 'bfe9338115b59f55e415a50269f35a49a91bfc46f2ca510f3154860317d23dad', 'HZ-ZZ', 'used', 1, '2026-09-03 21:00:00', NULL, 5, '2026-08-27 08:39:12', NULL, 7, 'bBrtwjhDUi2zk9Ag_hpD9', NULL, '2026-08-27 08:38:51');
 
 -- --------------------------------------------------------
 
@@ -613,7 +614,8 @@ INSERT INTO `lessons` (`id`, `chapter_id`, `title`, `description`, `thumbnail_ur
 (6, 5, 'الحصة الاولي', '- مقدمة المنهج الدراسي\n- مراجعة الاساسيات', NULL, 50.00, 1, 'published', '2026-08-13 22:55:24', NULL, NULL, '/uploads/videos/lesson-6-1786661766178.mp4'),
 (7, 7, 'القصة الانجليزية الجديدة', 'القصة الانجليزية الجديدةالقصة الانجليزية الجديدةالقصة الانجليزية الجديدةالقصة الانجليزية الجديدةالقصة الانجليزية الجديدة', NULL, 75.00, 1, 'published', '2026-08-14 14:48:09', NULL, NULL, '/uploads/videos/lesson-7-1786718931895.mp4'),
 (8, 8, 'Ohmic Resistance', 'fgkdjfgnldfsjnghlewj', NULL, 108.00, 0, 'published', '2026-08-26 20:38:23', NULL, NULL, '/uploads/videos/lesson-8-1787776746755.mp4'),
-(9, 8, 'Lesson 2', 'ase', NULL, 120.00, 0, 'published', '2026-08-26 21:36:03', NULL, NULL, '/uploads/videos/lesson-9-1787780188098.mp4');
+(9, 8, 'Lesson 2', 'ase', NULL, 120.00, 0, 'published', '2026-08-26 21:36:03', NULL, NULL, '/uploads/videos/lesson-9-1787780188098.mp4'),
+(10, 10, 'Induction', 'xdxghsfhs', NULL, 150.00, 3, 'published', '2026-08-27 08:21:45', NULL, NULL, '/uploads/videos/lesson-10-1787819646151.mp4');
 
 -- --------------------------------------------------------
 
@@ -643,7 +645,9 @@ INSERT INTO `lesson_assignments` (`id`, `lesson_id`, `title`, `description`, `at
 (3, 5, 'حل الشيت دي كلها', 'تحل كويس منغير ما تلعب32', '/uploads/assignments/assignment-5-1786481126299.pdf', '2024-03-03 15:33:00', 1, '2026-08-11 20:45:26', '2026-08-11 20:45:26'),
 (4, 6, 'حل القطع الخمس', 'مطلوب حل اربع قطع دون استخدام ai', '/uploads/assignments/assignment-6-1786661894028.jpg', '2026-08-29 13:22:00', 1, '2026-08-13 22:58:14', '2026-08-13 22:58:14'),
 (5, 8, 'jhygyfh', 'yfjfy', '/uploads/assignments/assignment-8-1787776838882.pdf', '2026-08-31 16:45:00', 1, '2026-08-26 20:40:38', '2026-08-26 20:40:38'),
-(6, 9, 'jhkjkjhb', 'kljblii', '/uploads/assignments/assignment-9-1787780214284.pdf', '2026-09-05 04:36:00', 1, '2026-08-26 21:36:54', '2026-08-26 21:36:54');
+(6, 9, 'jhkjkjhb', 'kljblii', '/uploads/assignments/assignment-9-1787780214284.pdf', '2026-09-05 04:36:00', 1, '2026-08-26 21:36:54', '2026-08-26 21:36:54'),
+(7, 10, 'Written Questions', 'solve all questions', '/uploads/assignments/assignment-10-1787819699540.pdf', '2026-09-05 23:39:00', 1, '2026-08-27 08:34:59', '2026-08-27 08:34:59'),
+(8, 10, 'Homework', 'cavaev', '/uploads/assignments/assignment-10-1787819724843.pdf', '2026-09-04 23:40:00', 2, '2026-08-27 08:35:24', '2026-08-27 08:35:24');
 
 -- --------------------------------------------------------
 
@@ -708,7 +712,8 @@ INSERT INTO `lesson_exams` (`id`, `lesson_id`, `title`, `description`, `pass_sco
 (10, 7, 'exam 3', NULL, 30, 1, 1, '2026-08-20 01:56:21', '2026-08-20 01:56:21', 'before_content'),
 (11, 7, 'exam 4', 'english test', 50, 0, 2, '2026-08-20 11:40:08', '2026-08-20 11:40:08', 'before_content'),
 (12, 8, 'mbvghvgfc', 'hjgvfhcghc', 33, 0, 1, '2026-08-26 20:41:03', '2026-08-26 20:41:03', 'before_content'),
-(13, 9, 'lkjnkjhb', 'khbjbh', 50, 1, 1, '2026-08-26 21:37:10', '2026-08-26 21:37:10', 'after_content');
+(13, 9, 'lkjnkjhb', 'khbjbh', 50, 1, 1, '2026-08-26 21:37:10', '2026-08-26 21:37:10', 'after_content'),
+(14, 10, 'Ezam 1', 'svadfwe', 65, 1, 1, '2026-08-27 08:35:48', '2026-08-27 08:35:48', 'after_content');
 
 -- --------------------------------------------------------
 
@@ -739,7 +744,9 @@ INSERT INTO `lesson_exam_answers` (`id`, `attempt_id`, `question_id`, `choice_id
 (10, 6, 6, 18, 1, 10, '2026-08-13 23:19:19'),
 (11, 6, 7, 23, 1, 10, '2026-08-13 23:19:19'),
 (12, 7, 10, 0, 0, 0, '2026-08-20 01:58:28'),
-(13, 8, 11, 38, 1, 50, '2026-08-20 11:41:23');
+(13, 8, 11, 38, 1, 50, '2026-08-20 11:41:23'),
+(14, 9, 12, 43, 1, 1, '2026-08-27 08:20:05'),
+(15, 9, 13, 46, 1, 5, '2026-08-27 08:20:05');
 
 -- --------------------------------------------------------
 
@@ -766,7 +773,8 @@ INSERT INTO `lesson_exam_attempts` (`id`, `exam_id`, `student_id`, `score`, `pas
 (5, 6, 3, 50, 1, '2026-08-11 21:07:33'),
 (6, 7, 4, 100, 1, '2026-08-13 23:19:19'),
 (7, 10, 4, 0, 0, '2026-08-20 01:58:28'),
-(8, 11, 4, 100, 1, '2026-08-20 11:41:23');
+(8, 11, 4, 100, 1, '2026-08-20 11:41:23'),
+(9, 12, 5, 100, 1, '2026-08-27 08:20:05');
 
 -- --------------------------------------------------------
 
@@ -837,7 +845,15 @@ INSERT INTO `lesson_exam_choices` (`id`, `question_id`, `choice_text`, `is_corre
 (46, 13, 'A', 1, 1, '2026-08-26 23:33:21', '2026-08-26 23:33:21'),
 (47, 13, 'B', 0, 2, '2026-08-26 23:33:21', '2026-08-26 23:33:21'),
 (48, 13, 'C', 0, 3, '2026-08-26 23:33:21', '2026-08-26 23:33:21'),
-(49, 13, 'D', 0, 4, '2026-08-26 23:33:21', '2026-08-26 23:33:21');
+(49, 13, 'D', 0, 4, '2026-08-26 23:33:21', '2026-08-26 23:33:21'),
+(50, 14, 'A', 0, 1, '2026-08-27 08:36:25', '2026-08-27 08:36:25'),
+(51, 14, 'B', 0, 2, '2026-08-27 08:36:25', '2026-08-27 08:36:25'),
+(52, 14, 'C', 0, 3, '2026-08-27 08:36:25', '2026-08-27 08:36:25'),
+(53, 14, 'D', 1, 4, '2026-08-27 08:36:25', '2026-08-27 08:36:25'),
+(54, 15, '1', 0, 1, '2026-08-27 08:36:38', '2026-08-27 08:36:38'),
+(55, 15, '2', 1, 2, '2026-08-27 08:36:38', '2026-08-27 08:36:38'),
+(56, 15, '3', 0, 3, '2026-08-27 08:36:38', '2026-08-27 08:36:38'),
+(57, 15, '4', 0, 4, '2026-08-27 08:36:38', '2026-08-27 08:36:38');
 
 -- --------------------------------------------------------
 
@@ -873,7 +889,9 @@ INSERT INTO `lesson_exam_questions` (`id`, `exam_id`, `question_text`, `question
 (10, 10, NULL, '/uploads/exam-questions/question-10-1787191018666.jpg', 10, 1, '2026-08-20 01:56:58', '2026-08-20 01:56:58'),
 (11, 11, NULL, '/uploads/exam-questions/question-11-1787226046305.png', 50, 1, '2026-08-20 11:40:46', '2026-08-20 11:40:46'),
 (12, 12, 'What is the symbol of Resistance', NULL, 1, 1, '2026-08-26 23:32:55', '2026-08-26 23:32:55'),
-(13, 12, NULL, '/uploads/exam-questions/question-12-1787787201465.jpg', 5, 2, '2026-08-26 23:33:21', '2026-08-26 23:33:21');
+(13, 12, NULL, '/uploads/exam-questions/question-12-1787787201465.jpg', 5, 2, '2026-08-26 23:33:21', '2026-08-26 23:33:21'),
+(14, 14, NULL, '/uploads/exam-questions/question-14-1787819785863.png', 3, 1, '2026-08-27 08:36:25', '2026-08-27 08:36:25'),
+(15, 14, 'SHSHW', NULL, 1, 2, '2026-08-27 08:36:38', '2026-08-27 08:36:38');
 
 -- --------------------------------------------------------
 
@@ -912,7 +930,8 @@ INSERT INTO `lesson_videos` (`id`, `lesson_id`, `title`, `video_url`, `storage_p
 (12, 6, ' Lesson Video 2', '/uploads/videos/lesson-6-1787098941688.mp4', NULL, 0, 2, NULL, NULL),
 (13, 8, 'Part 1', '/uploads/videos/lesson-8-1787776746755.mp4', NULL, 0, 1, NULL, NULL),
 (14, 8, 'Part 2', '/uploads/videos/lesson-8-1787776787840.mp4', NULL, 0, 2, NULL, NULL),
-(15, 9, 'Lesson Videoooooooooo', '/uploads/videos/lesson-9-1787780188098.mp4', NULL, 0, 1, NULL, NULL);
+(15, 9, 'Lesson Videoooooooooo', '/uploads/videos/lesson-9-1787780188098.mp4', NULL, 0, 1, NULL, NULL),
+(16, 10, 'Video 1 7abeby', '/uploads/videos/lesson-10-1787819646151.mp4', NULL, 0, 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1185,7 +1204,8 @@ INSERT INTO `student_lesson_access` (`id`, `student_id`, `lesson_id`, `access_co
 (8, 4, 7, 25, NULL, '2026-08-14 14:49:48', NULL, '2026-08-14 14:49:48'),
 (10, 5, 8, 27, NULL, '2026-08-26 20:44:27', NULL, '2026-08-26 20:44:27'),
 (11, 5, 9, 37, NULL, '2026-08-26 21:39:11', NULL, '2026-08-26 21:39:11'),
-(12, 5, 1, NULL, 4, '2026-08-26 22:55:01', NULL, '2026-08-26 22:55:01');
+(12, 5, 1, NULL, 4, '2026-08-26 22:55:01', NULL, '2026-08-26 22:55:01'),
+(14, 5, 10, 39, NULL, '2026-08-27 08:39:12', NULL, '2026-08-27 08:39:12');
 
 -- --------------------------------------------------------
 
@@ -1287,7 +1307,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `uuid`, `role_id`, `email`, `phone`, `password_hash`, `full_name`, `avatar_url`, `status`, `suspension_ends_at`, `email_verified_at`, `phone_verified_at`, `two_factor_enabled`, `two_factor_secret`, `max_devices`, `created_at`, `updated_at`, `deleted_at`, `last_login_at`) VALUES
-(1, 'd22feba7-8ac4-11f1-95d3-902e162c75db', 1, 'admin@horizon.test', '01000000001', '$2a$10$bcvqHrqUqvQH98xwVK0AbunDEXMV2caI4KT5I4oUKgsRXpvwHoVBC', 'مدير النظام', NULL, 'active', NULL, NULL, NULL, 0, NULL, 3, '2026-07-28 20:42:16', '2026-08-26 23:36:37', NULL, '2026-08-27 02:36:37'),
+(1, 'd22feba7-8ac4-11f1-95d3-902e162c75db', 1, 'admin@horizon.test', '01000000001', '$2a$10$bcvqHrqUqvQH98xwVK0AbunDEXMV2caI4KT5I4oUKgsRXpvwHoVBC', 'مدير النظام', NULL, 'active', NULL, NULL, NULL, 0, NULL, 3, '2026-07-28 20:42:16', '2026-08-27 08:46:09', NULL, '2026-08-27 11:46:09'),
 (2, 'd2306aa3-8ac4-11f1-95d3-902e162c75db', 2, 'teacher@horizon.test', '01000000002', '$2a$10$4x8RGTGdQGm9O3Kf8qAwy.Ptjkn3bJjgZhrgS.AqqrwIf8nuZ4ffW', 'د. أحمد درويش', NULL, 'active', NULL, NULL, NULL, 0, NULL, 3, '2026-07-28 20:42:16', '2026-08-11 20:20:17', NULL, '2026-08-11 23:20:17'),
 (3, 'd23142e6-8ac4-11f1-95d3-902e162c75db', 3, 'student@horizon.test', '01000000003', '$2a$10$bZcMdNyYHwheV4zkcOmJOOuxFZJi4NKh320eS6xQgbghEPjMIt4Ru', 'محمد محمود', NULL, 'suspended', NULL, NULL, NULL, 0, NULL, 3, '2026-07-28 20:42:16', '2026-08-14 14:51:41', '2026-08-14 14:51:41', NULL),
 (4, 'b3b21ab2-8ad7-11f1-95d3-902e162c75db', 2, 'mahmoud.teacher@test.com', '01015175618', '$2a$10$MWb.E3.2uogFcDYPbHcf0efAazpSjgW1hrubfdX6Agtz7wTnvWWpi', 'أ. محمود علي', NULL, 'active', NULL, NULL, NULL, 0, NULL, 3, '2026-07-28 22:57:28', '2026-07-28 22:57:28', NULL, NULL),
@@ -1297,8 +1317,8 @@ INSERT INTO `users` (`id`, `uuid`, `role_id`, `email`, `phone`, `password_hash`,
 (11, '6f698cde-95ba-11f1-8441-902e162c75db', 3, 'student@horizon.local', '01000000002', '$2a$10$A8.qnfmYlYcnjizeKxLj7uwOCdtju3s6yGi.M6.SMB48eGl65N5AW', 'محمد علي', NULL, 'active', NULL, NULL, NULL, 0, NULL, 3, '2026-08-11 19:25:39', '2026-08-13 20:36:08', NULL, '2026-08-13 23:36:08'),
 (12, 'c738bab2-975d-11f1-b1d9-902e162c75db', 3, 'student1@horizon.local', '12345678910', '$2a$10$36BsLhJQCD5Ylc2DQVsXYOtzAavSyHIoQ.P70pYwVIYJssyDMjQD6', 'يوسف علي سليمان', NULL, 'active', NULL, NULL, NULL, 0, NULL, 3, '2026-08-13 21:27:25', '2026-08-26 23:35:38', NULL, '2026-08-27 02:35:38'),
 (13, '3584f402-975e-11f1-b1d9-902e162c75db', 2, 'saadhamada1@gmail.com', '1122334455667', '$2a$10$/DLesLhbzootMIG7McpDwefSaR8UBVieML7CsN2kornBojegbFXti', 'مستر سعد حمادة', NULL, 'active', NULL, NULL, NULL, 0, NULL, 3, '2026-08-13 21:30:30', '2026-08-26 16:18:24', NULL, '2026-08-26 19:18:24'),
-(14, '99b00171-a18b-11f1-bf4d-505a652127e8', 3, 'youssifsoliman14@gmail.com', '01026724023', '$2a$12$MdeNbKNNJ8Vfv/dtRkE6Vezh.xUxhYJaTbGObmOSsY/YH.4rqvHJS', 'Youssef', NULL, 'active', NULL, NULL, NULL, 0, NULL, 3, '2026-08-26 20:20:10', '2026-08-26 23:25:43', NULL, '2026-08-27 02:25:43'),
-(15, '5ef38f87-a18c-11f1-bf4d-505a652127e8', 2, 'horizon.education83@gmail.com', '01026724023', '$2a$12$SSscurdVG.gjPME/f7mVbOGt0XhOR355Hjb9UgLr8MgnLhanjv/OS', 'Ahmed Darweesh', NULL, 'active', NULL, NULL, NULL, 0, NULL, 3, '2026-08-26 20:25:41', '2026-08-26 23:42:01', NULL, '2026-08-27 02:42:01');
+(14, '99b00171-a18b-11f1-bf4d-505a652127e8', 3, 'youssifsoliman14@gmail.com', '01026724023', '$2a$12$MdeNbKNNJ8Vfv/dtRkE6Vezh.xUxhYJaTbGObmOSsY/YH.4rqvHJS', 'Youssef', NULL, 'active', NULL, NULL, NULL, 0, NULL, 3, '2026-08-26 20:20:10', '2026-08-27 08:44:52', NULL, '2026-08-27 11:44:52'),
+(15, '5ef38f87-a18c-11f1-bf4d-505a652127e8', 2, 'horizon.education83@gmail.com', '01026724023', '$2a$12$SSscurdVG.gjPME/f7mVbOGt0XhOR355Hjb9UgLr8MgnLhanjv/OS', 'Ahmed Darweesh', NULL, 'active', NULL, NULL, NULL, 0, NULL, 3, '2026-08-26 20:25:41', '2026-08-27 08:49:25', NULL, '2026-08-27 11:49:25');
 
 --
 -- Indexes for dumped tables
@@ -1666,7 +1686,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `access_codes`
 --
 ALTER TABLE `access_codes`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT for table `account_blocks`
@@ -1762,13 +1782,13 @@ ALTER TABLE `guardians`
 -- AUTO_INCREMENT for table `lessons`
 --
 ALTER TABLE `lessons`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `lesson_assignments`
 --
 ALTER TABLE `lesson_assignments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `lesson_assignment_submissions`
@@ -1780,37 +1800,37 @@ ALTER TABLE `lesson_assignment_submissions`
 -- AUTO_INCREMENT for table `lesson_exams`
 --
 ALTER TABLE `lesson_exams`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `lesson_exam_answers`
 --
 ALTER TABLE `lesson_exam_answers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `lesson_exam_attempts`
 --
 ALTER TABLE `lesson_exam_attempts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `lesson_exam_choices`
 --
 ALTER TABLE `lesson_exam_choices`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `lesson_exam_questions`
 --
 ALTER TABLE `lesson_exam_questions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `lesson_videos`
 --
 ALTER TABLE `lesson_videos`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `login_sessions`
@@ -1882,7 +1902,7 @@ ALTER TABLE `student_course_requests`
 -- AUTO_INCREMENT for table `student_lesson_access`
 --
 ALTER TABLE `student_lesson_access`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `submission_files`
