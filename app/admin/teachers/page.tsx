@@ -3,8 +3,20 @@ import { query } from "@/lib/db"
 import { getCurrentUser } from "@/lib/session"
 import TeachersClient from "./teachers-client"
 
+export type Teacher = {
+  id: number
+  full_name: string
+  email: string
+  phone: string
+  status: "active" | "suspended" | "banned"
+  bio: string | null
+  address: string | null
+  platform_commission_pct: string
+  courses_count: number
+}
+
 async function getTeachers() {
-  return query<any>(
+  return query<Teacher>(
     `
     SELECT
       t.id,
@@ -49,4 +61,3 @@ export default async function AdminTeachersPage() {
 
   return <TeachersClient initialTeachers={teachers} />
 }
-

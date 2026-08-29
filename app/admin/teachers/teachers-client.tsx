@@ -2,18 +2,9 @@
 
 import Link from "next/link"
 import { useState } from "react"
-
-type Teacher = {
-  id: number
-  full_name: string
-  email: string
-  phone: string
-  status: "active" | "suspended" | "banned"
-  bio: string | null
-  address: string | null
-  platform_commission_pct: string
-  courses_count: number
-}
+import { SiteHeader } from "@/components/site/SiteHeader"
+import { SiteFooter } from "@/components/site/SiteFooter"
+import type { Teacher } from "./page"
 
 type FormState = {
   fullName: string
@@ -43,6 +34,10 @@ const statusLabel = {
   banned: "Banned",
 }
 
+function getInitials(name: string) {
+  return name.trim().slice(0, 1) || "T"
+}
+
 export default function TeachersClient({
   initialTeachers,
 }: {
@@ -54,6 +49,21 @@ export default function TeachersClient({
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState("")
   const [error, setError] = useState("")
+
+  const activeTeachers = teachers.filter((t) => t.status === "active").length
+  const totalCourses = teachers.reduce(
+    (sum, t) => sum + Number(t.courses_count || 0),
+    0
+  )
+  const avgCommission =
+    teachers.length > 0
+      ? (
+          teachers.reduce(
+            (sum, t) => sum + Number(t.platform_commission_pct || 0),
+            0
+          ) / teachers.length
+        ).toFixed(1)
+      : "0"
 
   async function reloadTeachers() {
     const res = await fetch("/api/admin/teachers", {
@@ -108,206 +118,197 @@ export default function TeachersClient({
   }
 
   return (
-    <main className="min-h-screen md:flex">
-      <aside className="sidebar p-5 md:min-h-screen md:w-72">
-        <Link href="/admin" className="text-2xl font-black">
-          Horizon
-        </Link>
+    <main>
+      <SiteHeader />
 
-        <p className="mt-1 text-sm opacity-70">Admin Dashboard</p>
+      <section className="admin-page-hero">
+        <div className="wrap">
+          <span className="eyebrow">Admin Dashboard</span>
+          <h1 className="h1">Manage Teachers</h1>
+          <p className="muted mt-5 max-w-2xl text-lg">
+            Create teacher accounts and review their status, platform percentage, and number of courses.
+          </p>
 
-        <nav className="mt-8 grid gap-2">
-          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin">
-            Home
-          </Link>
-          <Link
-            className="rounded-xl bg-white/10 px-3 py-3"
-            href="/admin/teachers"
-          >
-            Teachers
-          </Link>
-          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin/students">
-            Students
-          </Link>
-          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin/courses">
-            Courses
-          </Link>
-          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin/payments">
-            Payments
-          </Link>
-          <Link className="rounded-xl px-3 py-3 hover:bg-white/10" href="/admin/reports">
-            Reports
-          </Link>
-        </nav>
-      </aside>
-
-      <section className="flex-1 p-5 md:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <span className="badge">Admin Dashboard / Teachers</span>
-            <h1 className="mt-3 text-4xl font-black">Manage Teachers</h1>
-            <p className="mt-2 opacity-70">
-              Create teacher accounts and review their status, platform percentage, and number of courses.
-            </p>
-          </div>
-
-          <button
-            className="btn btn-primary"
-            type="button"
-            onClick={() => setShowForm((value) => !value)}
-          >
-            {showForm ? "Close Form" : "Add Teacher"}
-          </button>
-        </div>
-
-        {message ? (
-          <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-4 text-green-700">
-            {message}
-          </div>
-        ) : null}
-
-        {error ? (
-          <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
-            {error}
-          </div>
-        ) : null}
-
-        {showForm ? (
-          <form onSubmit={handleSubmit} className="card mt-8 p-6">
-            <h2 className="text-2xl font-black">Add New Teacher</h2>
-
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
-              <label>
-                Full Name
-                <input
-                  className="input mt-2"
-                  value={form.fullName}
-                  onChange={(e) =>
-                    setForm({ ...form, fullName: e.target.value })
-                  }
-                  required
-                />
-              </label>
-
-              <label>
-                Email Address
-                <input
-                  className="input mt-2"
-                  type="email"
-                  value={form.email}
-                  onChange={(e) =>
-                    setForm({ ...form, email: e.target.value })
-                  }
-                  required
-                />
-              </label>
-
-              <label>
-                Phone Number
-                <input
-                  className="input mt-2"
-                  value={form.phone}
-                  onChange={(e) =>
-                    setForm({ ...form, phone: e.target.value })
-                  }
-                  required
-                />
-              </label>
-
-              <label>
-                Password
-                <input
-                  className="input mt-2"
-                  type="password"
-                  value={form.password}
-                  onChange={(e) =>
-                    setForm({ ...form, password: e.target.value })
-                  }
-                  required
-                />
-              </label>
-
-              <label>
-                Address
-                <input
-                  className="input mt-2"
-                  value={form.address}
-                  onChange={(e) =>
-                    setForm({ ...form, address: e.target.value })
-                  }
-                />
-              </label>
-
-              <label>
-                Platform Percentage %
-                <input
-                  className="input mt-2"
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={form.commission}
-                  onChange={(e) =>
-                    setForm({ ...form, commission: e.target.value })
-                  }
-                  required
-                />
-              </label>
-
-              <label>
-                Account Status
-                <select
-                  className="input mt-2"
-                  value={form.status}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      status: e.target.value as FormState["status"],
-                    })
-                  }
-                >
-                  <option value="active">Active</option>
-                  <option value="suspended">Suspended</option>
-                  <option value="banned">Banned</option>
-                </select>
-              </label>
-
-              <label className="md:col-span-2">
-                Teacher Bio
-                <textarea
-                  className="input mt-2 min-h-28"
-                  value={form.bio}
-                  onChange={(e) =>
-                    setForm({ ...form, bio: e.target.value })
-                  }
-                />
-              </label>
-            </div>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Link href="/admin" className="btn btn-outline">
+              Back to Admin Dashboard
+            </Link>
 
             <button
-              className="btn btn-primary mt-6 disabled:opacity-60"
-              disabled={isLoading}
-              type="submit"
+              className="btn"
+              type="button"
+              onClick={() => setShowForm((value) => !value)}
             >
-              {isLoading ? "Saving..." : "Save Teacher"}
+              {showForm ? "Close Form" : "Add Teacher"}
             </button>
-          </form>
-        ) : null}
+          </div>
+        </div>
+      </section>
 
-        <div className="card mt-8 overflow-hidden p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-2xl font-black">Teachers List</h2>
+      <section className="section pt-6">
+        <div className="wrap">
+          <div className="admin-summary-grid">
+            <div className="card summary-card">
+              <b>{teachers.length}</b>
+              <span className="muted font-bold">Total Teachers</span>
+            </div>
+            <div className="card summary-card">
+              <b>{activeTeachers}</b>
+              <span className="muted font-bold">Active Teachers</span>
+            </div>
+            <div className="card summary-card">
+              <b>{totalCourses}</b>
+              <span className="muted font-bold">Total Courses</span>
+            </div>
+            <div className="card summary-card">
+              <b>{avgCommission}%</b>
+              <span className="muted font-bold">Avg. Platform Share</span>
+            </div>
+          </div>
+
+          {message ? <div className="alert-success mt-2 mb-6">{message}</div> : null}
+          {error ? <div className="alert-error mt-2 mb-6">{error}</div> : null}
+
+          {showForm ? (
+            <form onSubmit={handleSubmit} className="card p-6 md:p-8 mb-8">
+              <span className="eyebrow">New Account</span>
+              <h2 className="text-2xl font-black mt-2">Add New Teacher</h2>
+
+              <div className="mt-6 grid gap-4 md:grid-cols-2">
+                <label className="font-bold">
+                  Full Name
+                  <input
+                    className="input mt-2"
+                    value={form.fullName}
+                    onChange={(e) =>
+                      setForm({ ...form, fullName: e.target.value })
+                    }
+                    required
+                  />
+                </label>
+
+                <label className="font-bold">
+                  Email Address
+                  <input
+                    className="input mt-2"
+                    type="email"
+                    value={form.email}
+                    onChange={(e) =>
+                      setForm({ ...form, email: e.target.value })
+                    }
+                    required
+                  />
+                </label>
+
+                <label className="font-bold">
+                  Phone Number
+                  <input
+                    className="input mt-2"
+                    value={form.phone}
+                    onChange={(e) =>
+                      setForm({ ...form, phone: e.target.value })
+                    }
+                    required
+                  />
+                </label>
+
+                <label className="font-bold">
+                  Password
+                  <input
+                    className="input mt-2"
+                    type="password"
+                    value={form.password}
+                    onChange={(e) =>
+                      setForm({ ...form, password: e.target.value })
+                    }
+                    required
+                  />
+                </label>
+
+                <label className="font-bold">
+                  Address
+                  <input
+                    className="input mt-2"
+                    value={form.address}
+                    onChange={(e) =>
+                      setForm({ ...form, address: e.target.value })
+                    }
+                  />
+                </label>
+
+                <label className="font-bold">
+                  Platform Percentage %
+                  <input
+                    className="input mt-2"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={form.commission}
+                    onChange={(e) =>
+                      setForm({ ...form, commission: e.target.value })
+                    }
+                    required
+                  />
+                </label>
+
+                <label className="font-bold">
+                  Account Status
+                  <select
+                    className="input mt-2"
+                    value={form.status}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        status: e.target.value as FormState["status"],
+                      })
+                    }
+                  >
+                    <option value="active">Active</option>
+                    <option value="suspended">Suspended</option>
+                    <option value="banned">Banned</option>
+                  </select>
+                </label>
+
+                <label className="font-bold md:col-span-2">
+                  Teacher Bio
+                  <textarea
+                    className="input mt-2 min-h-28"
+                    value={form.bio}
+                    onChange={(e) =>
+                      setForm({ ...form, bio: e.target.value })
+                    }
+                  />
+                </label>
+              </div>
+
+              <button
+                className="btn mt-6 disabled:opacity-60"
+                disabled={isLoading}
+                type="submit"
+              >
+                {isLoading ? "Saving..." : "Save Teacher"}
+              </button>
+            </form>
+          ) : null}
+
+          <div className="toolbar">
+            <div>
+              <span className="eyebrow">Directory</span>
+              <h2 className="text-3xl font-black">Teachers List</h2>
+            </div>
+
             <span className="badge">{teachers.length} teachers</span>
           </div>
 
-          <div className="mt-5 overflow-auto">
-            <table className="table">
+          <div className="card admin-table-card">
+            <table className="admin-table">
               <thead>
                 <tr>
                   <th>Name</th>
                   <th>Email</th>
                   <th>Phone</th>
                   <th>Status</th>
-                  <th>Platform Percentage</th>
+                  <th>Platform %</th>
                   <th>Courses</th>
                 </tr>
               </thead>
@@ -316,10 +317,17 @@ export default function TeachersClient({
                 {teachers.map((teacher) => (
                   <tr key={teacher.id}>
                     <td>
-                      <b>{teacher.full_name}</b>
-                      <p className="mt-1 text-xs opacity-60">
-                        {teacher.address || "No address"}
-                      </p>
+                      <div className="table-user">
+                        <div className="table-avatar">
+                          {getInitials(teacher.full_name)}
+                        </div>
+                        <div>
+                          <b>{teacher.full_name}</b>
+                          <p className="muted mt-1 text-sm">
+                            {teacher.address || "No address"}
+                          </p>
+                        </div>
+                      </div>
                     </td>
                     <td>{teacher.email}</td>
                     <td>{teacher.phone}</td>
@@ -335,7 +343,7 @@ export default function TeachersClient({
 
                 {teachers.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center opacity-60">
+                    <td colSpan={6} className="text-center muted">
                       No teachers yet.
                     </td>
                   </tr>
@@ -345,6 +353,8 @@ export default function TeachersClient({
           </div>
         </div>
       </section>
+
+      <SiteFooter />
     </main>
   )
 }
