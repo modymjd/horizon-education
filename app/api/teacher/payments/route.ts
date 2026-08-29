@@ -1,0 +1,168 @@
+﻿import { NextResponse } from "next/server"
+import { z } from "zod"
+import { nanoid } from "nanoid"
+import { query, pool } from "@/lib/db"
+import { requireTeacher } from "@/lib/session"
+
+const paymentSchema = z.object({
+  student_id: z.number().int().positive(),
+  lesson_id: z.number().int().positive(),
+  amount_paid: z.number().positive(),
+  payment_method_id: z.number().int().positive(),
+  notes: z.string().optional(),
+})
+
+type LessonRow = {
+  price: number
+  teacher_id: number
+  platform_commission_pct: number
+}
+
+export async function POST(req: Request) {
+  try {
+    const { user, response } = await requireTeacher()
+
+    if (response || !user) {
+      return response
+    }
+
+    if (!user.teacher_id) {
+      return NextResponse.json(
+        { message: "Teacher account was not found." },
+        { status: 403 }
+      )
+    }
+
+    const body = paymentSchema.parse(await req.json())
+
+    // Ownership check: this lesson must belong to a course taught by
+    // the logged-in teacher. This is what keeps a teacher from ever
+    // recording a payment against someone else's course.
+    const lessonRows = await query<LessonRow>(
+      `
+      SELECT
+        l.price,
+        t.id AS teacher_id,
+        t.platform_commission_pct
+      FROM lessons l
+      JOIN chapters ch ON ch.id = l.chapter_id
+      JOIN courses c ON c.id = ch.course_id
+      JOIN teachers t ON t.id = c.teacher_id
+      WHERE l.id = ?
+        AND t.id = ?
+      LIMIT 1
+      `,
+      [body.lesson_id, user.teacher_id]
+    )
+
+    const lesson = lessonRows[0]
+
+    if (!lesson) {
+      return NextResponse.json(
+        { message: "This lesson does not belong to one of your courses." },
+        { status: 403 }
+      )
+    }
+
+    const commissionPct = Number(lesson.platform_commission_pct || 0)
+    const platformAmount = (Number(body.amount_paid) * commissionPct) / 100
+    const teacherAmount = Number(body.amount_paid) - platformAmount
+    const invoiceNumber = `INV-${new Date().getFullYear()}-${nanoid(8).toUpperCase()}`
+
+    const conn = await pool.getConnection()
+
+    try {
+      await conn.beginTransaction()
+
+      const [result] = await conn.execute(
+        `
+        INSERT INTO payments
+          (
+            invoice_number,
+            student_id,
+            lesson_id,
+            amount_paid,
+            lesson_price_at_payment,
+            platform_amount,
+            teacher_amount,
+            commission_pct,
+            payment_method_id,
+            transaction_ref,
+            paid_at,
+            notes,
+            created_by
+          )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)
+        `,
+        [
+          invoiceNumber,
+          body.student_id,
+          body.lesson_id,
+          body.amount_paid,
+          lesson.price,
+          platformAmount,
+          teacherAmount,
+          commissionPct,
+          body.payment_method_id,
+          null,
+          body.notes || null,
+          user.id,
+        ]
+      )
+
+      const paymentId = (result as any).insertId
+
+      await conn.execute(
+        `
+        UPDATE teachers
+        SET total_earnings = total_earnings + ?
+        WHERE id = ?
+        `,
+        [teacherAmount, lesson.teacher_id]
+      )
+
+      await conn.execute(
+        `
+        INSERT IGNORE INTO student_lesson_access
+          (student_id, lesson_id, payment_id)
+        VALUES (?, ?, ?)
+        `,
+        [body.student_id, body.lesson_id, paymentId]
+      )
+
+      await conn.execute(
+        `
+        INSERT INTO audit_logs
+          (user_id, action, entity_type, entity_id, new_values)
+        VALUES
+          (?, 'create_payment', 'payment', ?, JSON_OBJECT('invoice_number', ?, 'amount_paid', ?, 'recorded_by_teacher', true))
+        `,
+        [user.id, paymentId, invoiceNumber, body.amount_paid]
+      )
+
+      await conn.commit()
+
+      return NextResponse.json({
+        success: true,
+        message: "Payment recorded successfully.",
+        payment_id: paymentId,
+        invoice_number: invoiceNumber,
+        platform_amount: platformAmount,
+        teacher_amount: teacherAmount,
+      })
+    } catch (error) {
+      await conn.rollback()
+      throw error
+    } finally {
+      conn.release()
+    }
+  } catch (error) {
+    console.error("CREATE_TEACHER_PAYMENT_ERROR", error)
+
+    return NextResponse.json(
+      { message: "Unable to record the payment." },
+      { status: 500 }
+    )
+  }
+}
+

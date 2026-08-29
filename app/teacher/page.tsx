@@ -194,6 +194,10 @@ export default async function TeacherDashboard() {
               <Link href="/teacher/access-codes" className="btn btn-outline">
                 Create Access Codes
               </Link>
+            
+              <Link href="/teacher/payments" className="btn btn-outline">
+                Payments
+              </Link>
             </div>
           </div>
 
@@ -214,6 +218,12 @@ export default async function TeacherDashboard() {
               <span className="badge">Codes</span>
               <h3 className="mt-4 text-2xl font-black">Generate student codes</h3>
               <p className="muted mt-2">Create access codes for one lesson or multiple lessons.</p>
+            </Link>
+          
+            <Link href="/teacher/payments" className="teacher-action-card">
+              <span className="badge">Payments</span>
+              <h3 className="mt-4 text-2xl font-black">Record a payment</h3>
+              <p className="muted mt-2">Record payments for your own courses - counted as platform revenue.</p>
             </Link>
           </div>
         </section>
@@ -354,3 +364,4 @@ export default async function TeacherDashboard() {
     </main>
   )
 }
+
