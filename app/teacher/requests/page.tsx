@@ -79,9 +79,9 @@ async function getTeacherRequests(teacherId: number) {
 }
 
 function getStatusLabel(status: string) {
-  if (status === "pending") return "قيد المراجعة"
-  if (status === "accepted") return "مقبول"
-  if (status === "rejected") return "مرفوض"
+  if (status === "pending") return "Pending"
+  if (status === "accepted") return "Accepted"
+  if (status === "rejected") return "Rejected"
   return status
 }
 
@@ -107,19 +107,19 @@ export default async function TeacherRequestsPage() {
 
       <section className="teacher-page-hero">
         <div className="wrap">
-          <span className="eyebrow">لوحة المدرس</span>
-          <h1 className="h1">طلبات الانضمام</h1>
+          <span className="eyebrow">Teacher Dashboard </span>
+          <h1 className="h1">Join Requests</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            راجع طلبات الطلاب للانضمام إلى كورساتك، واقبل أو ارفض الطلبات. قبول الطلب لا يفتح الحصص بدون كود وصول.
+            Review students' requests to join your courses, and accept or reject them. Accepting a request does not open the sessions without an access code.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
             <Link href="/teacher" className="btn">
-              رجوع للوحة المدرس
+              Return to Teacher Dashboard
             </Link>
 
             <Link href="/teacher/access-codes" className="btn btn-outline">
-              إنشاء أكواد وصول
+              Create Access Codes
             </Link>
           </div>
         </div>
@@ -130,22 +130,22 @@ export default async function TeacherRequestsPage() {
           <div className="teacher-stat-grid mb-6">
             <div className="card teacher-stat-card">
               <b>{pendingCount}</b>
-              <span className="muted font-bold">طلبات قيد المراجعة</span>
+              <span className="muted font-bold">Pending Requests</span>
             </div>
 
             <div className="card teacher-stat-card">
               <b>{acceptedCount}</b>
-              <span className="muted font-bold">طلبات مقبولة</span>
+              <span className="muted font-bold">Accepted Requests</span>
             </div>
 
             <div className="card teacher-stat-card">
               <b>{rejectedCount}</b>
-              <span className="muted font-bold">طلبات مرفوضة</span>
+              <span className="muted font-bold">Rejected Requests</span>
             </div>
 
             <div className="card teacher-stat-card">
               <b>{requests.length}</b>
-              <span className="muted font-bold">إجمالي الطلبات</span>
+              <span className="muted font-bold">Total Requests</span>
             </div>
           </div>
 
@@ -159,11 +159,11 @@ export default async function TeacherRequestsPage() {
                     <div className="mt-4">
                       <h2 className="text-3xl font-black">{request.student_name}</h2>
                       <p className="muted mt-1">
-                        طلب الانضمام إلى: {request.course_title}
+                        Request to join: {request.course_title}
                       </p>
                       <p className="muted mt-2 text-sm">
-                        تاريخ الطلب: {request.requested_at}
-                        {request.reviewed_at ? ` — تمت المراجعة: ${request.reviewed_at}` : ""}
+                        Request Date: {request.requested_at}
+                        {request.reviewed_at ? ` — Reviewed: ${request.reviewed_at}` : ""}
                       </p>
                     </div>
                   </div>
@@ -177,32 +177,32 @@ export default async function TeacherRequestsPage() {
                 <div className="course-metrics">
                   <div className="metric-mini">
                     <b>{request.student_code || "—"}</b>
-                    <span className="muted">كود الطالب</span>
+                    <span className="muted">Student Code</span>
                   </div>
 
                   <div className="metric-mini">
                     <b>{request.student_phone || "—"}</b>
-                    <span className="muted">هاتف الطالب</span>
+                    <span className="muted">Student Phone</span>
                   </div>
 
                   <div className="metric-mini">
                     <b>{request.student_whatsapp_phone || "—"}</b>
-                    <span className="muted">واتساب الطالب</span>
+                    <span className="muted">Student WhatsApp  </span>
                   </div>
                 </div>
 
                 <div className="mt-5 grid gap-3 text-sm font-bold md:grid-cols-2">
-                  <p>البريد: {request.student_email}</p>
-                  <p>الرقم القومي: {request.national_id || "غير محدد"}</p>
-                  <p>المحافظة: {request.governorate || "غير محدد"}</p>
-                  <p>العنوان: {request.address || "غير محدد"}</p>
-                  <p>ولي الأمر: {request.guardian_name || "غير محدد"}</p>
-                  <p>رقم ولي الأمر: {request.guardian_phone || "غير محدد"}</p>
-                  <p>واتساب ولي الأمر: {request.guardian_whatsapp_phone || "غير محدد"}</p>
+                  <p>Email: {request.student_email}</p>
+                  <p>National ID: {request.national_id || "Not Specified"}</p>
+                  <p>Governorate: {request.governorate || "Not Specified"}</p>
+                  <p>Address: {request.address || "Not Specified"}</p>
+                  <p>Guardian Name: {request.guardian_name || "Not Specified"}</p>
+                  <p>Guardian Phone: {request.guardian_phone || "Not Specified"}</p>
+                  <p>Guardian WhatsApp: {request.guardian_whatsapp_phone || "Not Specified"}</p>
                   <p>
-                    التعليم: {request.education_type_name || "غير محدد"} —{" "}
-                    {request.stage_name || "غير محدد"} —{" "}
-                    {request.grade_name || "غير محدد"}
+                    Education: {request.education_type_name || "Not Specified"} —{" "}
+                    {request.stage_name || "Not Specified"} —{" "}
+                    {request.grade_name || "Not Specified"}
                   </p>
                 </div>
               </div>
@@ -210,9 +210,9 @@ export default async function TeacherRequestsPage() {
 
             {requests.length === 0 ? (
               <div className="card course-management-card">
-                <h2 className="text-2xl font-black">لا توجد طلبات بعد</h2>
+                <h2 className="text-2xl font-black">No requests yet</h2>
                 <p className="muted mt-2">
-                  عندما يطلب طالب الانضمام إلى أحد كورساتك، سيظهر الطلب هنا.
+                  When a student requests to join one of your courses, the request will appear here.
                 </p>
               </div>
             ) : null}

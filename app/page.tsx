@@ -32,11 +32,11 @@ export default function Home() {
         <div className="wrap hero-grid">
           <div>
             <span className="eyebrow">HORIZON EDUCATION</span>
-            <h1 className="h1">Learn every subject with clarity and confidence</h1>
+            <h2 className="h2">Learn every subject with clarity and confidence</h2>
             <p className="muted mt-6 max-w-2xl text-lg">
-              Horizon Education brings teachers, subjects, lessons, access codes,
-              assignments, exams, and certificates into one simple experience for
-              students, teachers, and administrators.
+              Horizon Education makes learning feel easier, 
+              more engaging, and more enjoyable — helping students 
+              learn with confidence and reach their full potential.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
