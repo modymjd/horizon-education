@@ -23,6 +23,7 @@ type StudentOption = {
   id: number
   full_name: string
   student_code: string | null
+  phone: string | null
 }
 
 type LessonOption = {
@@ -71,7 +72,8 @@ async function getStudents(teacherId: number) {
     SELECT DISTINCT
       s.id,
       u.full_name,
-      s.student_code
+      s.student_code,
+      u.phone
     FROM students s
     JOIN users u ON u.id = s.user_id
     JOIN student_course_requests scr ON scr.student_id = s.id AND scr.status = 'accepted'

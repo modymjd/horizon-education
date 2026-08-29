@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
+import { TeacherStudentsClient } from "./teacher-students-client"
 import { query } from "@/lib/db"
 import { getCurrentUser } from "@/lib/session"
 
@@ -45,7 +46,7 @@ async function getTeacherStudents(teacherId: number) {
       et.name AS education_type_name,
       es.name AS stage_name,
       g.name AS grade_name,
-      GROUP_CONCAT(DISTINCT c.title ORDER BY c.title SEPARATOR '، ') AS accepted_courses,
+      GROUP_CONCAT(DISTINCT c.title ORDER BY c.title SEPARATOR ', ') AS accepted_courses,
       COUNT(DISTINCT c.id) AS accepted_courses_count,
       COUNT(DISTINCT sla.lesson_id) AS unlocked_lessons_count
     FROM student_course_requests r
@@ -106,23 +107,23 @@ export default async function TeacherStudentsPage() {
 
       <section className="teacher-page-hero">
         <div className="wrap">
-          <span className="eyebrow">لوحة المدرس</span>
-          <h1 className="h1">طلابي</h1>
+          <span className="eyebrow">Teacher Dashboard</span>
+          <h1 className="h1">My Students</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            الطلاب الذين تم قبول طلباتهم في كورساتك، مع بيانات التواصل وولي الأمر.
+            Students accepted into your courses, with their contact details and guardian information.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
             <Link href="/teacher" className="btn">
-              رجوع للوحة المدرس
+              Back to Teacher Dashboard
             </Link>
 
             <Link href="/teacher/requests" className="btn btn-outline">
-              طلبات الانضمام
+              Join Requests
             </Link>
 
             <Link href="/teacher/access-codes" className="btn btn-outline">
-              إنشاء أكواد وصول
+              Create Access Codes
             </Link>
           </div>
         </div>
@@ -133,7 +134,7 @@ export default async function TeacherStudentsPage() {
           <div className="teacher-stat-grid mb-6">
             <div className="card teacher-stat-card">
               <b>{students.length}</b>
-              <span className="muted font-bold">طلاب مقبولون</span>
+              <span className="muted font-bold">Accepted Students</span>
             </div>
 
             <div className="card teacher-stat-card">
@@ -143,7 +144,7 @@ export default async function TeacherStudentsPage() {
                   0
                 )}
               </b>
-              <span className="muted font-bold">اشتراكات كورسات</span>
+              <span className="muted font-bold">Course Enrollments</span>
             </div>
 
             <div className="card teacher-stat-card">
@@ -153,85 +154,11 @@ export default async function TeacherStudentsPage() {
                   0
                 )}
               </b>
-              <span className="muted font-bold">حصص مفعّلة</span>
+              <span className="muted font-bold">Unlocked Lessons</span>
             </div>
           </div>
 
-          <div className="grid gap-5">
-            {students.map((student) => (
-              <div className="card course-management-card" key={student.student_id}>
-                <div className="course-management-head">
-                  <div>
-                    <span className="badge">{student.student_code || "بدون كود"}</span>
-
-                    <div className="mt-4">
-                      <h2 className="text-3xl font-black">{student.student_name}</h2>
-                      <p className="muted mt-1">
-                        {student.accepted_courses || "لا توجد كورسات مقبولة"}
-                      </p>
-                      <p className="muted mt-2 text-sm">
-                        التعليم: {student.education_type_name || "غير محدد"} —{" "}
-                        {student.stage_name || "غير محدد"} —{" "}
-                        {student.grade_name || "غير محدد"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="course-actions">
-                    <Link href="/teacher/access-codes" className="btn btn-outline">
-                      إنشاء كود
-                    </Link>
-                  </div>
-                </div>
-
-                <div className="course-metrics">
-                  <div className="metric-mini">
-                    <b>{student.student_phone || "—"}</b>
-                    <span className="muted">هاتف الطالب</span>
-                  </div>
-
-                  <div className="metric-mini">
-                    <b>{student.student_whatsapp_phone || "—"}</b>
-                    <span className="muted">واتساب الطالب</span>
-                  </div>
-
-                  <div className="metric-mini">
-                    <b>{student.guardian_phone || "—"}</b>
-                    <span className="muted">هاتف ولي الأمر</span>
-                  </div>
-
-                  <div className="metric-mini">
-                    <b>{student.guardian_whatsapp_phone || "—"}</b>
-                    <span className="muted">واتساب ولي الأمر</span>
-                  </div>
-                </div>
-
-                <div className="mt-5 grid gap-3 text-sm font-bold md:grid-cols-2">
-                  <p>البريد: {student.student_email}</p>
-                  <p>الرقم القومي: {student.national_id || "غير محدد"}</p>
-                  <p>المحافظة: {student.governorate || "غير محدد"}</p>
-                  <p>العنوان: {student.address || "غير محدد"}</p>
-                  <p>ولي الأمر: {student.guardian_name || "غير محدد"}</p>
-                  <p>حصص مفعّلة: {student.unlocked_lessons_count}</p>
-                </div>
-              </div>
-            ))}
-
-            {students.length === 0 ? (
-              <div className="card course-management-card">
-                <h2 className="text-2xl font-black">لا يوجد طلاب مقبولون بعد</h2>
-                <p className="muted mt-2">
-                  عندما تقبل طلب انضمام طالب إلى أحد كورساتك، سيظهر هنا.
-                </p>
-
-                <div className="mt-6">
-                  <Link href="/teacher/requests" className="btn">
-                    مراجعة طلبات الانضمام
-                  </Link>
-                </div>
-              </div>
-            ) : null}
-          </div>
+          <TeacherStudentsClient students={students} />
         </div>
       </section>
 
@@ -239,3 +166,4 @@ export default async function TeacherStudentsPage() {
     </main>
   )
 }
+

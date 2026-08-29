@@ -1,12 +1,13 @@
 ﻿"use client"
 
-import { useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 
 type StudentOption = {
   id: number
   full_name: string
   student_code: string | null
+  phone: string | null
 }
 
 type LessonOption = {
@@ -37,8 +38,11 @@ export function TeacherPaymentCreateForm({
   paymentMethods,
 }: Props) {
   const router = useRouter()
+  const searchBoxRef = useRef<HTMLDivElement>(null)
 
   const [studentId, setStudentId] = useState("")
+  const [studentQuery, setStudentQuery] = useState("")
+  const [isStudentListOpen, setIsStudentListOpen] = useState(false)
   const [lessonId, setLessonId] = useState("")
   const [amountPaid, setAmountPaid] = useState("")
   const [paymentMethodId, setPaymentMethodId] = useState("")
@@ -46,6 +50,36 @@ export function TeacherPaymentCreateForm({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+
+  const selectedStudent = students.find((item) => String(item.id) === studentId)
+
+  const filteredStudents = useMemo(() => {
+    const q = studentQuery.trim().toLowerCase()
+
+    if (!q) {
+      return students.slice(0, 8)
+    }
+
+    return students
+      .filter((student) => {
+        const name = (student.full_name || "").toLowerCase()
+        const phone = (student.phone || "").toLowerCase()
+        const code = (student.student_code || "").toLowerCase()
+        return name.includes(q) || phone.includes(q) || code.includes(q)
+      })
+      .slice(0, 8)
+  }, [students, studentQuery])
+
+  function handleSelectStudent(student: StudentOption) {
+    setStudentId(String(student.id))
+    setStudentQuery("")
+    setIsStudentListOpen(false)
+  }
+
+  function handleClearStudent() {
+    setStudentId("")
+    setStudentQuery("")
+  }
 
   function handleLessonChange(value: string) {
     setLessonId(value)
@@ -61,6 +95,12 @@ export function TeacherPaymentCreateForm({
 
     setError("")
     setSuccess("")
+
+    if (!studentId) {
+      setError("Search for and select a student")
+      return
+    }
+
     setIsLoading(true)
 
     try {
@@ -86,7 +126,7 @@ export function TeacherPaymentCreateForm({
       }
 
       setSuccess(`Payment recorded successfully. Invoice number: ${data.invoice_number}`)
-      setStudentId("")
+      handleClearStudent()
       setLessonId("")
       setAmountPaid("")
       setPaymentMethodId("")
@@ -111,29 +151,74 @@ export function TeacherPaymentCreateForm({
       {success ? <div className="alert-success mt-5">{success}</div> : null}
 
       <div className="form-grid mt-6">
-        <label className="font-bold">
+        <div className="font-bold" ref={searchBoxRef}>
           Student
-          <select
-            className="input mt-2"
-            value={studentId}
-            onChange={(e) => setStudentId(e.target.value)}
-            required
-          >
-            <option value="">Select student</option>
-            {students.map((student) => (
-              <option value={student.id} key={student.id}>
-                {student.full_name}
-                {student.student_code ? ` â€” ${student.student_code}` : ""}
-              </option>
-            ))}
-          </select>
+
+          {selectedStudent ? (
+            <div className="student-picker-selected mt-2">
+              <div>
+                <b>{selectedStudent.full_name}</b>
+                <p className="muted text-sm">
+                  {selectedStudent.phone || "No phone on file"}
+                  {selectedStudent.student_code ? ` â€” ${selectedStudent.student_code}` : ""}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={handleClearStudent}
+              >
+                Change
+              </button>
+            </div>
+          ) : (
+            <div className="student-picker">
+              <input
+                className="input mt-2"
+                value={studentQuery}
+                onChange={(e) => {
+                  setStudentQuery(e.target.value)
+                  setIsStudentListOpen(true)
+                }}
+                onFocus={() => setIsStudentListOpen(true)}
+                onBlur={() => {
+                  setTimeout(() => setIsStudentListOpen(false), 150)
+                }}
+                placeholder="Search by student name or phone number..."
+              />
+
+              {isStudentListOpen ? (
+                <div className="student-picker-list">
+                  {filteredStudents.map((student) => (
+                    <button
+                      type="button"
+                      key={student.id}
+                      className="student-picker-item"
+                      onMouseDown={() => handleSelectStudent(student)}
+                    >
+                      <b>{student.full_name}</b>
+                      <span className="muted text-sm">
+                        {student.phone || "No phone on file"}
+                        {student.student_code ? ` â€” ${student.student_code}` : ""}
+                      </span>
+                    </button>
+                  ))}
+
+                  {filteredStudents.length === 0 ? (
+                    <p className="muted p-3 text-sm">No matching students.</p>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          )}
 
           {students.length === 0 ? (
             <span className="muted mt-2 block text-sm">
               No accepted students yet. Accept a join request first from "Join Requests".
             </span>
           ) : null}
-        </label>
+        </div>
 
         <label className="font-bold">
           Lesson
