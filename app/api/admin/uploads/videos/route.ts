@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       )
     }
 
-    const maxSizeMb = 50
+    const maxSizeMb = 2048
     const maxSizeBytes = maxSizeMb * 1024 * 1024
 
     if (file.size > maxSizeBytes) {
@@ -71,3 +71,4 @@ export async function POST(req: Request) {
     )
   }
 }
+
