@@ -10,7 +10,6 @@ type EducationTypeRow = {
 type StageRow = {
   id: number
   name: string
-  education_type_id: number | null
   sort_order: number | null
 }
 
@@ -33,9 +32,9 @@ export async function GET() {
       ),
       query<StageRow>(
         `
-        SELECT id, name, education_type_id, sort_order
+        SELECT id, name, sort_order
         FROM educational_stages
-        ORDER BY education_type_id ASC, sort_order ASC, id ASC
+        ORDER BY sort_order ASC, id ASC
         `
       ),
       query<GradeRow>(
@@ -61,3 +60,4 @@ export async function GET() {
     )
   }
 }
+

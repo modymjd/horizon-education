@@ -11,6 +11,7 @@ type CourseRow = {
   slug: string
   title: string
   short_description: string | null
+  cover_image_url: string | null
   status: string
   teacher_name: string
   education_type_name: string | null
@@ -54,9 +55,15 @@ async function getAvailableCourses(studentId: number) {
       c.slug,
       c.title,
       c.short_description,
+      c.cover_image_url,
       c.status,
       u.full_name AS teacher_name,
-      et.name AS education_type_name,
+      (
+        SELECT GROUP_CONCAT(et2.name ORDER BY et2.id SEPARATOR ', ')
+        FROM course_education_types cet2
+        JOIN education_types et2 ON et2.id = cet2.education_type_id
+        WHERE cet2.course_id = c.id
+      ) AS education_type_name,
       COUNT(DISTINCT l.id) AS lessons_count,
       r.status AS request_status
     FROM students s
@@ -64,13 +71,28 @@ async function getAvailableCourses(studentId: number) {
       ON c.deleted_at IS NULL
       AND c.status = 'published'
       AND (
-        c.education_type_id IS NULL
+        NOT EXISTS (
+          SELECT 1 FROM course_education_types cet WHERE cet.course_id = c.id
+        )
         OR s.education_type_id IS NULL
-        OR c.education_type_id = s.education_type_id
+        OR EXISTS (
+          SELECT 1 FROM course_education_types cet
+          WHERE cet.course_id = c.id
+            AND cet.education_type_id = s.education_type_id
+        )
+      )
+      AND (
+        c.stage_id IS NULL
+        OR s.stage_id IS NULL
+        OR c.stage_id = s.stage_id
+      )
+      AND (
+        c.grade_id IS NULL
+        OR s.grade_id IS NULL
+        OR c.grade_id = s.grade_id
       )
     JOIN teachers t ON t.id = c.teacher_id
     JOIN users u ON u.id = t.user_id
-    LEFT JOIN education_types et ON et.id = c.education_type_id
     LEFT JOIN chapters ch ON ch.course_id = c.id AND ch.deleted_at IS NULL
     LEFT JOIN lessons l ON l.chapter_id = ch.id AND l.deleted_at IS NULL
     LEFT JOIN student_course_requests r
@@ -82,9 +104,9 @@ async function getAvailableCourses(studentId: number) {
       c.slug,
       c.title,
       c.short_description,
+      c.cover_image_url,
       c.status,
       u.full_name,
-      et.name,
       r.status
     ORDER BY c.id DESC
     `,
@@ -144,9 +166,9 @@ export default async function StudentCoursesPage() {
           <div className="card p-6 md:p-8 mb-6">
             <span className="eyebrow">Your Education Profile</span>
             <div className="mt-4 grid gap-3 text-sm font-bold md:grid-cols-3">
-              <p>✓ Education type: {profile?.education_type_name || "Not specified"}</p>
-              <p>✓ Stage: {profile?.stage_name || "Not specified"}</p>
-              <p>✓ Grade: {profile?.grade_name || "Not specified"}</p>
+              <p>âœ“ Education type: {profile?.education_type_name || "Not specified"}</p>
+              <p>âœ“ Stage: {profile?.stage_name || "Not specified"}</p>
+              <p>âœ“ Grade: {profile?.grade_name || "Not specified"}</p>
             </div>
           </div>
 
@@ -154,6 +176,14 @@ export default async function StudentCoursesPage() {
             {courses.map((course) => (
               <div className="card course-management-card" key={course.id}>
                 <div className="course-management-head">
+                  {course.cover_image_url ? (
+                    <img
+                      src={course.cover_image_url}
+                      alt={course.title}
+                      className="course-thumb"
+                    />
+                  ) : null}
+
                   <div>
                     <span className="badge">
                       {getRequestLabel(course.request_status)}
@@ -165,7 +195,7 @@ export default async function StudentCoursesPage() {
                         {course.short_description || "No short description yet."}
                       </p>
                       <p className="muted mt-2 text-sm">
-                        Teacher: {course.teacher_name} — Education type: {course.education_type_name || "General"} — Lessons: {course.lessons_count}
+                        Teacher: {course.teacher_name} â€” Education type: {course.education_type_name || "General"} â€” Lessons: {course.lessons_count}
                       </p>
                     </div>
                   </div>
@@ -200,3 +230,4 @@ export default async function StudentCoursesPage() {
     </main>
   )
 }
+

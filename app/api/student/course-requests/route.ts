@@ -42,9 +42,15 @@ export async function POST(req: Request) {
         AND c.status = 'published'
         AND c.deleted_at IS NULL
         AND (
-          c.education_type_id IS NULL
+          NOT EXISTS (
+            SELECT 1 FROM course_education_types cet WHERE cet.course_id = c.id
+          )
           OR s.education_type_id IS NULL
-          OR c.education_type_id = s.education_type_id
+          OR EXISTS (
+            SELECT 1 FROM course_education_types cet
+            WHERE cet.course_id = c.id
+              AND cet.education_type_id = s.education_type_id
+          )
         )
       LIMIT 1
       `,
@@ -124,3 +130,4 @@ export async function POST(req: Request) {
     )
   }
 }
+

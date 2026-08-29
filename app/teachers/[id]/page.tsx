@@ -19,6 +19,7 @@ type CourseRow = {
   slug: string
   title: string
   short_description: string | null
+  cover_image_url: string | null
   education_type_name: string | null
   stage_name: string | null
   grade_name: string | null
@@ -80,12 +81,17 @@ async function getTeacherCourses(teacherId: number) {
       c.slug,
       c.title,
       c.short_description,
-      et.name AS education_type_name,
+      c.cover_image_url,
+      (
+        SELECT GROUP_CONCAT(et2.name ORDER BY et2.id SEPARATOR ', ')
+        FROM course_education_types cet2
+        JOIN education_types et2 ON et2.id = cet2.education_type_id
+        WHERE cet2.course_id = c.id
+      ) AS education_type_name,
       es.name AS stage_name,
       g.name AS grade_name,
       COUNT(DISTINCT l.id) AS lessons_count
     FROM courses c
-    LEFT JOIN education_types et ON et.id = c.education_type_id
     LEFT JOIN educational_stages es ON es.id = c.stage_id
     LEFT JOIN grades g ON g.id = c.grade_id
     LEFT JOIN chapters ch
@@ -102,7 +108,7 @@ async function getTeacherCourses(teacherId: number) {
       c.slug,
       c.title,
       c.short_description,
-      et.name,
+      c.cover_image_url,
       es.name,
       g.name
     ORDER BY c.id DESC
@@ -188,7 +194,15 @@ export default async function TeacherProfilePage({ params }: Params) {
                 className="card subject-card"
                 key={course.id}
               >
-                <div className="icon-circle">{course.title.slice(0, 1)}</div>
+                {course.cover_image_url ? (
+                  <img
+                    src={course.cover_image_url}
+                    alt={course.title}
+                    className="course-cover-image"
+                  />
+                ) : (
+                  <div className="icon-circle">{course.title.slice(0, 1)}</div>
+                )}
 
                 <h3 className="mt-5 text-2xl font-black">{course.title}</h3>
 
@@ -223,3 +237,5 @@ export default async function TeacherProfilePage({ params }: Params) {
     </main>
   )
 }
+
+

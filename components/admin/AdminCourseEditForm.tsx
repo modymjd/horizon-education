@@ -1,7 +1,8 @@
 ﻿"use client"
 
-import { useMemo, useState } from "react"
+import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
+import { EducationClassificationFields } from "./EducationClassificationFields"
 
 type CourseData = {
   id: number
@@ -11,7 +12,6 @@ type CourseData = {
   cover_image_url: string | null
   status: string
   teacher_id: number
-  education_type_id: number | null
   stage_id: number | null
   grade_id: number | null
   access_duration_days: number | null
@@ -30,7 +30,6 @@ type EducationTypeOption = {
 type StageOption = {
   id: number
   name: string
-  education_type_id: number | null
 }
 
 type GradeOption = {
@@ -45,6 +44,7 @@ type Props = {
   educationTypes: EducationTypeOption[]
   stages: StageOption[]
   grades: GradeOption[]
+  initialEducationTypeIds: number[]
 }
 
 export function AdminCourseEditForm({
@@ -53,13 +53,15 @@ export function AdminCourseEditForm({
   educationTypes,
   stages,
   grades,
+  initialEducationTypeIds,
 }: Props) {
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [title, setTitle] = useState(course.title || "")
   const [teacherId, setTeacherId] = useState(String(course.teacher_id || ""))
-  const [educationTypeId, setEducationTypeId] = useState(
-    course.education_type_id ? String(course.education_type_id) : ""
+  const [educationTypeIds, setEducationTypeIds] = useState<number[]>(
+    initialEducationTypeIds || []
   )
   const [stageId, setStageId] = useState(course.stage_id ? String(course.stage_id) : "")
   const [gradeId, setGradeId] = useState(course.grade_id ? String(course.grade_id) : "")
@@ -67,7 +69,10 @@ export function AdminCourseEditForm({
   const [accessDurationDays, setAccessDurationDays] = useState(
     String(course.access_duration_days || 30)
   )
-  const [coverImageUrl, setCoverImageUrl] = useState(course.cover_image_url || "")
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null)
+  const [coverImagePreview, setCoverImagePreview] = useState(
+    course.cover_image_url || ""
+  )
   const [shortDescription, setShortDescription] = useState(
     course.short_description || ""
   )
@@ -76,43 +81,10 @@ export function AdminCourseEditForm({
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
 
-  const filteredStages = useMemo(() => {
-    if (!educationTypeId) return stages
-
-    const matching = stages.filter((stage) => {
-      return !stage.education_type_id || String(stage.education_type_id) === educationTypeId
-    })
-
-    return matching.length > 0 ? matching : stages
-  }, [educationTypeId, stages])
-
-  const filteredGrades = useMemo(() => {
-    if (!stageId) return grades
-
-    const matching = grades.filter((grade) => String(grade.stage_id) === stageId)
-
-    return matching.length > 0 ? matching : grades
-  }, [stageId, grades])
-
-  function handleEducationTypeChange(value: string) {
-    const nextStages = stages.filter((stage) => {
-      return !stage.education_type_id || String(stage.education_type_id) === value
-    })
-    const nextStage = nextStages[0]
-    const nextGrades = nextStage
-      ? grades.filter((grade) => grade.stage_id === nextStage.id)
-      : grades
-
-    setEducationTypeId(value)
-    setStageId(nextStage ? String(nextStage.id) : "")
-    setGradeId(nextGrades[0] ? String(nextGrades[0].id) : "")
-  }
-
-  function handleStageChange(value: string) {
-    const nextGrades = grades.filter((grade) => String(grade.stage_id) === value)
-
-    setStageId(value)
-    setGradeId(nextGrades[0] ? String(nextGrades[0].id) : "")
+  function handleCoverImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] || null
+    setCoverImageFile(file)
+    setCoverImagePreview(file ? URL.createObjectURL(file) : course.cover_image_url || "")
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -134,23 +106,25 @@ export function AdminCourseEditForm({
     setIsLoading(true)
 
     try {
+      const formData = new FormData()
+      formData.append("title", title)
+      formData.append("shortDescription", shortDescription)
+      formData.append("description", description)
+      formData.append("teacherId", teacherId)
+      formData.append("educationTypeIds", JSON.stringify(educationTypeIds))
+      if (stageId) formData.append("stageId", stageId)
+      if (gradeId) formData.append("gradeId", gradeId)
+      formData.append("status", status)
+      formData.append("accessDurationDays", accessDurationDays || "30")
+      formData.append("existingCoverImageUrl", course.cover_image_url || "")
+
+      if (coverImageFile) {
+        formData.append("coverImage", coverImageFile)
+      }
+
       const res = await fetch(`/api/admin/courses/${course.id}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title,
-          shortDescription,
-          description,
-          coverImageUrl,
-          teacherId: Number(teacherId),
-          educationTypeId: educationTypeId ? Number(educationTypeId) : undefined,
-          stageId: stageId ? Number(stageId) : undefined,
-          gradeId: gradeId ? Number(gradeId) : undefined,
-          status,
-          accessDurationDays: Number(accessDurationDays || 30),
-        }),
+        body: formData,
       })
 
       const data = await res.json()
@@ -174,7 +148,7 @@ export function AdminCourseEditForm({
       <span className="eyebrow">Edit Course</span>
       <h2 className="text-3xl font-black">Course Details</h2>
       <p className="muted mt-3">
-        Update course details and make sure the education type, stage, and grade match the target students.
+        Update course details and make sure the education type(s), stage, and grade match the target students.
       </p>
 
       {error ? <div className="alert-error mt-5">{error}</div> : null}
@@ -209,54 +183,6 @@ export function AdminCourseEditForm({
         </label>
 
         <label className="font-bold">
-          Education Type
-          <select
-            className="input mt-2"
-            value={educationTypeId}
-            onChange={(e) => handleEducationTypeChange(e.target.value)}
-          >
-            <option value="">All education types</option>
-            {educationTypes.map((item) => (
-              <option value={item.id} key={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="font-bold">
-          Stage
-          <select
-            className="input mt-2"
-            value={stageId}
-            onChange={(e) => handleStageChange(e.target.value)}
-          >
-            <option value="">All stages</option>
-            {filteredStages.map((stage) => (
-              <option value={stage.id} key={stage.id}>
-                {stage.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="font-bold">
-          Grade
-          <select
-            className="input mt-2"
-            value={gradeId}
-            onChange={(e) => setGradeId(e.target.value)}
-          >
-            <option value="">All grades</option>
-            {filteredGrades.map((grade) => (
-              <option value={grade.id} key={grade.id}>
-                {grade.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="font-bold">
           Status
           <select
             className="input mt-2"
@@ -281,16 +207,37 @@ export function AdminCourseEditForm({
           />
         </label>
 
-        <label className="font-bold">
-          Cover Image URL
+        <div className="font-bold md:col-span-2">
+          Cover Image
           <input
+            ref={fileInputRef}
             className="input mt-2"
-            value={coverImageUrl}
-            onChange={(e) => setCoverImageUrl(e.target.value)}
-            placeholder="Optional"
+            type="file"
+            accept="image/*"
+            onChange={handleCoverImageChange}
           />
-        </label>
+
+          {coverImagePreview ? (
+            <img
+              src={coverImagePreview}
+              alt="Cover preview"
+              className="mt-3 max-h-48 rounded-2xl border border-[var(--line)] object-cover"
+            />
+          ) : null}
+        </div>
       </div>
+
+      <EducationClassificationFields
+        educationTypes={educationTypes}
+        stages={stages}
+        grades={grades}
+        selectedTypeIds={educationTypeIds}
+        onTypeIdsChange={setEducationTypeIds}
+        stageId={stageId}
+        onStageIdChange={setStageId}
+        gradeId={gradeId}
+        onGradeIdChange={setGradeId}
+      />
 
       <label className="mt-4 block font-bold">
         Short Description
@@ -316,3 +263,4 @@ export function AdminCourseEditForm({
     </form>
   )
 }
+

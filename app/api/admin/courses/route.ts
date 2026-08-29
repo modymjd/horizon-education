@@ -1,4 +1,6 @@
 ﻿import { NextResponse } from "next/server"
+import { writeFile, mkdir } from "fs/promises"
+import path from "path"
 import { query, pool } from "@/lib/db"
 import { courseSchema } from "@/lib/validators"
 import { requireAdmin } from "@/lib/session"
@@ -13,6 +15,33 @@ function makeSlug(title: string) {
     "-" +
     Date.now()
   )
+}
+
+async function saveCoverImage(file: File) {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("The cover image must be an image file.")
+  }
+
+  const maxSizeMb = 10
+  const maxSizeBytes = maxSizeMb * 1024 * 1024
+
+  if (file.size > maxSizeBytes) {
+    throw new Error(`Cover image size must not exceed ${maxSizeMb}MB.`)
+  }
+
+  const bytes = await file.arrayBuffer()
+  const buffer = Buffer.from(bytes)
+
+  const ext = path.extname(file.name) || ".jpg"
+  const safeName = `course-${Date.now()}${ext}`
+
+  const uploadDir = path.join(process.cwd(), "public", "uploads", "courses")
+  await mkdir(uploadDir, { recursive: true })
+
+  const filePath = path.join(uploadDir, safeName)
+  await writeFile(filePath, buffer)
+
+  return `/uploads/courses/${safeName}`
 }
 
 export async function GET() {
@@ -41,8 +70,12 @@ export async function GET() {
         c.created_at,
         t.id AS teacher_id,
         u.full_name AS teacher_name,
-        et.id AS education_type_id,
-        et.name AS education_type_name,
+        (
+          SELECT GROUP_CONCAT(et2.name ORDER BY et2.id SEPARATOR ', ')
+          FROM course_education_types cet2
+          JOIN education_types et2 ON et2.id = cet2.education_type_id
+          WHERE cet2.course_id = c.id
+        ) AS education_type_name,
         es.name AS stage_name,
         g.name AS grade_name,
         COUNT(DISTINCT ch.id) AS chapters_count,
@@ -50,7 +83,6 @@ export async function GET() {
       FROM courses c
       JOIN teachers t ON t.id = c.teacher_id
       JOIN users u ON u.id = t.user_id
-      LEFT JOIN education_types et ON et.id = c.education_type_id
       LEFT JOIN educational_stages es ON es.id = c.stage_id
       LEFT JOIN grades g ON g.id = c.grade_id
       LEFT JOIN chapters ch ON ch.course_id = c.id AND ch.deleted_at IS NULL
@@ -72,8 +104,6 @@ export async function GET() {
         c.created_at,
         t.id,
         u.full_name,
-        et.id,
-        et.name,
         es.name,
         g.name
       ORDER BY c.id DESC
@@ -103,7 +133,7 @@ export async function GET() {
 
     const stages = await query<any>(
       `
-      SELECT id, name, education_type_id
+      SELECT id, name
       FROM educational_stages
       ORDER BY sort_order ASC, id ASC
       `
@@ -141,8 +171,44 @@ export async function POST(req: Request) {
     return response
   }
 
-  const body = courseSchema.parse(await req.json())
+  const formData = await req.formData()
+
+  let educationTypeIdsRaw: number[] = []
+  try {
+    educationTypeIdsRaw = JSON.parse(String(formData.get("educationTypeIds") || "[]"))
+  } catch {
+    educationTypeIdsRaw = []
+  }
+
+  const body = courseSchema.parse({
+    title: formData.get("title"),
+    shortDescription: formData.get("shortDescription") || undefined,
+    description: formData.get("description") || undefined,
+    teacherId: formData.get("teacherId"),
+    educationTypeIds: educationTypeIdsRaw,
+    stageId: formData.get("stageId") || undefined,
+    gradeId: formData.get("gradeId") || undefined,
+    status: formData.get("status"),
+    accessDurationDays: formData.get("accessDurationDays") || undefined,
+  })
+
   const slug = makeSlug(body.title)
+  const educationTypeIds = Array.from(new Set(body.educationTypeIds || []))
+
+  let coverImageUrl: string | null = null
+  const coverImageField = formData.get("coverImage")
+
+  if (coverImageField instanceof File && coverImageField.size > 0) {
+    try {
+      coverImageUrl = await saveCoverImage(coverImageField)
+    } catch (uploadError: any) {
+      return NextResponse.json(
+        { message: uploadError.message || "Unable to upload the cover image." },
+        { status: 400 }
+      )
+    }
+  }
+
   const conn = await pool.getConnection()
 
   try {
@@ -175,9 +241,9 @@ export async function POST(req: Request) {
         body.title,
         body.shortDescription || null,
         body.description || null,
-        body.coverImageUrl || null,
+        coverImageUrl,
         body.teacherId,
-        body.educationTypeId || null,
+        educationTypeIds[0] || null,
         body.stageId || null,
         body.gradeId || null,
         body.status,
@@ -189,6 +255,16 @@ export async function POST(req: Request) {
     )
 
     const courseId = result.insertId
+
+    if (educationTypeIds.length > 0) {
+      const values = educationTypeIds.map(() => "(?, ?)").join(", ")
+      const params = educationTypeIds.flatMap((typeId) => [courseId, typeId])
+
+      await conn.execute(
+        `INSERT INTO course_education_types (course_id, education_type_id) VALUES ${values}`,
+        params
+      )
+    }
 
     await conn.execute(
       `
@@ -213,7 +289,7 @@ export async function POST(req: Request) {
           JSON_OBJECT(
             'title', ?,
             'teacher_id', ?,
-            'education_type_id', ?,
+            'education_type_ids', ?,
             'stage_id', ?,
             'grade_id', ?
           )
@@ -224,7 +300,7 @@ export async function POST(req: Request) {
         courseId,
         body.title,
         body.teacherId,
-        body.educationTypeId || null,
+        JSON.stringify(educationTypeIds),
         body.stageId || null,
         body.gradeId || null,
       ]
@@ -250,3 +326,4 @@ export async function POST(req: Request) {
     conn.release()
   }
 }
+

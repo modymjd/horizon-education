@@ -72,7 +72,12 @@ async function getCourse(slug: string, studentId?: number) {
       c.teacher_id,
       u.full_name AS teacher_name,
       t.bio AS teacher_bio,
-      et.name AS education_type_name,
+      (
+        SELECT GROUP_CONCAT(et2.name ORDER BY et2.id SEPARATOR ', ')
+        FROM course_education_types cet2
+        JOIN education_types et2 ON et2.id = cet2.education_type_id
+        WHERE cet2.course_id = c.id
+      ) AS education_type_name,
       es.name AS stage_name,
       g.name AS grade_name,
       COUNT(DISTINCT ch.id) AS chapters_count,
@@ -82,7 +87,6 @@ async function getCourse(slug: string, studentId?: number) {
     FROM courses c
     JOIN teachers t ON t.id = c.teacher_id
     JOIN users u ON u.id = t.user_id
-    LEFT JOIN education_types et ON et.id = c.education_type_id
     LEFT JOIN educational_stages es ON es.id = c.stage_id
     LEFT JOIN grades g ON g.id = c.grade_id
     LEFT JOIN chapters ch
@@ -114,7 +118,6 @@ async function getCourse(slug: string, studentId?: number) {
       c.teacher_id,
       u.full_name,
       t.bio,
-      et.name,
       es.name,
       g.name,
       r.status
@@ -262,7 +265,18 @@ export default async function CoursePage({ params }: Params) {
             ) : null}
           </div>
 
-          <aside className="course-preview">
+          <aside
+            className="course-preview"
+            style={
+              course.cover_image_url
+                ? {
+                    backgroundImage: `linear-gradient(rgba(20, 10, 8, 0.55), rgba(20, 10, 8, 0.55)), url(${course.cover_image_url})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }
+                : undefined
+            }
+          >
             <span className="lesson-pill">Published course</span>
             <h2 className="mt-5 font-[var(--display)] text-6xl font-bold leading-none">
               {course.lessons_count} lessons
@@ -401,3 +415,5 @@ export default async function CoursePage({ params }: Params) {
     </main>
   )
 }
+
+

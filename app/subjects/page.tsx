@@ -10,6 +10,7 @@ type CourseRow = {
   slug: string
   title: string
   short_description: string | null
+  cover_image_url: string | null
   teacher_name: string | null
   education_type_name: string | null
   stage_name: string | null
@@ -27,8 +28,14 @@ async function getCourses(studentId?: number) {
         c.slug,
         c.title,
         c.short_description,
+        c.cover_image_url,
         u.full_name AS teacher_name,
-        et.name AS education_type_name,
+        (
+          SELECT GROUP_CONCAT(et2.name ORDER BY et2.id SEPARATOR ', ')
+          FROM course_education_types cet2
+          JOIN education_types et2 ON et2.id = cet2.education_type_id
+          WHERE cet2.course_id = c.id
+        ) AS education_type_name,
         es.name AS stage_name,
         g.name AS grade_name,
         COUNT(DISTINCT l.id) AS lessons_count,
@@ -38,9 +45,15 @@ async function getCourses(studentId?: number) {
         ON c.deleted_at IS NULL
         AND c.status = 'published'
         AND (
-          c.education_type_id IS NULL
+          NOT EXISTS (
+            SELECT 1 FROM course_education_types cet WHERE cet.course_id = c.id
+          )
           OR s.education_type_id IS NULL
-          OR c.education_type_id = s.education_type_id
+          OR EXISTS (
+            SELECT 1 FROM course_education_types cet
+            WHERE cet.course_id = c.id
+              AND cet.education_type_id = s.education_type_id
+          )
         )
         AND (
           c.stage_id IS NULL
@@ -54,7 +67,6 @@ async function getCourses(studentId?: number) {
         )
       JOIN teachers t ON t.id = c.teacher_id
       JOIN users u ON u.id = t.user_id
-      LEFT JOIN education_types et ON et.id = c.education_type_id
       LEFT JOIN educational_stages es ON es.id = c.stage_id
       LEFT JOIN grades g ON g.id = c.grade_id
       LEFT JOIN chapters ch ON ch.course_id = c.id AND ch.deleted_at IS NULL
@@ -68,8 +80,8 @@ async function getCourses(studentId?: number) {
         c.slug,
         c.title,
         c.short_description,
+        c.cover_image_url,
         u.full_name,
-        et.name,
         es.name,
         g.name,
         r.status
@@ -86,8 +98,14 @@ async function getCourses(studentId?: number) {
       c.slug,
       c.title,
       c.short_description,
+      c.cover_image_url,
       u.full_name AS teacher_name,
-      et.name AS education_type_name,
+      (
+        SELECT GROUP_CONCAT(et2.name ORDER BY et2.id SEPARATOR ', ')
+        FROM course_education_types cet2
+        JOIN education_types et2 ON et2.id = cet2.education_type_id
+        WHERE cet2.course_id = c.id
+      ) AS education_type_name,
       es.name AS stage_name,
       g.name AS grade_name,
       COUNT(DISTINCT l.id) AS lessons_count,
@@ -95,7 +113,6 @@ async function getCourses(studentId?: number) {
     FROM courses c
     JOIN teachers t ON t.id = c.teacher_id
     JOIN users u ON u.id = t.user_id
-    LEFT JOIN education_types et ON et.id = c.education_type_id
     LEFT JOIN educational_stages es ON es.id = c.stage_id
     LEFT JOIN grades g ON g.id = c.grade_id
     LEFT JOIN chapters ch ON ch.course_id = c.id AND ch.deleted_at IS NULL
@@ -107,8 +124,8 @@ async function getCourses(studentId?: number) {
       c.slug,
       c.title,
       c.short_description,
+      c.cover_image_url,
       u.full_name,
-      et.name,
       es.name,
       g.name
     ORDER BY c.id DESC
@@ -150,7 +167,15 @@ export default async function SubjectsPage() {
           <div className="grid-auto">
             {courses.map((course) => (
               <div className="card subject-card" key={course.id}>
-                <div className="icon-circle">{getInitials(course.title)}</div>
+                {course.cover_image_url ? (
+                  <img
+                    src={course.cover_image_url}
+                    alt={course.title}
+                    className="course-cover-image"
+                  />
+                ) : (
+                  <div className="icon-circle">{getInitials(course.title)}</div>
+                )}
                 <h3 className="mt-5 text-2xl font-black">{course.title}</h3>
                 <p className="muted mt-2">
                   {course.short_description || "No short description is available for this course yet."}
@@ -161,8 +186,8 @@ export default async function SubjectsPage() {
                 </p>
 
                 <p className="muted mt-1 text-sm">
-                  {course.education_type_name || "All types"} —{" "}
-                  {course.stage_name || "All stages"} —{" "}
+                  {course.education_type_name || "All types"} â€”{" "}
+                  {course.stage_name || "All stages"} â€”{" "}
                   {course.grade_name || "All grades"}
                 </p>
 
@@ -220,3 +245,4 @@ export default async function SubjectsPage() {
     </main>
   )
 }
+

@@ -31,7 +31,6 @@ type EducationTypeOption = {
 type StageOption = {
   id: number
   name: string
-  education_type_id: number | null
 }
 
 type GradeOption = {
@@ -49,7 +48,12 @@ async function getCourses() {
       c.slug,
       c.status,
       u.full_name AS teacher_name,
-      et.name AS education_type_name,
+      (
+        SELECT GROUP_CONCAT(et2.name ORDER BY et2.id SEPARATOR ', ')
+        FROM course_education_types cet2
+        JOIN education_types et2 ON et2.id = cet2.education_type_id
+        WHERE cet2.course_id = c.id
+      ) AS education_type_name,
       es.name AS stage_name,
       g.name AS grade_name,
       COUNT(DISTINCT l.id) AS lessons_count,
@@ -57,7 +61,6 @@ async function getCourses() {
     FROM courses c
     LEFT JOIN teachers t ON t.id = c.teacher_id
     LEFT JOIN users u ON u.id = t.user_id
-    LEFT JOIN education_types et ON et.id = c.education_type_id
     LEFT JOIN educational_stages es ON es.id = c.stage_id
     LEFT JOIN grades g ON g.id = c.grade_id
     LEFT JOIN chapters ch ON ch.course_id = c.id
@@ -70,7 +73,6 @@ async function getCourses() {
       c.slug,
       c.status,
       u.full_name,
-      et.name,
       es.name,
       g.name
     ORDER BY c.id DESC
@@ -108,7 +110,7 @@ async function getEducationTypes() {
 async function getStages() {
   return query<StageOption>(
     `
-    SELECT id, name, education_type_id
+    SELECT id, name
     FROM educational_stages
     ORDER BY sort_order ASC, id ASC
     `
@@ -159,7 +161,7 @@ export default async function AdminCoursesPage() {
           <span className="eyebrow">Admin Dashboard</span>
           <h1 className="h1">Manage Courses</h1>
           <p className="muted mt-5 max-w-2xl text-lg">
-            Create courses from the admin panel and select the teacher, education type, stage, and grade.
+            Create courses from the admin panel and select the teacher, education type(s), stage, and grade.
           </p>
         </div>
       </section>
@@ -229,7 +231,7 @@ export default async function AdminCoursesPage() {
                     <td>
                       <p>{course.education_type_name || "All types"}</p>
                       <p className="muted text-sm">
-                        {course.stage_name || "All stages"} — {course.grade_name || "All grades"}
+                        {course.stage_name || "All stages"} â€” {course.grade_name || "All grades"}
                       </p>
                     </td>
                     <td>
@@ -271,3 +273,4 @@ export default async function AdminCoursesPage() {
     </main>
   )
 }
+

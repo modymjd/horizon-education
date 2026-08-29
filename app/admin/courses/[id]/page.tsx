@@ -17,7 +17,6 @@ type CourseRow = {
   status: string
   teacher_id: number
   teacher_name: string
-  education_type_id: number | null
   education_type_name: string | null
   stage_id: number | null
   stage_name: string | null
@@ -48,7 +47,6 @@ type EducationTypeOption = {
 type StageOption = {
   id: number
   name: string
-  education_type_id: number | null
 }
 
 type GradeOption = {
@@ -76,8 +74,12 @@ async function getCourse(courseId: number) {
       c.status,
       c.teacher_id,
       u.full_name AS teacher_name,
-      c.education_type_id,
-      et.name AS education_type_name,
+      (
+        SELECT GROUP_CONCAT(et2.name ORDER BY et2.id SEPARATOR ', ')
+        FROM course_education_types cet2
+        JOIN education_types et2 ON et2.id = cet2.education_type_id
+        WHERE cet2.course_id = c.id
+      ) AS education_type_name,
       c.stage_id,
       es.name AS stage_name,
       c.grade_id,
@@ -86,7 +88,6 @@ async function getCourse(courseId: number) {
     FROM courses c
     JOIN teachers t ON t.id = c.teacher_id
     JOIN users u ON u.id = t.user_id
-    LEFT JOIN education_types et ON et.id = c.education_type_id
     LEFT JOIN educational_stages es ON es.id = c.stage_id
     LEFT JOIN grades g ON g.id = c.grade_id
     WHERE c.id = ?
@@ -97,6 +98,19 @@ async function getCourse(courseId: number) {
   )
 
   return rows[0]
+}
+
+async function getCourseEducationTypeIds(courseId: number) {
+  const rows = await query<{ education_type_id: number }>(
+    `
+    SELECT education_type_id
+    FROM course_education_types
+    WHERE course_id = ?
+    `,
+    [courseId]
+  )
+
+  return rows.map((row) => row.education_type_id)
 }
 
 async function getChapters(courseId: number) {
@@ -148,9 +162,9 @@ async function getEducationTypes() {
 async function getStages() {
   return query<StageOption>(
     `
-    SELECT id, name, education_type_id
+    SELECT id, name
     FROM educational_stages
-    ORDER BY education_type_id ASC, sort_order ASC, id ASC
+    ORDER BY sort_order ASC, id ASC
     `
   )
 }
@@ -191,7 +205,7 @@ export default async function AdminCourseDetailsPage({ params }: Params) {
     notFound()
   }
 
-  const [course, chapters, teachers, educationTypes, stages, grades] =
+  const [course, chapters, teachers, educationTypes, stages, grades, selectedTypeIds] =
     await Promise.all([
       getCourse(courseId),
       getChapters(courseId),
@@ -199,6 +213,7 @@ export default async function AdminCourseDetailsPage({ params }: Params) {
       getEducationTypes(),
       getStages(),
       getGrades(),
+      getCourseEducationTypeIds(courseId),
     ])
 
   if (!course) {
@@ -236,13 +251,13 @@ export default async function AdminCourseDetailsPage({ params }: Params) {
             <h2 className="text-3xl font-black">{course.title}</h2>
 
             <div className="mt-5 grid gap-3 text-sm font-bold">
-              <p>✓ Teacher: {course.teacher_name}</p>
-              <p>✓ Status: {getStatusLabel(course.status)}</p>
-              <p>✓ Education type: {course.education_type_name || "All types"}</p>
-              <p>✓ Stage: {course.stage_name || "All stages"}</p>
-              <p>✓ Grade: {course.grade_name || "All grades"}</p>
-              <p>✓ Access duration: {course.access_duration_days || 30} days</p>
-              <p>✓ Chapters: {chapters.length}</p>
+              <p>âœ“ Teacher: {course.teacher_name}</p>
+              <p>âœ“ Status: {getStatusLabel(course.status)}</p>
+              <p>âœ“ Education type(s): {course.education_type_name || "All types"}</p>
+              <p>âœ“ Stage: {course.stage_name || "All stages"}</p>
+              <p>âœ“ Grade: {course.grade_name || "All grades"}</p>
+              <p>âœ“ Access duration: {course.access_duration_days || 30} days</p>
+              <p>âœ“ Chapters: {chapters.length}</p>
             </div>
           </aside>
 
@@ -253,6 +268,7 @@ export default async function AdminCourseDetailsPage({ params }: Params) {
               educationTypes={educationTypes}
               stages={stages}
               grades={grades}
+              initialEducationTypeIds={selectedTypeIds}
             />
 
             <AdminChapterCreateForm courseId={course.id} />
@@ -306,3 +322,4 @@ export default async function AdminCourseDetailsPage({ params }: Params) {
     </main>
   )
 }
+
