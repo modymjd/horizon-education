@@ -21,17 +21,6 @@ export async function POST(req: Request) {
         { status: 400 }
       )
     }
-
-    const maxSizeMb = 2048
-    const maxSizeBytes = maxSizeMb * 1024 * 1024
-
-    if (file.size > maxSizeBytes) {
-      return NextResponse.json(
-        { message: `Video size must not exceed ${maxSizeMb}MB.` },
-        { status: 400 }
-      )
-    }
-
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
@@ -71,4 +60,5 @@ export async function POST(req: Request) {
     )
   }
 }
+
 

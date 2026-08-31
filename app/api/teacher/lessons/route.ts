@@ -63,17 +63,6 @@ export async function POST(req: Request) {
         { status: 400 }
       )
     }
-
-    const maxSizeMb = 2048
-    const maxSizeBytes = maxSizeMb * 1024 * 1024
-
-    if (file.size > maxSizeBytes) {
-      return NextResponse.json(
-        { message: `Video size must not exceed ${maxSizeMb}MB.` },
-        { status: 400 }
-      )
-    }
-
     const lesson = await verifyTeacherLesson(lessonId, user.teacher_id)
 
     if (!lesson) {
@@ -153,4 +142,5 @@ export async function POST(req: Request) {
     )
   }
 }
+
 
