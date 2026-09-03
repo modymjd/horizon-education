@@ -1,6 +1,7 @@
-﻿"use client"
+"use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 type Chapter = {
@@ -66,9 +67,15 @@ export default function ChapterLessonsClient({
   const [lessons, setLessons] = useState<Lesson[]>(initialLessons)
   const [form, setForm] = useState<FormState>(emptyForm)
   const [showForm, setShowForm] = useState(false)
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [isChapterLoading, setIsChapterLoading] = useState(false)
   const [message, setMessage] = useState("")
   const [error, setError] = useState("")
+  const [chapterOrder, setChapterOrder] = useState(String(chapter?.sort_order ?? 0))
+  const [chapterStatus, setChapterStatus] = useState<Chapter["status"]>(
+    chapter?.status ?? "draft"
+  )
 
   if (!chapter) {
     return (
@@ -93,6 +100,75 @@ export default function ChapterLessonsClient({
 
     const data = await res.json()
     setLessons(data.lessons || [])
+  }
+
+  async function handleChapterSettingsSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+
+    setError("")
+    setMessage("")
+    setIsChapterLoading(true)
+
+    try {
+      const res = await fetch(`/api/admin/chapters/${chapterId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sort_order: Number(chapterOrder),
+          status: chapterStatus,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.message || "Unable to update chapter")
+        return
+      }
+
+      setMessage(data.message || "Chapter updated successfully")
+      router.refresh()
+    } catch {
+      setError("Unable to connect to the server")
+    } finally {
+      setIsChapterLoading(false)
+    }
+  }
+
+  async function handleDeleteChapter() {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this chapter? Its lessons will be hidden as well."
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    setError("")
+    setMessage("")
+    setIsChapterLoading(true)
+
+    try {
+      const res = await fetch(`/api/admin/chapters/${chapterId}`, {
+        method: "DELETE",
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.message || "Unable to delete chapter")
+        return
+      }
+
+      router.push(`/admin/courses/${chapter!.course_id}`)
+      router.refresh()
+    } catch {
+      setError("Unable to connect to the server")
+    } finally {
+      setIsChapterLoading(false)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -183,14 +259,70 @@ export default function ChapterLessonsClient({
 
           <div className="card p-5">
             <p className="text-sm opacity-60">Chapter Order</p>
-            <b className="mt-2 block text-xl">{chapter.sort_order}</b>
+            <b className="mt-2 block text-xl">{chapterOrder}</b>
           </div>
 
           <div className="card p-5">
             <p className="text-sm opacity-60">Status</p>
-            <b className="mt-2 block text-xl">{lessonStatusLabel[chapter.status]}</b>
+            <b className="mt-2 block text-xl">{lessonStatusLabel[chapterStatus]}</b>
           </div>
         </div>
+
+        <form onSubmit={handleChapterSettingsSubmit} className="card mt-6 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <span className="badge">Chapter Settings</span>
+              <h2 className="mt-3 text-2xl font-black">Order and visibility</h2>
+              <p className="mt-2 opacity-70">
+                Update the chapter order inside the course or delete it from the admin panel.
+              </p>
+            </div>
+
+            <button
+              className="btn btn-outline disabled:opacity-60"
+              disabled={isChapterLoading}
+              type="button"
+              onClick={handleDeleteChapter}
+            >
+              Delete Chapter
+            </button>
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <label>
+              Chapter Order
+              <input
+                className="input mt-2"
+                type="number"
+                min="0"
+                value={chapterOrder}
+                onChange={(e) => setChapterOrder(e.target.value)}
+                required
+              />
+            </label>
+
+            <label>
+              Chapter Status
+              <select
+                className="input mt-2"
+                value={chapterStatus}
+                onChange={(e) => setChapterStatus(e.target.value as Chapter["status"])}
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="hidden">Hidden</option>
+              </select>
+            </label>
+          </div>
+
+          <button
+            className="btn btn-primary mt-6 disabled:opacity-60"
+            disabled={isChapterLoading}
+            type="submit"
+          >
+            {isChapterLoading ? "Saving..." : "Save Chapter Settings"}
+          </button>
+        </form>
 
         {message ? (
           <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-4 text-green-700">

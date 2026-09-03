@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { writeFile, mkdir } from "fs/promises"
 import path from "path"
 import { pool } from "@/lib/db"
@@ -76,7 +76,7 @@ export async function PATCH(req: Request, context: Params) {
     accessDurationDays: formData.get("accessDurationDays") || undefined,
   })
 
-  const educationTypeIds = Array.from(new Set(body.educationTypeIds || []))
+  const educationTypeIds = Array.from(new Set(((body as any).educationTypeIds || ((body as any).educationTypeId ? [(body as any).educationTypeId] : []))))
 
   const existingCoverImageUrl = String(formData.get("existingCoverImageUrl") || "") || null
   let coverImageUrl = existingCoverImageUrl

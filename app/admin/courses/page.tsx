@@ -1,9 +1,13 @@
-﻿import Link from "next/link"
+import Link from "next/link"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
 import { AdminCourseCreateForm } from "@/components/admin/AdminCourseCreateForm"
 import { AdminCourseDeleteButton } from "@/components/admin/AdminCourseDeleteButton"
 import { query } from "@/lib/db"
+
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 
 type CourseRow = {
   id: number

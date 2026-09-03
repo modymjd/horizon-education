@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { writeFile, mkdir } from "fs/promises"
 import path from "path"
 import { query, pool } from "@/lib/db"
@@ -193,7 +193,7 @@ export async function POST(req: Request) {
   })
 
   const slug = makeSlug(body.title)
-  const educationTypeIds = Array.from(new Set(body.educationTypeIds || []))
+  const educationTypeIds = Array.from(new Set(((body as any).educationTypeIds || ((body as any).educationTypeId ? [(body as any).educationTypeId] : []))))
 
   let coverImageUrl: string | null = null
   const coverImageField = formData.get("coverImage")

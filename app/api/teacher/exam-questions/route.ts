@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { writeFile, mkdir } from "fs/promises"
 import path from "path"
 import { query } from "@/lib/db"
@@ -130,7 +130,7 @@ export async function POST(req: Request) {
     let questionImageUrl: string | null = null
 
     if (questionType === "image" && image instanceof File) {
-      const maxSizeMb = 5
+      const maxSizeMb = 20
       const maxSizeBytes = maxSizeMb * 1024 * 1024
 
       if (image.size > maxSizeBytes) {

@@ -1,15 +1,20 @@
-﻿import { NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { query, pool } from "@/lib/db"
 import { lessonSchema } from "@/lib/validators"
 import { requireAdmin } from "@/lib/session"
 
-type Params = {
-  params: Promise<{
-    id: string
-  }>
+function getChapterIdFromRequest(req: Request) {
+  const url = new URL(req.url)
+  const chapterId = Number(url.searchParams.get("chapter_id") || url.searchParams.get("chapterId"))
+
+  if (!chapterId || Number.isNaN(chapterId)) {
+    return null
+  }
+
+  return chapterId
 }
 
-export async function GET(_req: Request, context: Params) {
+export async function GET(req: Request) {
   try {
     const { response } = await requireAdmin()
 
@@ -17,10 +22,9 @@ export async function GET(_req: Request, context: Params) {
       return response
     }
 
-    const { id } = await context.params
-    const chapterId = Number(id)
+    const chapterId = getChapterIdFromRequest(req)
 
-    if (!chapterId || Number.isNaN(chapterId)) {
+    if (!chapterId) {
       return NextResponse.json(
         { message: "Invalid chapter ID." },
         { status: 400 }
@@ -94,15 +98,15 @@ export async function GET(_req: Request, context: Params) {
   }
 }
 
-export async function POST(req: Request, context: Params) {
+export async function POST(req: Request) {
   const { user, response } = await requireAdmin()
 
   if (response || !user) {
     return response
   }
 
-  const { id } = await context.params
-  const chapterId = Number(id)
+  const body = lessonSchema.parse(await req.json())
+  const chapterId = Number((body as any).chapterId || (body as any).chapter_id)
 
   if (!chapterId || Number.isNaN(chapterId)) {
     return NextResponse.json(
@@ -111,7 +115,6 @@ export async function POST(req: Request, context: Params) {
     )
   }
 
-  const body = lessonSchema.parse(await req.json())
   const conn = await pool.getConnection()
 
   try {
