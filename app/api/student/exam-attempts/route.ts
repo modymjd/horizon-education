@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { pool, query } from "@/lib/db"
 import { requireStudent } from "@/lib/session"
 
@@ -9,12 +9,15 @@ type ExamRow = {
 
 type QuestionRow = {
   id: number
+  question_text: string | null
+  question_image_url: string | null
   points: number
 }
 
 type ChoiceRow = {
   id: number
   question_id: number
+  choice_text: string
   is_correct: number
 }
 
@@ -96,7 +99,11 @@ export async function POST(req: Request) {
 
     const questions = await query<QuestionRow>(
       `
-      SELECT id, points
+      SELECT
+        id,
+        question_text,
+        question_image_url,
+        points
       FROM lesson_exam_questions
       WHERE exam_id = ?
       ORDER BY sort_order ASC, id ASC
@@ -113,10 +120,15 @@ export async function POST(req: Request) {
 
     const choices = await query<ChoiceRow>(
       `
-      SELECT c.id, c.question_id, c.is_correct
+      SELECT
+        c.id,
+        c.question_id,
+        c.choice_text,
+        c.is_correct
       FROM lesson_exam_choices c
       JOIN lesson_exam_questions q ON q.id = c.question_id
       WHERE q.exam_id = ?
+      ORDER BY c.sort_order ASC, c.id ASC
       `,
       [examId]
     )
@@ -136,11 +148,14 @@ export async function POST(req: Request) {
     }
 
     const gradedAnswers = questions.map((question) => {
-      const selectedChoiceId = answerMap.get(question.id)
-      const selectedChoice = choices.find(
-        (choice) =>
-          choice.id === selectedChoiceId && choice.question_id === question.id
+      const questionChoices = choices.filter(
+        (choice) => choice.question_id === question.id
       )
+      const selectedChoiceId = answerMap.get(question.id)
+      const selectedChoice = questionChoices.find(
+        (choice) => choice.id === selectedChoiceId
+      )
+      const correctChoice = questionChoices.find((choice) => choice.is_correct)
 
       const isCorrect = selectedChoice?.is_correct ? 1 : 0
       const pointsAwarded = isCorrect ? Number(question.points || 0) : 0
@@ -149,7 +164,13 @@ export async function POST(req: Request) {
 
       return {
         question_id: question.id,
+        question_text: question.question_text,
+        question_image_url: question.question_image_url,
+        points: Number(question.points || 0),
         choice_id: selectedChoiceId || 0,
+        selected_choice_text: selectedChoice?.choice_text || null,
+        correct_choice_id: correctChoice?.id || 0,
+        correct_choice_text: correctChoice?.choice_text || null,
         is_correct: isCorrect,
         points_awarded: pointsAwarded,
       }
@@ -211,6 +232,7 @@ export async function POST(req: Request) {
           success: true,
           score: 0,
           passed: false,
+          review: [],
           message: "The exam was closed because you left the page.",
         })
       }
@@ -218,7 +240,10 @@ export async function POST(req: Request) {
       return NextResponse.json({
         success: true,
         score,
+        earnedPoints,
+        totalPoints,
         passed: Boolean(passed),
+        review: gradedAnswers,
         message: passed
           ? `You passed the exam with a score of ${score}%.`
           : `You did not pass the exam. Your score is ${score}%.`,

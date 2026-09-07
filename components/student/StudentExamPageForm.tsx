@@ -1,7 +1,6 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useRouter } from "next/navigation"
 
 type ExamQuestion = {
   id: number
@@ -14,6 +13,19 @@ type ExamChoice = {
   id: number
   question_id: number
   choice_text: string
+}
+
+type ExamReviewItem = {
+  question_id: number
+  question_text: string | null
+  question_image_url: string | null
+  points: number
+  choice_id: number
+  selected_choice_text: string | null
+  correct_choice_id: number
+  correct_choice_text: string | null
+  is_correct: number
+  points_awarded: number
 }
 
 type Props = {
@@ -29,13 +41,17 @@ export function StudentExamPageForm({
   questions,
   choices,
 }: Props) {
-  const router = useRouter()
-
   const [started, setStarted] = useState(false)
   const [answers, setAnswers] = useState<Record<number, number>>({})
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const [review, setReview] = useState<ExamReviewItem[]>([])
+  const [score, setScore] = useState<number | null>(null)
+  const [earnedPoints, setEarnedPoints] = useState<number | null>(null)
+  const [totalPoints, setTotalPoints] = useState<number | null>(null)
+  const [passed, setPassed] = useState<boolean | null>(null)
+  const [showReview, setShowReview] = useState(false)
 
   const submittedRef = useRef(false)
   const startedRef = useRef(false)
@@ -90,11 +106,12 @@ export function StudentExamPageForm({
       }
 
       setSuccess(data.message || "Exam submitted successfully")
-
-      setTimeout(() => {
-        router.push(`/student/lessons/${lessonId}`)
-        router.refresh()
-      }, 800)
+      setShowReview(false)
+      setReview(Array.isArray(data.review) ? data.review : [])
+      setScore(typeof data.score === "number" ? data.score : null)
+      setEarnedPoints(typeof data.earnedPoints === "number" ? data.earnedPoints : null)
+      setTotalPoints(typeof data.totalPoints === "number" ? data.totalPoints : null)
+      setPassed(typeof data.passed === "boolean" ? data.passed : null)
     } catch {
       setError("Unable to connect to the server")
       submittedRef.current = false
@@ -119,6 +136,104 @@ export function StudentExamPageForm({
       window.removeEventListener("beforeunload", handleBeforeUnload)
     }
   }, [])
+
+  if (review.length > 0) {
+    return (
+      <div className="mt-8 grid gap-5">
+        <div className={passed ? "alert-success" : "alert-error"}>
+          <b>{passed ? "Passed" : "Not passed"}</b>
+          <p className="mt-2">
+            Your score: {score}%{" "}
+            {earnedPoints !== null && totalPoints !== null
+              ? `(${earnedPoints}/${totalPoints} points)`
+              : ""}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setShowReview((current) => !current)}
+          >
+            {showReview ? "Hide My Answers" : "View My Answers"}
+          </button>
+
+          <a href={`/student/lessons/${lessonId}`} className="btn btn-outline">
+            Back to Lesson
+          </a>
+        </div>
+
+        {showReview ? (
+          <>
+            <div className="rounded-2xl border border-[var(--line)] bg-[var(--cream-2)] p-4">
+              <h2 className="text-2xl font-black">My answers</h2>
+              <p className="muted mt-2">
+                Review your answers and compare them with the correct answers.
+              </p>
+            </div>
+
+            {review.map((item, index) => (
+              <div
+                className="rounded-2xl border border-[var(--line)] bg-[var(--cream-2)] p-4"
+                key={item.question_id}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <h3 className="text-xl font-black">
+                    {index + 1}. {item.question_text || ""}
+                  </h3>
+
+                  <span
+                    className={
+                      item.is_correct
+                        ? "rounded-full bg-green-100 px-3 py-1 text-sm font-black text-green-700"
+                        : "rounded-full bg-red-100 px-3 py-1 text-sm font-black text-red-700"
+                    }
+                  >
+                    {item.is_correct ? "Correct" : "Wrong"}
+                  </span>
+                </div>
+
+                {item.question_image_url ? (
+                  <div className="mt-3">
+                    <img
+                      src={item.question_image_url}
+                      alt={`Question ${index + 1}`}
+                      className="max-h-80 w-full rounded-2xl border border-[var(--line)] bg-white object-contain"
+                    />
+                  </div>
+                ) : null}
+
+                <p className="muted mt-2 text-sm">
+                  Points: {item.points_awarded}/{item.points}
+                </p>
+
+                <div className="mt-4 grid gap-2">
+                  <div
+                    className={
+                      item.is_correct
+                        ? "rounded-xl border border-green-200 bg-green-50 p-3"
+                        : "rounded-xl border border-red-200 bg-red-50 p-3"
+                    }
+                  >
+                    <b>Your answer:</b>{" "}
+                    {item.selected_choice_text || "No answer selected"}
+                  </div>
+
+                  {!item.is_correct ? (
+                    <div className="rounded-xl border border-green-200 bg-green-50 p-3">
+                      <b>Correct answer:</b>{" "}
+                      {item.correct_choice_text || "No correct answer set"}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </>
+        ) : null}
+      </div>
+    )
+  }
 
   if (!started) {
     return (
@@ -172,7 +287,7 @@ export function StudentExamPageForm({
               <img
                 src={question.question_image_url}
                 alt={`Question ${index + 1}`}
-                className="max-h-80 w-full rounded-2xl border border-[var(--line)] object-contain bg-white"
+                className="max-h-80 w-full rounded-2xl border border-[var(--line)] bg-white object-contain"
               />
             </div>
           ) : null}

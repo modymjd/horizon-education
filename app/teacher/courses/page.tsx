@@ -1,4 +1,7 @@
-﻿import Link from "next/link"
+﻿export const dynamic = "force-dynamic"
+export const revalidate = 0
+
+import Link from "next/link"
 import { redirect } from "next/navigation"
 import { SiteHeader } from "@/components/site/SiteHeader"
 import { SiteFooter } from "@/components/site/SiteFooter"
@@ -25,7 +28,7 @@ async function getTeacherCourses(teacherId: number) {
       c.title,
       c.short_description,
       c.status,
-      COUNT(DISTINCT l.id) AS lessons_count,
+      COUNT(DISTINCT CASE WHEN l.deleted_at IS NULL THEN l.id END) AS lessons_count,
       COUNT(DISTINCT sla.student_id) AS students_count,
       COALESCE(SUM(DISTINCT p.teacher_amount), 0) AS teacher_revenue
     FROM courses c

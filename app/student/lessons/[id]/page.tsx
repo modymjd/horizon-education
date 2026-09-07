@@ -174,8 +174,17 @@ function ExamCard({ exam }: { exam: ExamRow }) {
 
       {exam.attempted ? (
         <div className="alert-success mt-4">
-          Exam submitted — score: {exam.score}% —{" "}
-          {exam.passed ? "Passed" : "Not passed"}
+          <p>
+            Exam submitted — score: {exam.score}% —{" "}
+            {exam.passed ? "Passed" : "Not passed"}
+          </p>
+
+          <Link
+            href={`/student/exams/${exam.id}?showAnswers=1`}
+            className="btn btn-outline mt-4"
+          >
+            View My Answers
+          </Link>
         </div>
       ) : (
         <Link href={`/student/exams/${exam.id}`} className="btn mt-4">
@@ -295,7 +304,7 @@ export default async function StudentLessonPage({
                 <h2 className="text-3xl font-black">{video.title}</h2>
 
                 <div className="mt-6 overflow-hidden rounded-[28px] border border-[var(--line)] bg-[var(--ember)]">
-                  <video controls className="w-full" src={video.video_url}>
+                  <video controls controlsList="nodownload" className="w-full" src={video.video_url}>
                     Your browser does not support video playback.
                   </video>
                 </div>
