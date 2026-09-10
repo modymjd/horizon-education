@@ -75,7 +75,7 @@ export async function POST(req: Request) {
     let attachmentUrl: string | null = null
 
     if (file instanceof File && file.size > 0) {
-      const maxSizeMb = 50
+      const maxSizeMb = 500
       const maxSizeBytes = maxSizeMb * 1024 * 1024
 
       if (file.size > maxSizeBytes) {
