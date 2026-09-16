@@ -4,6 +4,9 @@ import { SiteFooter } from "@/components/site/SiteFooter"
 import { query } from "@/lib/db"
 import { PaymentCreateForm } from "@/components/admin/PaymentCreateForm"
 
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 type PaymentRow = {
   id: number
   invoice_number: string
@@ -14,6 +17,7 @@ type PaymentRow = {
   platform_amount: number
   teacher_amount: number
   status: string
+  notes: string | null
   paid_at: string
 }
 
@@ -47,6 +51,7 @@ async function getPayments() {
       p.platform_amount,
       p.teacher_amount,
       p.status,
+      p.notes,
       DATE_FORMAT(p.paid_at, '%Y-%m-%d') AS paid_at
     FROM payments p
     LEFT JOIN students s ON s.id = p.student_id
@@ -74,15 +79,19 @@ async function getPaymentFormOptions() {
 
   const lessons = await query<LessonOption>(`
     SELECT
-      l.id,
-      l.title,
-      c.title AS course_title,
-      l.price
+      MIN(l.id) AS id,
+      MIN(TRIM(l.title)) AS title,
+      MIN(TRIM(c.title)) AS course_title,
+      MIN(l.price) AS price
     FROM lessons l
     JOIN chapters ch ON ch.id = l.chapter_id
     JOIN courses c ON c.id = ch.course_id
     WHERE l.status = 'published'
-    ORDER BY c.title ASC, l.sort_order ASC
+      AND l.deleted_at IS NULL
+      AND ch.deleted_at IS NULL
+      AND c.deleted_at IS NULL
+    GROUP BY LOWER(TRIM(c.title)), LOWER(TRIM(l.title)), l.price
+    ORDER BY MIN(TRIM(c.title)) ASC, MIN(l.sort_order) ASC
   `)
 
   const paymentMethods = await query<PaymentMethodOption>(`
@@ -147,7 +156,7 @@ export default async function AdminPaymentsPage() {
       </section>
 
       <section className="section pt-6">
-        <div className="wrap grid gap-7 lg:grid-cols-[0.85fr_1.15fr]">
+        <div className="wrap grid gap-7 xl:grid-cols-[320px_minmax(0,1fr)]">
           <PaymentCreateForm
             students={options.students}
             lessons={options.lessons}
@@ -181,8 +190,8 @@ export default async function AdminPaymentsPage() {
               </Link>
             </div>
 
-            <div className="card admin-table-card">
-              <table className="admin-table">
+            <div className="card admin-table-card overflow-x-auto">
+              <table className="admin-table min-w-[980px]">
                 <thead>
                   <tr>
                     <th>Invoice</th>
@@ -191,6 +200,7 @@ export default async function AdminPaymentsPage() {
                     <th>Method</th>
                     <th>Amount</th>
                     <th>Status</th>
+                    <th>Notes</th>
                     <th>Date</th>
                   </tr>
                 </thead>
@@ -201,7 +211,7 @@ export default async function AdminPaymentsPage() {
                         <b>{payment.invoice_number}</b>
                       </td>
                       <td>{payment.student_name || "Not specified"}</td>
-                      <td>{payment.lesson_title || "Not specified"}</td>
+                      <td className="max-w-[260px] whitespace-normal">{payment.lesson_title || "Not specified"}</td>
                       <td>{payment.payment_method_name || "Not specified"}</td>
                       <td className="amount">{money(payment.amount_paid)}</td>
                       <td>
@@ -209,13 +219,16 @@ export default async function AdminPaymentsPage() {
                           {getStatusLabel(payment.status)}
                         </span>
                       </td>
+                      <td className="max-w-[260px] whitespace-normal text-sm leading-relaxed">
+                        {payment.notes || "—"}
+                      </td>
                       <td>{payment.paid_at}</td>
                     </tr>
                   ))}
 
                   {payments.length === 0 ? (
                     <tr>
-                      <td colSpan={7}>No payments recorded yet.</td>
+                      <td colSpan={8}>No payments recorded yet.</td>
                     </tr>
                   ) : null}
                 </tbody>
