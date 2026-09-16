@@ -118,22 +118,21 @@ export async function DELETE(_req: Request, context: Params) {
   try {
     await conn.beginTransaction()
 
-    const [studentRows] = await conn.execute<any[]>(
+    const [result] = await conn.execute<any>(
       `
-      SELECT s.id AS student_id
-      FROM users u
+      UPDATE users u
       JOIN roles r ON r.id = u.role_id
-      JOIN students s ON s.user_id = u.id
+      SET
+        u.status = 'suspended',
+        u.deleted_at = NOW()
       WHERE u.id = ?
         AND r.name = 'student'
-      LIMIT 1
+        AND u.deleted_at IS NULL
       `,
       [userId]
     )
 
-    const student = studentRows[0]
-
-    if (!student) {
+    if (result.affectedRows === 0) {
       await conn.rollback()
 
       return NextResponse.json(
@@ -142,99 +141,31 @@ export async function DELETE(_req: Request, context: Params) {
       )
     }
 
-    const studentId = student.student_id
-
-    await conn.execute(
-      `
-      DELETE lea
-      FROM lesson_exam_answers lea
-      JOIN lesson_exam_attempts attempt ON attempt.id = lea.attempt_id
-      WHERE attempt.student_id = ?
-      `,
-      [studentId]
-    )
-
-    await conn.execute(
-      "DELETE FROM lesson_exam_attempts WHERE student_id = ?",
-      [studentId]
-    )
-
-    await conn.execute(
-      `
-      DELETE sa
-      FROM student_answers sa
-      JOIN exam_attempts attempt ON attempt.id = sa.attempt_id
-      WHERE attempt.student_id = ?
-      `,
-      [studentId]
-    )
-
-    await conn.execute(
-      "DELETE FROM exam_attempts WHERE student_id = ?",
-      [studentId]
-    )
-
-    await conn.execute(
-      "DELETE FROM lesson_assignment_submissions WHERE student_id = ?",
-      [studentId]
-    )
-
-    await conn.execute(
-      "DELETE FROM assignment_submissions WHERE student_id = ?",
-      [studentId]
-    )
-
-    await conn.execute(
-      "DELETE FROM student_lesson_access WHERE student_id = ?",
-      [studentId]
-    )
-
-    await conn.execute(
-      "DELETE FROM student_course_requests WHERE student_id = ?",
-      [studentId]
-    )
-
-    await conn.execute(
-      "DELETE FROM payments WHERE student_id = ?",
-      [studentId]
-    )
-
-    await conn.execute(
-      "DELETE FROM students WHERE id = ?",
-      [studentId]
-    )
-
-    await conn.execute(
-      "DELETE FROM users WHERE id = ?",
-      [userId]
-    )
-
     await conn.execute(
       `
       INSERT INTO audit_logs
         (user_id, action, entity_type, entity_id, new_values)
       VALUES
-        (?, 'hard_delete_student', 'student', ?, JSON_OBJECT('student_id', ?, 'permanent', true))
+        (?, 'delete_student', 'student', ?, JSON_OBJECT('deleted', true))
       `,
-      [user.id, userId, studentId]
+      [user.id, userId]
     )
 
     await conn.commit()
 
     return NextResponse.json({
-      message: "Student permanently deleted successfully.",
+      message: "Student deleted successfully.",
     })
   } catch (error) {
     await conn.rollback()
 
-    console.error("HARD_DELETE_STUDENT_ERROR", error)
+    console.error("DELETE_STUDENT_ERROR", error)
 
     return NextResponse.json(
-      { message: "Unable to permanently delete the student." },
+      { message: "Unable to delete the student." },
       { status: 500 }
     )
   } finally {
     conn.release()
   }
 }
-
