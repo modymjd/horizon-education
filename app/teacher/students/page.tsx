@@ -23,6 +23,7 @@ type TeacherStudentRow = {
   stage_name: string | null
   grade_name: string | null
   accepted_courses: string
+  accepted_courses_json: string | null
   accepted_courses_count: number
   unlocked_lessons_count: number
 }
@@ -47,6 +48,15 @@ async function getTeacherStudents(teacherId: number) {
       es.name AS stage_name,
       g.name AS grade_name,
       GROUP_CONCAT(DISTINCT c.title ORDER BY c.title SEPARATOR ', ') AS accepted_courses,
+      CONCAT(
+        '[',
+        GROUP_CONCAT(
+          DISTINCT JSON_OBJECT('id', c.id, 'title', c.title)
+          ORDER BY c.title
+          SEPARATOR ','
+        ),
+        ']'
+      ) AS accepted_courses_json,
       COUNT(DISTINCT c.id) AS accepted_courses_count,
       COUNT(DISTINCT sla.lesson_id) AS unlocked_lessons_count
     FROM student_course_requests r
